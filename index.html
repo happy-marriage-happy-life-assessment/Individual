@@ -1,21 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Discover Your Top Intimacy Needs</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #FFF9F2;
-      color: #1A3C5E;
+      font-family: 'Arial', sans-serif;
+      background-color: #fff9f2;
+      color: #1a3c5e;
       padding: 20px;
-      max-width: 700px;
+      max-width: 800px;
       margin: auto;
     }
     h1, h2 {
       text-align: center;
-      color: #FF4D4D;
+      color: #ff4d4d;
     }
     .question {
       display: none;
@@ -25,22 +27,22 @@
     }
     .progress {
       text-align: center;
-      margin-bottom: 20px;
+      margin: 20px 0;
       font-weight: bold;
     }
     label {
       display: block;
       margin: 10px 0;
-      background-color: #F5F5F5;
-      padding: 8px 12px;
-      border-radius: 6px;
+      padding: 10px 15px;
+      background-color: #f5f5f5;
+      border-radius: 5px;
       cursor: pointer;
     }
     input[type="radio"] {
-      margin-right: 8px;
+      margin-right: 10px;
     }
-    #nextButton, #submitButton {
-      background-color: #4D9DE0;
+    button {
+      background-color: #4d9de0;
       color: white;
       border: none;
       padding: 12px 24px;
@@ -56,20 +58,31 @@
     }
     canvas {
       display: block;
-      margin: 0 auto 30px;
+      margin: 30px auto;
       max-width: 100%;
     }
-    .result-block {
-      margin-bottom: 20px;
+    .result-block, .description-block {
+      background-color: #f0f4f9;
+      border-left: 5px solid #4d9de0;
       padding: 15px;
-      background: #f0f4f9;
-      border-left: 5px solid #4D9DE0;
+      margin-bottom: 20px;
+    }
+    form#emailForm {
+      margin-top: 30px;
+      text-align: center;
+    }
+    form#emailForm input[type="email"] {
+      padding: 10px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <h1>What Are Your Top Intimacy Needs?</h1>
   <div class="progress" id="progressText">Question 1 of 24</div>
+
   <form id="quizForm">
     <div id="quiz"></div>
     <button type="button" id="nextButton">Next</button>
@@ -77,96 +90,217 @@
 
   <div id="resultSection">
     <h2>Your Personalized Intimacy Profile</h2>
-    <canvas id="resultsChart" width="400" height="400"></canvas>
+    <canvas id="resultsChart"></canvas>
     <div id="resultBreakdown"></div>
-    <form style="text-align:center; margin-top: 30px;">
-      <label for="email">Want your results emailed to you?</label>
-      <input type="email" id="email" placeholder="Enter your email" required>
-      <button type="submit" id="submitButton">Send Results</button>
+    <div id="descriptions"></div>
+
+    <form id="emailForm" action="https://formspree.io/f/xgvzkwre" method="POST">
+      <label>Want your results emailed to you?</label>
+      <input type="email" name="email" placeholder="Enter your email" required>
+      <input type="hidden" id="scoreSummary" name="message" value="">
+      <button type="submit">Send Results</button>
     </form>
+
+    <button onclick="downloadPDF()">Download PDF</button>
+    <button onclick="location.reload()">Retake Quiz</button>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const questions = [
-      ["When do you feel most spiritually connected in your relationship?",
-        "When we pray or reflect on our faith together", "When we open up about our feelings and share struggles",
-        "When we align values and commit to each other", "When we express love through caring actions",
-        "Spiritual", "Emotional", "Commitment", "Service"],
-      ["What kind of conversation brings you the most joy?",
-        "Dreaming and strategizing future goals together", "Debating big ideas or reading side-by-side",
-        "Creating a project or brainstorming ideas", "Joking, laughing, and telling silly stories",
-        "Intellectual", "Intellectual", "Creative", "Affability"],
-      ["When do you feel most cared for?",
-        "When my partner helps me with practical tasks", "When we cuddle or share physical affection",
-        "When we worship or read Scripture together", "When we’re truly emotionally honest",
-        "Service", "Physical", "Spiritual", "Emotional"],
-      ["What builds trust the most for you?",
-        "When we align financially and make joint decisions", "When we talk through conflict calmly and kindly",
-        "When we’re committed no matter what", "When we show up and follow through with chores",
-        "Financial", "Emotional", "Commitment", "Partnership"],
-      ["What’s your ideal date?",
-        "Board game night or fun outing with laughter", "Romantic evening with affection or intimacy",
-        "Serving or volunteering together", "Having a deep heart-to-heart conversation",
-        "Affability", "Physical", "Service", "Emotional"],
-      ["What makes you feel most secure?",
-        "Long-term commitment and loyalty", "Touch, cuddling, or sex", "Praying together and shared values", "Daily teamwork at home",
-        "Commitment", "Sexual", "Spiritual", "Partnership"],
-      ["What kind of connection do you crave when stressed?",
-        "Intellectual reassurance and strategy", "Physical closeness or sex", "Emotional comfort and empathy", "Prayer or spiritual guidance",
-        "Intellectual", "Physical", "Emotional", "Spiritual"],
-      ["How do you enjoy bonding with your spouse?",
-        "Working together creatively or around the house", "Engaging deep philosophical conversations", "Planning finances or budgeting", "Spontaneous fun together",
-        "Creative", "Intellectual", "Financial", "Recreational"],
-      ["What moment would make you smile the most?",
-        "They do something for me without being asked", "They grab my hand or kiss me affectionately", "They surprise me with a spiritual insight or encouragement", "They invite me on a fun, playful date",
-        "Service", "Physical", "Spiritual", "Recreational"],
-      ["What turns you off in a relationship?",
-        "Being ignored or emotionally dismissed", "Lack of affection or sexual connection", "Lack of shared spiritual values", "Feeling like I do all the work",
-        "Emotional", "Sexual", "Spiritual", "Partnership"],
-      ["How do you know your spouse is for you?",
-        "They express commitment to stay and grow with me", "They prioritize intimacy and pursue me", "They offer to help or make my life easier", "They spend time having fun with me",
-        "Commitment", "Sexual", "Service", "Recreational"],
-      ["When do you feel like a team?",
-        "We split responsibilities fairly", "We create or build something together", "We agree on spiritual goals", "We dream and brainstorm life decisions",
-        "Partnership", "Creative", "Spiritual", "Intellectual"],
-      ["What shows love best to you?",
-        "Cuddling, kissing, or making love", "Spending time being silly and laughing", "They pray for me or speak faith into my life", "They take emotional risks and open up",
-        "Physical", "Affability", "Spiritual", "Emotional"],
-      ["What do you value in a long-term marriage?",
-        "Mutual faith and devotion to God", "Working as a team to achieve goals", "Shared values, routines, and loyalty", "Ongoing romance and sexual connection",
-        "Spiritual", "Partnership", "Commitment", "Sexual"],
-      ["How do you best express love?",
-        "Through service and taking care of practical things", "By enjoying hobbies or games together", "Through creativity—projects, writing, or music", "Through physical touch or sexual affection",
-        "Service", "Recreational", "Creative", "Physical"],
-      ["What kind of presence means the most?",
-        "They emotionally show up and hear my heart", "They plan a getaway or fun event", "They touch me gently or with intention", "They spiritually encourage and pray with me",
-        "Emotional", "Recreational", "Physical", "Spiritual"],
-      ["Which best describes your ideal relationship rhythm?",
-        "Faith-centered with shared spiritual disciplines", "Emotionally safe and consistently affectionate", "Mentally stimulating with deep discussion", "Productive and creative in building something",
-        "Spiritual", "Emotional", "Intellectual", "Creative"],
-      ["What makes you feel prioritized?",
-        "They support my goals financially and practically", "They plan sexual intimacy and pursue it", "They show consistent commitment even during conflict", "They enjoy spending lighthearted time with me",
-        "Financial", "Sexual", "Commitment", "Affability"],
-      ["What disappoints you most?",
-        "Lack of fun or laughter", "No time for emotional sharing", "No physical or sexual contact", "No follow-through on shared responsibilities",
-        "Affability", "Emotional", "Sexual", "Partnership"],
-      ["What makes you proud of your relationship?",
-        "How we live out our spiritual values", "How we resolve conflict emotionally and respectfully", "How we support each other’s responsibilities", "How we plan our future and stay on track",
-        "Spiritual", "Emotional", "Service", "Financial"],
-      ["What fills your love tank?",
-        "Physical affection", "Verbal affirmation and emotional empathy", "Shared commitment and loyalty", "Spontaneous recreation or laughter",
-        "Physical", "Emotional", "Commitment", "Recreational"],
-      ["Which routine brings joy?",
-        "Spiritual rituals or worship together", "Creative activities or projects", "Serving each other in daily life", "Making future plans and discussing values",
-        "Spiritual", "Creative", "Service", "Intellectual"],
-      ["What best represents your love language?",
-        "Touch and physical closeness", "Kind acts and service", "Time spent discussing and learning", "Shared spiritual connection",
-        "Physical", "Service", "Intellectual", "Spiritual"],
-      ["When are you most confident in your relationship?",
-        "When we resolve emotions with care", "When we share and dream goals", "When we commit and forgive consistently", "When we play and enjoy life",
-        "Emotional", "Intellectual", "Commitment", "Affability"]
-    ];
+    const questions = [const questions = [
+  [
+    "When you're feeling emotionally drained, what helps you feel most reconnected with your spouse?",
+    "Having a spiritual conversation or praying together",
+    "A warm, empathetic talk where you feel truly heard",
+    "Doing something fun or silly together",
+    "Being physically close or cuddling",
+    "Spiritual", "Emotional", "Recreational", "Physical"
+  ],
+  [
+    "What makes you feel most supported after a long day?",
+    "Knowing your spouse is 100% committed and has your back",
+    "Having your spouse help with dinner or chores",
+    "Laughing together or watching a favorite show",
+    "Discussing dreams and ideas for the future",
+    "Commitment", "Partnership", "Affability", "Intellectual"
+  ],
+  [
+    "What best helps you feel deeply loved?",
+    "Intentional affection like hugs, kisses, or hand-holding",
+    "Shared quiet time with your spouse and God",
+    "Receiving a helpful act like making you coffee or folding laundry",
+    "Playfully teasing or sharing inside jokes",
+    "Physical", "Spiritual", "Service", "Affability"
+  ],
+  [
+    "Which experience draws you closer to your spouse?",
+    "Working on a budget or planning finances together",
+    "Praying or reading scripture together",
+    "Talking about hopes, fears, and deep emotions",
+    "Planning a creative project together",
+    "Financial", "Spiritual", "Emotional", "Creative"
+  ],
+  [
+    "What makes you feel most secure in your relationship?",
+    "Hearing your spouse reaffirm their lifelong commitment",
+    "Consistent actions of support and kindness",
+    "Having open conversations about money or future goals",
+    "Being sexually pursued and desired",
+    "Commitment", "Service", "Financial", "Sexual"
+  ],
+  [
+    "What do you miss most when you're disconnected?",
+    "Having intellectual conversation or brainstorming ideas",
+    "Laughter, lightheartedness, and goofiness",
+    "Gentle touch and closeness",
+    "Spending time in prayer or worship together",
+    "Intellectual", "Affability", "Physical", "Spiritual"
+  ],
+  [
+    "How do you prefer to celebrate something exciting?",
+    "Going on a date or enjoying shared physical intimacy",
+    "Spending fun, adventurous time together",
+    "Thanking God together and praying",
+    "Sitting down and planning your next big goal",
+    "Sexual", "Recreational", "Spiritual", "Intellectual"
+  ],
+  [
+    "Which moment would mean the most?",
+    "Your spouse listens deeply and affirms your feelings",
+    "They plan an entire date night just for the two of you",
+    "They join you in a heartfelt devotional or prayer",
+    "They surprise you by handling a task you were dreading",
+    "Emotional", "Recreational", "Spiritual", "Service"
+  ],
+  [
+    "What do you wish your spouse understood better about you?",
+    "You need emotional connection to feel close",
+    "Spiritual unity makes your relationship stronger",
+    "Finances and practical planning bring you peace",
+    "You love creating or dreaming together",
+    "Emotional", "Spiritual", "Financial", "Creative"
+  ],
+  [
+    "Which action would fill your emotional tank?",
+    "Spending uninterrupted time praying or reading the Bible together",
+    "Being touched gently—shoulder squeeze, hand-hold, or a hug",
+    "Having a no-stress, fun experience together",
+    "Knowing your spouse is truly in it for the long haul",
+    "Spiritual", "Physical", "Recreational", "Commitment"
+  ],
+  [
+    "You're overwhelmed. What’s most comforting?",
+    "Your spouse taking something off your plate without being asked",
+    "A reassuring talk where your spouse really listens",
+    "Holding hands or sitting close",
+    "Being reminded of your shared faith and purpose",
+    "Service", "Emotional", "Physical", "Spiritual"
+  ],
+  [
+    "How do you know your spouse values you?",
+    "They encourage your creativity and ideas",
+    "They stay faithful to your shared values",
+    "They speak kindly and keep a joyful tone",
+    "They pursue physical and sexual closeness",
+    "Creative", "Commitment", "Affability", "Sexual"
+  ],
+  [
+    "You're planning a weekend together. What excites you most?",
+    "Volunteering or serving together",
+    "Doing something active, like hiking or going to a game",
+    "Starting a creative or DIY project",
+    "Relaxing and reading devotionals together",
+    "Service", "Recreational", "Creative", "Spiritual"
+  ],
+  [
+    "Which statement feels most true to you?",
+    "Touch is how I feel closest to my spouse",
+    "I feel safe when we’re emotionally vulnerable",
+    "Playfulness helps me de-stress and connect",
+    "I feel intimacy through spiritual connection",
+    "Physical", "Emotional", "Affability", "Spiritual"
+  ],
+  [
+    "How does your spouse best express love?",
+    "Taking on responsibilities when I’m tired",
+    "Talking with me about ideas or current events",
+    "Keeping promises and honoring their word",
+    "Being silly and laughing with me",
+    "Service", "Intellectual", "Commitment", "Affability"
+  ],
+  [
+    "What’s your favorite way to reconnect after conflict?",
+    "Holding hands or cuddling",
+    "Praying together and restoring spiritually",
+    "Talking honestly and feeling emotionally safe",
+    "Doing something spontaneous and fun",
+    "Physical", "Spiritual", "Emotional", "Recreational"
+  ],
+  [
+    "What intimacy feels hardest to live without?",
+    "Sexual passion and desire",
+    "Working together as a team",
+    "Emotional empathy and affirmation",
+    "Faith and prayer as a couple",
+    "Sexual", "Partnership", "Emotional", "Spiritual"
+  ],
+  [
+    "What makes you feel most prioritized?",
+    "Being included in decisions and responsibilities",
+    "Being pursued physically and sexually",
+    "Having regular emotional check-ins",
+    "Creating a shared spiritual routine",
+    "Partnership", "Sexual", "Emotional", "Spiritual"
+  ],
+  [
+    "What brings you the most peace in your marriage?",
+    "Financial unity and shared planning",
+    "Faithfulness and trustworthiness",
+    "Having fun together often",
+    "Creative collaboration or dreaming big",
+    "Financial", "Commitment", "Recreational", "Creative"
+  ],
+  [
+    "Your spouse surprises you. What would you love?",
+    "Setting up a prayer or worship time together",
+    "Taking over something you usually do",
+    "Planning a fun day with no responsibilities",
+    "Leaving an affectionate or romantic note",
+    "Spiritual", "Service", "Recreational", "Affability"
+  ],
+  [
+    "In a busy week, what do you long for?",
+    "Someone to ask how I feel and really listen",
+    "Time for intimacy and touch",
+    "A spontaneous, joyful moment together",
+    "A partner in the daily grind",
+    "Emotional", "Physical", "Affability", "Partnership"
+  ],
+  [
+    "Which intimacy area needs to grow?",
+    "Better spiritual connection",
+    "More sexual attention and passion",
+    "Deeper emotional bonding",
+    "More help with responsibilities",
+    "Spiritual", "Sexual", "Emotional", "Partnership"
+  ],
+  [
+    "What do you think sustains long-term love?",
+    "Faith and shared purpose",
+    "Mutual respect, honesty, and loyalty",
+    "Ongoing laughter and shared joy",
+    "Creating and growing together",
+    "Spiritual", "Commitment", "Affability", "Creative"
+  ],
+  [
+    "You feel most loved when...",
+    "You’re touched or kissed affectionately",
+    "Your spouse shows they care through practical help",
+    "You share joyful moments with lots of laughter",
+    "Your spouse initiates prayer or faith conversations",
+    "Physical", "Service", "Affability", "Spiritual"
+  ]
+];
+
 
     const scores = {
       Spiritual: 0, Emotional: 0, Commitment: 0,
@@ -174,6 +308,21 @@
       Physical: 0, Sexual: 0,
       Recreational: 0, Affability: 0,
       Service: 0, Creative: 0
+    };
+
+    const descriptions = {
+      Spiritual: "You crave shared spiritual practices like prayer, worship, and faith conversations. This intimacy fuels your sense of purpose together.",
+      Emotional: "You desire to feel emotionally seen, safe, and connected—sharing deep feelings without fear of judgment.",
+      Commitment: "You find comfort in loyalty, devotion, and knowing your spouse is truly 'all in' no matter the season.",
+      Intellectual: "You enjoy deep conversations, shared learning, and a meeting of the minds that keeps you mentally engaged.",
+      Financial: "You value financial partnership, security, transparency, and alignment in future goals.",
+      Partnership: "You feel loved when your spouse works alongside you and helps manage responsibilities equally.",
+      Physical: "You enjoy closeness through hugs, hand-holding, and everyday affection.",
+      Sexual: "You connect through sexual expression, passion, and being deeply desired by your spouse.",
+      Recreational: "You feel closest when having fun, laughing, or enjoying lighthearted adventures together.",
+      Affability: "You need friendliness and joy—companionship, humor, and positive emotional tone.",
+      Service: "Acts of kindness and practical support help you feel loved and nurtured.",
+      Creative: "You thrive on shared creativity—projects, art, music, or collaborative imagination."
     };
 
     const quizDiv = document.getElementById("quiz");
@@ -189,7 +338,7 @@
       if (i === 0) div.classList.add("active");
       div.innerHTML = `
         <p><strong>Q${i + 1}:</strong> ${q[0]}</p>
-        <label><input type="radio" name="q${i}" value="a" required> A. ${q[1]}</label>
+        <label><input type="radio" name="q${i}" value="a"> A. ${q[1]}</label>
         <label><input type="radio" name="q${i}" value="b"> B. ${q[2]}</label>
         <label><input type="radio" name="q${i}" value="c"> C. ${q[3]}</label>
         <label><input type="radio" name="q${i}" value="d"> D. ${q[4]}</label>
@@ -203,7 +352,7 @@
       const currentInputs = allQuestions[currentQuestion].querySelectorAll("input[type=radio]");
       const answered = Array.from(currentInputs).some(input => input.checked);
       if (!answered) {
-        alert("Please select an answer before continuing.");
+        alert("Please select an answer.");
         return;
       }
 
@@ -231,28 +380,66 @@
       const labels = sorted.map(s => s[0]);
       const data = sorted.map(s => s[1]);
 
-      new Chart(document.getElementById("resultsChart"), {
-        type: 'pie',
+      const ctx = document.getElementById("resultsChart").getContext("2d");
+      new Chart(ctx, {
+        type: 'bar',
         data: {
           labels,
           datasets: [{
             label: 'Intimacy Preferences',
             data,
-            backgroundColor: [
-              '#FF4D4D', '#4D9DE0', '#FFD166', '#06D6A0', '#118AB2', '#8338EC',
-              '#FF6B6B', '#CDB4DB', '#F7B801', '#90BE6D', '#F28482', '#3A86FF'
-            ],
+            backgroundColor: '#4d9de0'
           }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
         }
       });
 
-      const breakdown = document.getElementById("resultBreakdown");
-      breakdown.innerHTML = `
-        <div class="result-block"><strong>Top 4:</strong> ${labels.slice(0, 4).join(", ")}</div>
+      document.getElementById("resultBreakdown").innerHTML = `
+        <div class="result-block"><strong>Top 4 Intimacy Types:</strong> ${labels.slice(0, 4).join(", ")}</div>
         <div class="result-block"><strong>Middle 4:</strong> ${labels.slice(4, 8).join(", ")}</div>
         <div class="result-block"><strong>Bottom 4:</strong> ${labels.slice(-4).join(", ")}</div>
       `;
+
+      const descDiv = document.getElementById("descriptions");
+      labels.slice(0, 4).forEach(type => {
+        const block = document.createElement("div");
+        block.className = "description-block";
+        block.innerHTML = `<strong>${type} Intimacy:</strong><br>${descriptions[type]}`;
+        descDiv.appendChild(block);
+      });
+
+      document.getElementById("scoreSummary").value = `Top 4: ${labels.slice(0, 4).join(", ")} | Middle: ${labels.slice(4, 8).join(", ")} | Bottom: ${labels.slice(-4).join(", ")}`;
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Your Intimacy Profile", 20, 20);
+      doc.setFontSize(12);
+
+      const summary = document.getElementById("scoreSummary").value;
+      doc.text(summary, 20, 40);
+
+      let y = 60;
+      Object.keys(descriptions).forEach(type => {
+        if (scores[type]) {
+          doc.setFont(undefined, 'bold');
+          doc.text(`${type} (${scores[type]})`, 20, y);
+          doc.setFont(undefined, 'normal');
+          doc.text(descriptions[type], 20, y + 6);
+          y += 20;
+        }
+      });
+
+      doc.save("intimacy-results.pdf");
     }
   </script>
 </body>
 </html>
+
