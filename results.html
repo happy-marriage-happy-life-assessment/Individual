@@ -14,123 +14,100 @@
       padding: 20px;
     }
     h1 {
-      color: #FF4D4D;
       text-align: center;
+      color: #FF4D4D;
     }
-    #chartContainer {
-      width: 100%;
-      max-width: 500px;
-      margin: 40px auto;
-    }
-    #resultsList {
+    #resultsSummary {
       margin-top: 30px;
+      background-color: #F5F5F5;
+      padding: 20px;
+      border-radius: 10px;
     }
-    .result-box {
-      background: #f9f9f9;
-      padding: 16px;
-      margin: 15px 0;
-      border-left: 6px solid #4D9DE0;
-      border-radius: 6px;
+    canvas {
+      max-width: 100%;
     }
-    #downloadBtn {
-      display: block;
-      margin: 40px auto;
-      padding: 12px 24px;
-      font-size: 16px;
-      color: white;
-      background-color: #4D9DE0;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    .top-results {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #EAF4FC;
+      border-radius: 10px;
+    }
+    .top-results h3 {
+      margin-bottom: 10px;
+    }
+    #downloadNotice {
+      margin-top: 30px;
+      font-style: italic;
+      text-align: center;
+      color: #888;
     }
   </style>
 </head>
 <body>
   <h1>Your Top Intimacy Needs</h1>
+  <canvas id="resultsChart" width="400" height="400"></canvas>
 
-  <div id="chartContainer">
-    <canvas id="intimacyChart"></canvas>
+  <div id="resultsSummary">
+    <h2>Your Top 3 Intimacy Needs</h2>
+    <div id="topThree" class="top-results"></div>
   </div>
 
-  <div id="resultsList"></div>
-
-  <button id="downloadBtn">Download PDF</button>
+  <div id="downloadNotice">
+    📥 A downloadable PDF summary is coming soon!
+  </div>
 
   <script>
-    const descriptions = {
-      Spiritual: "You value a deep, shared connection with God. Your strongest intimacy need centers on spiritual unity—praying together, sharing faith, and growing closer through your shared beliefs.",
-      Emotional: "You crave emotional safety, empathy, and meaningful conversations. Emotional connection is essential for you to feel loved and understood.",
-      Commitment: "You prioritize loyalty, consistency, and a strong sense of 'we’re in this together.' Your ideal intimacy is built on devotion and stability.",
-      Intellectual: "You feel most connected through thoughtful discussion, learning, and mental stimulation. Intellectual bonding is how you build closeness.",
-      Financial: "Financial security, shared budgeting, and planning for the future are key parts of your intimacy. Teamwork in financial decisions helps you feel safe.",
-      Partnership: "Shared responsibilities, mutual effort, and being a true team make you feel close. You value fairness and balance in marriage.",
-      Physical: "Hugs, hand-holding, and being physically close reassure you. You need regular physical touch to feel secure in your connection.",
-      Sexual: "Passionate intimacy is an important way you give and receive love. You thrive when this area is mutually fulfilling and prioritized.",
-      Recreational: "You bond through laughter, play, and doing fun things together. Adventure and joy fuel your emotional connection.",
-      Affability: "You value humor, warmth, and a relaxed vibe in your relationship. Affability helps you feel connected without pressure.",
-      Service: "Acts of kindness and thoughtful help mean the world to you. You feel loved when your partner serves and supports you without being asked.",
-      Creative: "You come alive when creating or building something together. Shared creative projects bring you closer and fulfill your relational needs."
-    };
+    const urlParams = new URLSearchParams(window.location.search);
+    const labels = [
+      "Spiritual", "Emotional", "Commitment",
+      "Intellectual", "Financial", "Partnership",
+      "Physical", "Sexual", "Recreational",
+      "Affability", "Service", "Creative"
+    ];
 
-    function getScoresFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      const scores = {};
-      for (const [key, value] of params.entries()) {
-        if (key !== "email") scores[key] = parseInt(value) || 0;
-      }
-      return scores;
-    }
+    const data = labels.map(label => ({
+      label,
+      value: parseInt(urlParams.get(label)) || 0
+    }));
 
-    function renderChart(scores) {
-      const ctx = document.getElementById("intimacyChart").getContext("2d");
-      new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: Object.keys(scores),
-          datasets: [{
-            data: Object.values(scores),
-            backgroundColor: [
-              "#FF6384", "#36A2EB", "#FFCE56", "#8BC34A", "#9C27B0",
-              "#FF9800", "#00BCD4", "#E91E63", "#795548", "#3F51B5",
-              "#CDDC39", "#009688"
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom'
-            },
-            title: {
-              display: true,
-              text: 'Your Intimacy Need Profile'
-            }
+    // Sort to find top 3
+    const topThree = [...data].sort((a, b) => b.value - a.value).slice(0, 3);
+
+    // Show text summary
+    const summaryDiv = document.getElementById("topThree");
+    topThree.forEach((item, i) => {
+      const p = document.createElement("p");
+      p.innerHTML = `<strong>#${i + 1}: ${item.label}</strong> — Score: ${item.value}`;
+      summaryDiv.appendChild(p);
+    });
+
+    // Build pie chart
+    const ctx = document.getElementById('resultsChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: data.map(d => d.label),
+        datasets: [{
+          data: data.map(d => d.value),
+          backgroundColor: [
+            "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+            "#9966FF", "#FF9F40", "#66CC99", "#E57373",
+            "#7986CB", "#BA68C8", "#AED581", "#FFD54F"
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: {
+            display: true,
+            text: 'Your Intimacy Profile'
           }
         }
-      });
-    }
-
-    function renderTopResults(scores) {
-      const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-      const top3 = sorted.slice(0, 3);
-      const resultsList = document.getElementById("resultsList");
-      top3.forEach(([type, score], i) => {
-        const box = document.createElement("div");
-        box.className = "result-box";
-        box.innerHTML = `<h3>#${i + 1}: ${type} Intimacy</h3><p>${descriptions[type]}</p>`;
-        resultsList.appendChild(box);
-      });
-    }
-
-    const scores = getScoresFromURL();
-    renderChart(scores);
-    renderTopResults(scores);
-
-    // PDF placeholder (real logic coming next)
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      alert("PDF download will be available soon!");
+      }
     });
   </script>
 </body>
 </html>
+
