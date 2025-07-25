@@ -5,246 +5,293 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Discover Your Top Intimacy Needs</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
-  <!-- ✅ Styles -->
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #fff9f2;
-      color: #1a3c5e;
-      padding: 20px;
-      max-width: 800px;
-      margin: auto;
-    }
-    h1, h2, h3 { text-align: center; }
+    body { font-family: 'Arial', sans-serif; background: #fff9f2; color: #1a3c5e; max-width: 800px; margin: auto; padding: 20px; }
+    h1,h2,h3 { text-align: center; }
     .branding { text-align: center; font-size: 0.85em; color: #888; margin-top: 20px; }
     .question { display: none; }
     .question.active { display: block; }
     .progress { text-align: center; margin: 20px 0; font-weight: bold; color: #888; }
-    label {
-      display: block;
-      margin: 10px 0;
-      padding: 10px 15px;
-      background-color: #f5f5f5;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+    label { display: block; margin: 10px 0; padding: 10px 15px; background: #f5f5f5; border-radius: 5px; cursor: pointer; }
     input[type="radio"] { margin-right: 10px; }
-    button {
-      background-color: #4d9de0;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      display: block;
-      margin: 20px auto;
-    }
+    button { background: #4d9de0; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; display: block; margin: 20px auto; }
     canvas { display: block; margin: 30px auto; max-width: 100%; }
-    .description-block {
-      background-color: #f0f4f9;
-      border-left: 5px solid #4d9de0;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
+    .description-block { background: #f0f4f9; border-left: 5px solid #4d9de0; padding: 15px; margin-bottom: 20px; }
+    .form-section { text-align: center; margin-top: 20px; }
+    .form-section input { padding: 10px; margin: 5px; width: 70%; max-width: 300px; display: block; margin-left: auto; margin-right: auto; }
+    .next-steps-box { background: #e5f8e8; border-left: 6px solid #4CAF50; padding: 15px; margin-top: 30px; }
   </style>
 </head>
 <body>
 
-  <!-- ✅ Quiz Header -->
   <h1>What Are Your Top Intimacy Needs?</h1>
   <div class="progress" id="progressText">Question 1 of 24</div>
 
-  <!-- ✅ Quiz Form -->
   <form id="quizForm">
     <div id="quiz"></div>
     <button type="button" id="nextButton">Next</button>
   </form>
 
-  <div class="branding">HappyMarriageHappyLife.com ©</div>
-
-  <!-- ✅ Results Section -->
   <div id="resultSection" style="display:none;">
     <h2>Your Personalized Intimacy Profile</h2>
-    <div class="branding">Based on the Covenant Intimacy Fulfillment Model™</div>
     <canvas id="chart"></canvas>
     <div id="descriptions"></div>
-    <button onclick="location.reload()">Retake Quiz</button>
+
+    <div class="form-section">
+      <input type="text" id="nameInput" placeholder="Your Name" required />
+      <input type="email" id="emailInput" placeholder="Your Email" required />
+      <button id="sendButton" disabled>Send & Download My Results</button>
+    </div>
+
+    <div class="next-steps-box">
+      <strong>What To Do Next:</strong><br/>
+      Share your top 4 intimacy needs with your spouse. Choose one small, practical action this week to grow in each area. Consider praying together, discussing what each need looks like, or planning a date that nurtures one of your top areas.
+    </div>
   </div>
 
-  <!-- ✅ MAIN SCRIPT -->
-  <script>
-    /* -------------------------------
-       1. QUESTIONS & DESCRIPTIONS
-    --------------------------------*/
-    const questions = [
-      { q: "I feel most connected when we share spiritual beliefs or pray together.", type: "Spiritual" },
-      { q: "I value deep emotional conversations where I feel fully heard and understood.", type: "Emotional" },
-      { q: "Having respectful, honest communication—especially during conflict—is important to me.", type: "Conflict" },
-      { q: "I enjoy growing intellectually together—learning, reading, or discussing ideas.", type: "Intellectual" },
-      { q: "Being physically close (hugs, cuddles, kisses) helps me feel secure.", type: "Physical" },
-      { q: "I feel loved when we share sexual closeness and intimacy.", type: "Sexual" },
-      { q: "Having shared responsibilities and making decisions as a team matters to me.", type: "Partnership" },
-      { q: "I feel safe and connected when we handle tough situations together, not apart.", type: "Conflict" },
-      { q: "Spending quality, lighthearted time (laughing, relaxing, having fun) strengthens us.", type: "Affable" },
-      { q: "Creating art, music, or other creative experiences together brings me joy.", type: "Creative" },
-      { q: "When we manage money together responsibly and transparently, I feel connected.", type: "Financial" },
-      { q: "Affectionate touch and presence (like holding hands or snuggling) is very meaningful.", type: "Physical" },
-      { q: "I appreciate kind and thoughtful actions done without being asked.", type: "Affable" },
-      { q: "Deep heart talks and mutual emotional vulnerability create strong closeness for me.", type: "Emotional" },
-      { q: "I feel secure when we set goals together and make decisions as partners.", type: "Partnership" },
-      { q: "Shared faith and a common spiritual direction unites us.", type: "Spiritual" },
-      { q: "I need to feel sexually desired and enjoyed by my partner.", type: "Sexual" },
-      { q: "Playful time, laughing, or even watching a show together helps me connect.", type: "Affable" },
-      { q: "It’s important to me that we can talk respectfully even during arguments.", type: "Conflict" },
-      { q: "Using money wisely and discussing purchases builds trust and closeness.", type: "Financial" },
-      { q: "Collaborating on creative things or solving problems creatively makes me feel alive.", type: "Creative" },
-      { q: "I love when we pray together, read Scripture, or serve with shared faith.", type: "Spiritual" },
-      { q: "We grow closer when we talk about values, dreams, and big ideas.", type: "Intellectual" },
-      { q: "Being emotionally safe and not judged lets me open my heart.", type: "Emotional" }
-    ];
+<script>
+const questions = [
+  { q: "I feel most connected when we share spiritual beliefs or pray together.", type: "Spiritual" },
+  { q: "I value deep emotional conversations where I feel fully heard and understood.", type: "Emotional" },
+  { q: "Having respectful, honest communication—especially during conflict—is important to me.", type: "Conflict" },
+  { q: "I enjoy growing intellectually together—learning, reading, or discussing ideas.", type: "Intellectual" },
+  { q: "Being physically close (hugs, cuddles, kisses) helps me feel secure.", type: "Physical" },
+  { q: "I feel loved when we share sexual closeness and intimacy.", type: "Sexual" },
+  { q: "Having shared responsibilities and making decisions as a team matters to me.", type: "Partnership" },
+  { q: "I feel safe and connected when we handle tough situations together, not apart.", type: "Conflict" },
+  { q: "Spending quality, lighthearted time (laughing, relaxing, having fun) strengthens us.", type: "Affable" },
+  { q: "Creating art, music, or other creative experiences together brings me joy.", type: "Creative" },
+  { q: "When we manage money together responsibly and transparently, I feel connected.", type: "Financial" },
+  { q: "Affectionate touch and presence (like holding hands or snuggling) is very meaningful.", type: "Physical" },
+  { q: "I appreciate kind and thoughtful actions done without being asked.", type: "Affable" },
+  { q: "Deep heart talks and mutual emotional vulnerability create strong closeness for me.", type: "Emotional" },
+  { q: "I feel secure when we set goals together and make decisions as partners.", type: "Partnership" },
+  { q: "Shared faith and a common spiritual direction unites us.", type: "Spiritual" },
+  { q: "I need to feel sexually desired and enjoyed by my partner.", type: "Sexual" },
+  { q: "Playful time, laughing, or even watching a show together helps me connect.", type: "Affable" },
+  { q: "It’s important to me that we can talk respectfully even during arguments.", type: "Conflict" },
+  { q: "Using money wisely and discussing purchases builds trust and closeness.", type: "Financial" },
+  { q: "Collaborating on creative things or solving problems creatively makes me feel alive.", type: "Creative" },
+  { q: "I love when we pray together, read Scripture, or serve with shared faith.", type: "Spiritual" },
+  { q: "We grow closer when we talk about values, dreams, and big ideas.", type: "Intellectual" },
+  { q: "Being emotionally safe and not judged lets me open my heart.", type: "Emotional" }
+];
 
-    const intimacyDescriptions = {
-      Spiritual: "Shared faith and values form the foundation of your bond.",
-      Emotional: "You long to feel emotionally safe and deeply known.",
-      Intellectual: "You enjoy connecting through thoughtful conversations.",
-      Physical: "Being close through touch helps you feel safe and loved.",
-      Sexual: "Sexual intimacy expresses affection, passion, and closeness.",
-      Conflict: "You value staying connected even during disagreements.",
-      Partnership: "You thrive when responsibilities and decisions are shared.",
-      Affable: "Playfulness, kindness, and joy build your connection.",
-      Creative: "Creative activities and imagination inspire closeness.",
-      Financial: "Transparency with money strengthens trust and unity.",
-      Commitment: "Loyalty and security form a foundation for your love.",
-      Recreational: "Fun, leisure, and shared activities grow connection."
-    };
+const intimacyDescriptions = {
+  Spiritual: "Shared faith and values form the foundation of your bond.",
+  Emotional: "You long to feel emotionally safe and deeply known.",
+  Intellectual: "You enjoy connecting through thoughtful conversations.",
+  Physical: "Being close through touch helps you feel safe and loved.",
+  Sexual: "Sexual intimacy expresses affection, passion, and closeness.",
+  Conflict: "You value staying connected even during disagreements.",
+  Partnership: "You thrive when responsibilities and decisions are shared.",
+  Affable: "Playfulness, kindness, and joy build your connection.",
+  Creative: "Creative activities and imagination inspire closeness.",
+  Financial: "Transparency with money strengthens trust and unity.",
+  Commitment: "Loyalty and security form a foundation for your love.",
+  Recreational: "Fun, leisure, and shared activities grow connection."
+};
 
-    /* -------------------------------
-       2. FIXED COLORS FOR EACH TYPE
-    --------------------------------*/
-    const typeColors = {
-      Spiritual: "#FF4D4D",
-      Emotional: "#4D9DE0",
-      Intellectual: "#1A3C5E",
-      Physical: "#FDC57B",
-      Sexual: "#92C9D6",
-      Conflict: "#F67599",
-      Partnership: "#D07E5F",
-      Affable: "#A1B56C",
-      Creative: "#C084FC",
-      Financial: "#7BC1D1",
-      Commitment: "#BAA0F5",
-      Recreational: "#FFE07B"
-    };
+const typeColors = {
+  Spiritual:"#FF4D4D", Emotional:"#4D9DE0", Intellectual:"#1A3C5E",
+  Physical:"#FDC57B", Sexual:"#92C9D6", Conflict:"#F67599",
+  Partnership:"#D07E5F", Affable:"#A1B56C", Creative:"#C084FC",
+  Financial:"#7BC1D1", Commitment:"#BAA0F5", Recreational:"#FFE07B"
+};
 
-    /* -------------------------------
-       3. QUIZ LOGIC
-    --------------------------------*/
-    const quizContainer = document.getElementById("quiz");
-    const progressText = document.getElementById("progressText");
-    let currentQuestion = 0;
-    const scores = {};
-    Object.keys(intimacyDescriptions).forEach(type => scores[type] = 0);
+const scores = {};
+Object.keys(intimacyDescriptions).forEach(t=>scores[t]=0);
 
-    function showQuestion(index) {
-      quizContainer.innerHTML = '';
-      const q = questions[index];
-      const div = document.createElement("div");
-      div.className = "question active";
-      div.innerHTML = `
-        <h3>${q.q}</h3>
-        <label><input type="radio" name="q${index}" value="5"> Strongly Agree</label>
-        <label><input type="radio" name="q${index}" value="4"> Agree</label>
-        <label><input type="radio" name="q${index}" value="3"> Neutral</label>
-        <label><input type="radio" name="q${index}" value="2"> Disagree</label>
-        <label><input type="radio" name="q${index}" value="1"> Strongly Disagree</label>
-      `;
-      quizContainer.appendChild(div);
-      progressText.textContent = `Question ${index + 1} of ${questions.length}`;
+let currentQuestion=0;
+const quizContainer=document.getElementById("quiz");
+const progressText=document.getElementById("progressText");
+
+function showQuestion(i){
+  quizContainer.innerHTML='';
+  const q=questions[i];
+  const div=document.createElement("div");
+  div.className="question active";
+  div.innerHTML=`<h3>${q.q}</h3>
+  <label><input type="radio" name="q${i}" value="5"> Strongly Agree</label>
+  <label><input type="radio" name="q${i}" value="4"> Agree</label>
+  <label><input type="radio" name="q${i}" value="3"> Neutral</label>
+  <label><input type="radio" name="q${i}" value="2"> Disagree</label>
+  <label><input type="radio" name="q${i}" value="1"> Strongly Disagree</label>`;
+  quizContainer.appendChild(div);
+  progressText.textContent=`Question ${i+1} of ${questions.length}`;
+}
+
+document.getElementById("nextButton").addEventListener("click",()=>{
+  const selected=document.querySelector(`input[name="q${currentQuestion}"]:checked`);
+  if(!selected){alert("Please select an answer.");return;}
+  scores[questions[currentQuestion].type]+=parseInt(selected.value);
+  currentQuestion++;
+  if(currentQuestion<questions.length){showQuestion(currentQuestion);}
+  else{
+    document.getElementById("quizForm").style.display="none";
+    document.getElementById("resultSection").style.display="block";
+    displayResults();
+  }
+});
+
+function displayResults(){
+  const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const top4=sorted.slice(0,4);
+  const moderate4=sorted.slice(4,8);
+  const maintenance4=sorted.slice(8,12);
+
+  const topNames=top4.map(([t])=>t).join(", ");
+  const summary=`<div style="background:#eef7ff;padding:15px;border-left:6px solid #4D9DE0;margin-bottom:20px;">
+    <strong>Your strongest intimacy needs are:</strong> ${topNames}.
+  </div>`;
+
+  function sectionHTML(title,text,items){
+    return `<h3>${title}</h3><p>${text}</p>${items.map(([t,s])=>`
+    <div class="description-block" style="border-left:8px solid ${typeColors[t]}">
+      <strong>${t}</strong> (Score: ${s})<br/>${intimacyDescriptions[t]}
+    </div>`).join('')}`;
+  }
+
+  document.getElementById("descriptions").innerHTML=
+    summary+
+    sectionHTML("Your Top 4 Intimacy Needs","These are your highest-priority needs.",top4)+
+    sectionHTML("Your Moderate 4 Intimacy Needs","These are important to keep balanced.",moderate4)+
+    sectionHTML("Your Maintenance 4 Intimacy Areas","These currently require the least attention.",maintenance4);
+
+  renderChart(sorted);
+}
+
+function renderChart(sorted){
+  const ctx=document.getElementById("chart").getContext("2d");
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:sorted.map(([t])=>t),
+      datasets:[{label:'Intimacy Score',data:sorted.map(([_,s])=>s),backgroundColor:sorted.map(([t])=>typeColors[t])}]
+    },
+    options:{responsive:true,scales:{y:{beginAtZero:true,max:30}}}
+  });
+}
+
+// ✅ Enable button only if both fields filled
+const nameInput=document.getElementById("nameInput");
+const emailInput=document.getElementById("emailInput");
+const sendButton=document.getElementById("sendButton");
+[nameInput,emailInput].forEach(el=>{
+  el.addEventListener("input",()=>{
+    sendButton.disabled=!(nameInput.value && emailInput.value);
+  });
+});
+
+// ✅ Send to Formspree + Generate PDF
+sendButton.addEventListener("click",async()=>{
+  const formData={name:nameInput.value,email:emailInput.value,scores:JSON.stringify(scores)};
+  await fetch("https://formspree.io/f/xgvzkwre",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(formData)
+  });
+  generatePDF();
+});
+
+// ✅ PDF Generation (Branded with Colors + Page Breaks)
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "pt", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const marginLeft = 40;
+  const marginRight = 40;
+  const maxContentHeight = pageHeight - 140;
+
+  const logo = new Image();
+  logo.src = "logo.png";
+
+  logo.onload = async () => {
+    pdf.addImage(logo, "PNG", marginLeft, 20, 100, 40);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(22);
+    pdf.setTextColor("#1A3C5E");
+    pdf.text("Your Personalized Intimacy Profile", pageWidth / 2, 55, { align: "center" });
+
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor("#333333");
+    pdf.text("Based on the Covenant Intimacy Fulfillment Model™", pageWidth / 2, 75, { align: "center" });
+
+    const chartCanvas = document.getElementById("chart");
+    const chartImg = chartCanvas.toDataURL("image/png");
+    pdf.addImage(chartImg, "PNG", marginLeft, 95, pageWidth - 2 * marginLeft, 200);
+
+    let yPosition = 320;
+
+    function checkPageSpace(extra = 0) {
+      if (yPosition + extra > maxContentHeight) {
+        pdf.addPage();
+        yPosition = 60;
+      }
     }
 
-    document.getElementById("nextButton").addEventListener("click", () => {
-      const selected = document.querySelector(`input[name="q${currentQuestion}"]:checked`);
-      if (!selected) { alert("Please select an answer before continuing."); return; }
-      scores[questions[currentQuestion].type] += parseInt(selected.value);
-      currentQuestion++;
-      if (currentQuestion < questions.length) {
-        showQuestion(currentQuestion);
-      } else {
-        document.getElementById("quizForm").style.display = "none";
-        document.getElementById("resultSection").style.display = "block";
-        displayResults();
-      }
-    });
-
-    /* -------------------------------
-       4. RESULTS DISPLAY
-    --------------------------------*/
-    function displayResults() {
-      const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-      const top4 = sorted.slice(0, 4);
-      const moderate4 = sorted.slice(4, 8);
-      const maintenance4 = sorted.slice(8, 12);
-
-      // ✅ Summary Box
-      const topNames = top4.map(([type]) => type).join(", ");
-      const summaryHTML = `
-        <div style="background:#eef7ff; padding:15px; border-left:6px solid #4D9DE0; margin-bottom:20px;">
-          <strong>Your strongest intimacy needs are:</strong> ${topNames}.<br/>
-          These are the areas where meeting your needs can bring the deepest connection and fulfillment.
-        </div>
-      `;
-
-      // ✅ Helper function for each section
-      function createSectionHTML(title, explanation, items) {
-        return `
-          <h3>${title}</h3>
-          <p>${explanation}</p>
-          ${items.map(([type, score]) => `
-            <div class="description-block" style="border-left: 8px solid ${typeColors[type]};">
-              <strong>${type}</strong> (Score: ${score})<br/>
-              ${intimacyDescriptions[type]}
-            </div>
-          `).join('')}
-        `;
-      }
-
-      const topHTML = createSectionHTML("Your Top 4 Intimacy Needs",
-        "These are where you feel the strongest need for connection.", top4);
-
-      const moderateHTML = createSectionHTML("Your Moderate 4 Intimacy Needs",
-        "These needs matter but aren’t as strong as your top needs.", moderate4);
-
-      const maintenanceHTML = createSectionHTML("Your Maintenance 4 Intimacy Areas",
-        "These are less urgent but worth maintaining for balance.", maintenance4);
-
-      document.getElementById("descriptions").innerHTML =
-        summaryHTML + topHTML + moderateHTML + maintenanceHTML;
-
-      renderChart(sorted);
+    function addHeading(text) {
+      checkPageSpace(40);
+      const headingHeight = 25;
+      pdf.setFillColor("#4D9DE0");
+      pdf.rect(marginLeft, yPosition, pageWidth - marginLeft - marginRight, headingHeight, "F");
+      pdf.setTextColor("#FFFFFF");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      pdf.text(text, marginLeft + 10, yPosition + 17);
+      yPosition += headingHeight + 10;
+      pdf.setTextColor("#000000");
     }
 
-    /* -------------------------------
-       5. CHART RENDER
-    --------------------------------*/
-    function renderChart(sorted) {
-      const ctx = document.getElementById("chart").getContext("2d");
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: sorted.map(([type]) => type),
-          datasets: [{
-            label: 'Intimacy Score',
-            data: sorted.map(([_, score]) => score),
-            backgroundColor: sorted.map(([type]) => typeColors[type])
-          }]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true, max: 30 } } }
+    function addSection(title, items) {
+      addHeading(title);
+      items.forEach(([type, score]) => {
+        checkPageSpace(20);
+        pdf.setFillColor(typeColors[type]);
+        pdf.rect(marginLeft, yPosition - 10, 5, 10, "F");
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(12);
+        pdf.text(`${type} (Score: ${score})`, marginLeft + 15, yPosition);
+        yPosition += 16;
       });
+      yPosition += 10;
     }
 
-    window.onload = () => showQuestion(currentQuestion);
-  </script>
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    addSection("Your Top 4 Intimacy Needs", sorted.slice(0, 4));
+    addSection("Your Moderate 4 Intimacy Needs", sorted.slice(4, 8));
+    addSection("Your Maintenance 4 Intimacy Areas", sorted.slice(8, 12));
+
+    const footerY = pageHeight - 70;
+    pdf.setDrawColor(200);
+    pdf.line(marginLeft, footerY, pageWidth - marginRight, footerY);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    pdf.setTextColor("#444444");
+    pdf.text(
+      "Discover how to build a Christ-centered, fulfilling marriage with the Covenant Intimacy Fulfillment Model™—developed by Dr. Scott Inman, PhD.",
+      pageWidth / 2,
+      footerY + 20,
+      { align: "center", maxWidth: pageWidth - 80 }
+    );
+
+    pdf.text(
+      "Visit HappyMarriageHappyLife.com to explore courses, tools, and resources designed to help you and your spouse grow in lasting love and connection.",
+      pageWidth / 2,
+      footerY + 40,
+      { align: "center", maxWidth: pageWidth - 80 }
+    );
+
+    pdf.save("Intimacy-Results.pdf");
+  };
+}
+
+window.onload = () => showQuestion(currentQuestion);
+</script>
 </body>
 </html>
