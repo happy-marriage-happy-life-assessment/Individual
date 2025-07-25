@@ -9,7 +9,7 @@
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
   <style>
-    body { font-family: 'Arial', sans-serif; background: #fff9f2; color: #1a3c5e; max-width: 800px; margin: auto; padding: 20px; }
+    body { font-family: Arial, sans-serif; background: #fff9f2; color: #1a3c5e; max-width: 800px; margin: auto; padding: 20px; }
     h1,h2,h3 { text-align: center; }
     .branding { text-align: center; font-size: 0.85em; color: #888; margin-top: 20px; }
     .question { display: none; }
@@ -23,36 +23,53 @@
     .form-section { text-align: center; margin-top: 20px; }
     .form-section input { padding: 10px; margin: 5px; width: 70%; max-width: 300px; display: block; margin-left: auto; margin-right: auto; }
     .next-steps-box { background: #e5f8e8; border-left: 6px solid #4CAF50; padding: 15px; margin-top: 30px; }
+    #introPage { text-align: center; margin-top: 50px; }
+    #successMessage { text-align: center; color: green; font-weight: bold; display: none; }
   </style>
 </head>
 <body>
 
-  <h1>What Are Your Top Intimacy Needs?</h1>
-  <div class="progress" id="progressText">Question 1 of 24</div>
+  <!-- ✅ Intro Page -->
+  <div id="introPage">
+    <h1>Are You Ready to Discover Your Top Needs for Connection?</h1>
+    <p>You're only 24 questions away from learning how you were created for connection...</p>
+    <button id="startQuiz">Start Quiz</button>
+  </div>
 
-  <form id="quizForm">
-    <div id="quiz"></div>
-    <button type="button" id="nextButton">Next</button>
-  </form>
+  <!-- ✅ Quiz Section -->
+  <div id="quizSection" style="display:none;">
+    <h1>What Are Your Top Intimacy Needs?</h1>
+    <div class="progress" id="progressText">Question 1 of 24</div>
 
+    <form id="quizForm">
+      <div id="quiz"></div>
+      <button type="button" id="nextButton">Next</button>
+    </form>
+  </div>
+
+  <!-- ✅ Results Section -->
   <div id="resultSection" style="display:none;">
     <h2>Your Personalized Intimacy Profile</h2>
     <canvas id="chart"></canvas>
     <div id="descriptions"></div>
 
-    <div class="form-section">
+    <div class="form-section" id="emailSection">
       <input type="text" id="nameInput" placeholder="Your Name" required />
       <input type="email" id="emailInput" placeholder="Your Email" required />
       <button id="sendButton" disabled>Send & Download My Results</button>
     </div>
 
+    <p id="successMessage">✅ Your results have been sent, and your PDF has been downloaded!</p>
+
     <div class="next-steps-box">
       <strong>What To Do Next:</strong><br/>
-      Share your top 4 intimacy needs with your spouse. Choose one small, practical action this week to grow in each area. Consider praying together, discussing what each need looks like, or planning a date that nurtures one of your top areas.
+      Share your top 4 intimacy needs with your spouse. Choose one small, practical action this week to grow in each area. 
+      Consider praying together, discussing what each need looks like, or planning a date that nurtures one of your top areas.
     </div>
   </div>
 
 <script>
+/* ✅ Questions & Descriptions */
 const questions = [
   { q: "I feel most connected when we share spiritual beliefs or pray together.", type: "Spiritual" },
   { q: "I value deep emotional conversations where I feel fully heard and understood.", type: "Emotional" },
@@ -106,10 +123,17 @@ const scores = {};
 Object.keys(intimacyDescriptions).forEach(t=>scores[t]=0);
 
 let currentQuestion=0;
-const quizContainer=document.getElementById("quiz");
-const progressText=document.getElementById("progressText");
+
+/* ✅ Intro Page Logic */
+document.getElementById("startQuiz").addEventListener("click", () => {
+  document.getElementById("introPage").style.display = "none";
+  document.getElementById("quizSection").style.display = "block";
+  showQuestion(currentQuestion);
+});
 
 function showQuestion(i){
+  const quizContainer=document.getElementById("quiz");
+  const progressText=document.getElementById("progressText");
   quizContainer.innerHTML='';
   const q=questions[i];
   const div=document.createElement("div");
@@ -131,7 +155,7 @@ document.getElementById("nextButton").addEventListener("click",()=>{
   currentQuestion++;
   if(currentQuestion<questions.length){showQuestion(currentQuestion);}
   else{
-    document.getElementById("quizForm").style.display="none";
+    document.getElementById("quizSection").style.display="none";
     document.getElementById("resultSection").style.display="block";
     displayResults();
   }
@@ -143,11 +167,6 @@ function displayResults(){
   const moderate4=sorted.slice(4,8);
   const maintenance4=sorted.slice(8,12);
 
-  const topNames=top4.map(([t])=>t).join(", ");
-  const summary=`<div style="background:#eef7ff;padding:15px;border-left:6px solid #4D9DE0;margin-bottom:20px;">
-    <strong>Your strongest intimacy needs are:</strong> ${topNames}.
-  </div>`;
-
   function sectionHTML(title,text,items){
     return `<h3>${title}</h3><p>${text}</p>${items.map(([t,s])=>`
     <div class="description-block" style="border-left:8px solid ${typeColors[t]}">
@@ -155,8 +174,8 @@ function displayResults(){
     </div>`).join('')}`;
   }
 
-  document.getElementById("descriptions").innerHTML=
-    summary+
+  document.getElementById("descriptions").innerHTML =
+    `<h3>Your Full Intimacy Profile</h3>` +
     sectionHTML("Your Top 4 Intimacy Needs","These are your highest-priority needs.",top4)+
     sectionHTML("Your Moderate 4 Intimacy Needs","These are important to keep balanced.",moderate4)+
     sectionHTML("Your Maintenance 4 Intimacy Areas","These currently require the least attention.",maintenance4);
@@ -176,7 +195,7 @@ function renderChart(sorted){
   });
 }
 
-// ✅ Enable button only if both fields filled
+/* ✅ Enable Send Button only when filled */
 const nameInput=document.getElementById("nameInput");
 const emailInput=document.getElementById("emailInput");
 const sendButton=document.getElementById("sendButton");
@@ -186,112 +205,41 @@ const sendButton=document.getElementById("sendButton");
   });
 });
 
-// ✅ Send to Formspree + Generate PDF
+/* ✅ Send to Formspree + Generate PDF */
 sendButton.addEventListener("click",async()=>{
-  const formData={name:nameInput.value,email:emailInput.value,scores:JSON.stringify(scores)};
-  await fetch("https://formspree.io/f/xgvzkwre",{
-    method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(formData)
+  await fetch("https://formspree.io/f/YOUR-ENDPOINT",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({name:nameInput.value,email:emailInput.value,scores})
   });
   generatePDF();
+  document.getElementById("successMessage").style.display = "block";
 });
 
-// ✅ PDF Generation (Branded with Colors + Page Breaks)
-async function generatePDF() {
+/* ✅ PDF Matches Results Page */
+async function generatePDF(){
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p", "pt", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const marginLeft = 40;
-  const marginRight = 40;
-  const maxContentHeight = pageHeight - 140;
+  const pdf = new jsPDF("p","pt","a4");
 
-  const logo = new Image();
-  logo.src = "logo.png";
+  const resultClone = document.getElementById("resultSection").cloneNode(true);
+  resultClone.querySelector("#emailSection").remove(); // Remove email inputs
 
-  logo.onload = async () => {
-    pdf.addImage(logo, "PNG", marginLeft, 20, 100, 40);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(22);
-    pdf.setTextColor("#1A3C5E");
-    pdf.text("Your Personalized Intimacy Profile", pageWidth / 2, 55, { align: "center" });
+  const tempDiv = document.createElement("div");
+  tempDiv.style.width = "800px"; // fixed width for consistency
+  tempDiv.appendChild(resultClone);
+  document.body.appendChild(tempDiv);
 
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "normal");
-    pdf.setTextColor("#333333");
-    pdf.text("Based on the Covenant Intimacy Fulfillment Model™", pageWidth / 2, 75, { align: "center" });
+  const canvas = await html2canvas(tempDiv, { scale: 2 });
+  document.body.removeChild(tempDiv);
 
-    const chartCanvas = document.getElementById("chart");
-    const chartImg = chartCanvas.toDataURL("image/png");
-    pdf.addImage(chartImg, "PNG", marginLeft, 95, pageWidth - 2 * marginLeft, 200);
+  const imgData = canvas.toDataURL("image/png");
+  const imgProps = pdf.getImageProperties(imgData);
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-    let yPosition = 320;
-
-    function checkPageSpace(extra = 0) {
-      if (yPosition + extra > maxContentHeight) {
-        pdf.addPage();
-        yPosition = 60;
-      }
-    }
-
-    function addHeading(text) {
-      checkPageSpace(40);
-      const headingHeight = 25;
-      pdf.setFillColor("#4D9DE0");
-      pdf.rect(marginLeft, yPosition, pageWidth - marginLeft - marginRight, headingHeight, "F");
-      pdf.setTextColor("#FFFFFF");
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(14);
-      pdf.text(text, marginLeft + 10, yPosition + 17);
-      yPosition += headingHeight + 10;
-      pdf.setTextColor("#000000");
-    }
-
-    function addSection(title, items) {
-      addHeading(title);
-      items.forEach(([type, score]) => {
-        checkPageSpace(20);
-        pdf.setFillColor(typeColors[type]);
-        pdf.rect(marginLeft, yPosition - 10, 5, 10, "F");
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(12);
-        pdf.text(`${type} (Score: ${score})`, marginLeft + 15, yPosition);
-        yPosition += 16;
-      });
-      yPosition += 10;
-    }
-
-    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    addSection("Your Top 4 Intimacy Needs", sorted.slice(0, 4));
-    addSection("Your Moderate 4 Intimacy Needs", sorted.slice(4, 8));
-    addSection("Your Maintenance 4 Intimacy Areas", sorted.slice(8, 12));
-
-    const footerY = pageHeight - 70;
-    pdf.setDrawColor(200);
-    pdf.line(marginLeft, footerY, pageWidth - marginRight, footerY);
-
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
-    pdf.setTextColor("#444444");
-    pdf.text(
-      "Discover how to build a Christ-centered, fulfilling marriage with the Covenant Intimacy Fulfillment Model™—developed by Dr. Scott Inman, PhD.",
-      pageWidth / 2,
-      footerY + 20,
-      { align: "center", maxWidth: pageWidth - 80 }
-    );
-
-    pdf.text(
-      "Visit HappyMarriageHappyLife.com to explore courses, tools, and resources designed to help you and your spouse grow in lasting love and connection.",
-      pageWidth / 2,
-      footerY + 40,
-      { align: "center", maxWidth: pageWidth - 80 }
-    );
-
-    pdf.save("Intimacy-Results.pdf");
-  };
+  pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+  pdf.save("Intimacy-Results.pdf");
 }
-
-window.onload = () => showQuestion(currentQuestion);
 </script>
 </body>
 </html>
