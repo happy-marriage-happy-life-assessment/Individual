@@ -24,6 +24,7 @@
     .form-section input { padding: 10px; margin: 5px; width: 70%; max-width: 300px; display: block; margin-left: auto; margin-right: auto; }
     .next-steps-box { background: #e5f8e8; border-left: 6px solid #4CAF50; padding: 15px; margin-top: 30px; }
     #introPage { text-align: center; margin-top: 50px; }
+    #introLogo, #resultsLogo { max-width: 220px; display: block; margin: 0 auto 20px auto; }
     #successMessage { text-align: center; color: green; font-weight: bold; display: none; }
   </style>
 </head>
@@ -31,6 +32,7 @@
 
   <!-- ✅ Intro Page -->
   <div id="introPage">
+    <img src="logo.png" id="introLogo" alt="Logo" />
     <h1>Are You Ready to Discover Your Top Needs for Connection?</h1>
     <p>You're only 24 questions away from learning how you were created for connection...</p>
     <button id="startQuiz">Start Quiz</button>
@@ -48,7 +50,8 @@
   </div>
 
   <!-- ✅ Results Section -->
-  <div id="resultSection" style="display:none;">
+  <div id="resultSection" style="display:none; text-align:center;">
+    <img src="logo.png" id="resultsLogo" alt="Logo" />
     <h2>Your Personalized Intimacy Profile</h2>
     <canvas id="chart"></canvas>
     <div id="descriptions"></div>
@@ -161,27 +164,37 @@ document.getElementById("nextButton").addEventListener("click",()=>{
   }
 });
 
-function displayResults(){
-  const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
-  const top4=sorted.slice(0,4);
-  const moderate4=sorted.slice(4,8);
-  const maintenance4=sorted.slice(8,12);
+function displayResults() {
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const top4 = sorted.slice(0, 4);
+  const moderate4 = sorted.slice(4, 8);
+  const maintenance4 = sorted.slice(8, 12);
 
-  function sectionHTML(title,text,items){
-    return `<h3>${title}</h3><p>${text}</p>${items.map(([t,s])=>`
-    <div class="description-block" style="border-left:8px solid ${typeColors[t]}">
-      <strong>${t}</strong> (Score: ${s})<br/>${intimacyDescriptions[t]}
-    </div>`).join('')}`;
+  function sectionHTML(title, text, items) {
+    return `
+      <div style="margin-top:20px;">
+        <h3 style="margin-bottom:5px;">${title}</h3>
+        <p style="margin-top:0; margin-bottom:10px; font-size:14px;">${text}</p>
+        ${items
+          .map(
+            ([t, s]) => `
+          <div class="description-block" style="border-left:8px solid ${typeColors[t]}; margin-bottom:10px;">
+            <strong>${t}</strong> (Score: ${s})<br/>${intimacyDescriptions[t]}
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+    `;
   }
 
+  // ✅ Removed "Your Full Intimacy Profile" heading
   document.getElementById("descriptions").innerHTML =
-    `<h3>Your Full Intimacy Profile</h3>` +
-    sectionHTML("Your Top 4 Intimacy Needs","These are your highest-priority needs.",top4)+
-    sectionHTML("Your Moderate 4 Intimacy Needs","These are important to keep balanced.",moderate4)+
-    sectionHTML("Your Maintenance 4 Intimacy Areas","These currently require the least attention.",maintenance4);
-
-  renderChart(sorted);
+    sectionHTML("Your Top 4 Intimacy Needs", "These are your highest-priority needs.", top4) +
+    sectionHTML("Your Moderate 4 Intimacy Needs", "These are important to keep balanced.", moderate4) +
+    sectionHTML("Your Maintenance 4 Intimacy Areas", "These currently require the least attention.", maintenance4);
 }
+
 
 function renderChart(sorted){
   const ctx=document.getElementById("chart").getContext("2d");
@@ -207,7 +220,7 @@ const sendButton=document.getElementById("sendButton");
 
 /* ✅ Send to Formspree + Generate PDF */
 sendButton.addEventListener("click",async()=>{
-  await fetch("https://formspree.io/f/YOUR-ENDPOINT",{
+  await fetch("https://formspree.io/f/xgvzkwre",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({name:nameInput.value,email:emailInput.value,scores})
@@ -216,43 +229,169 @@ sendButton.addEventListener("click",async()=>{
   document.getElementById("successMessage").style.display = "block";
 });
 
-/* ✅ PDF Matches Results Page */
+/* ✅ PDF Matches Results Page + Footer Banner */
+
 async function generatePDF() {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p", "pt", "a4");
 
-  // ✅ Clone results section and remove email form
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const marginX = 30;
+  const marginY = 40;
+  const usableWidth = pageWidth - marginX * 2;
+
+  let yPos = marginY;
+
+  // ✅ Add page numbers (except cover)
+  function addPageNumber(pageNum) {
+    pdf.setFontSize(10);
+    pdf.setTextColor("#555555");
+    pdf.text(`Page ${pageNum}`, pageWidth - 60, pageHeight - 20);
+  }
+
+  // ✅ Add each section with page breaks
+  function addSectionToPDF(imgData, imgProps) {
+    const imgHeight = (imgProps.height * usableWidth) / imgProps.width;
+    if (yPos + imgHeight > pageHeight - 60) {
+      addPageNumber(pdf.internal.getNumberOfPages());
+      pdf.addPage();
+      yPos = marginY;
+    }
+    pdf.addImage(imgData, "PNG", marginX, yPos, usableWidth, imgHeight);
+    yPos += imgHeight + 15;
+  }
+
+  // ✅ Clone results page (remove email form)
   const resultClone = document.getElementById("resultSection").cloneNode(true);
   const emailForm = resultClone.querySelector("#emailSection");
   if (emailForm) emailForm.remove();
 
-  // ✅ Insert logo at top of clone
-  const logo = document.createElement("img");
-  logo.src = "logo.png"; // Place your logo.png in same folder
-  logo.style.maxWidth = "200px";
-  logo.style.display = "block";
-  logo.style.margin = "0 auto 20px auto";
-  resultClone.insertBefore(logo, resultClone.firstChild);
+  // ✅ Replace chart canvas with static image
+  const chartCanvas = document.getElementById("chart");
+  const chartImage = chartCanvas.toDataURL("image/png");
+  const clonedChart = resultClone.querySelector("#chart");
+  const chartImg = document.createElement("img");
+  chartImg.src = chartImage;
+  chartImg.style.width = "90%";
+  clonedChart.replaceWith(chartImg);
 
-  // ✅ Create temp container for rendering
-  const tempDiv = document.createElement("div");
-  tempDiv.style.width = "800px";
-  tempDiv.appendChild(resultClone);
-  document.body.appendChild(tempDiv);
+  // ✅ Identify pieces to render
+  const title = resultClone.querySelector("h2");
+  const chart = chartImg;
+  const sections = resultClone.querySelectorAll("h3");
 
-  // ✅ Capture as canvas
-  const canvas = await html2canvas(tempDiv, { scale: 2 });
-  document.body.removeChild(tempDiv);
+  const pieces = [];
 
-  // ✅ Add to PDF
-  const imgData = canvas.toDataURL("image/png");
-  const imgProps = pdf.getImageProperties(imgData);
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  const titleBlock = document.createElement("div");
+  titleBlock.appendChild(resultClone.querySelector("#resultsLogo").cloneNode(true));
+  titleBlock.appendChild(title.cloneNode(true));
+  pieces.push(titleBlock);
 
-  pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+  const chartBlock = document.createElement("div");
+  chartBlock.style.textAlign = "center";
+  chartBlock.appendChild(chart.cloneNode(true));
+  pieces.push(chartBlock);
+
+  sections.forEach((section) => {
+    const block = document.createElement("div");
+    block.appendChild(section.cloneNode(true));
+
+    let sibling = section.nextElementSibling;
+    while (sibling && sibling.tagName !== "H3") {
+      block.appendChild(sibling.cloneNode(true));
+      sibling = sibling.nextElementSibling;
+    }
+    pieces.push(block);
+  });
+
+  // ✅ COVER PAGE
+  const centerX = pageWidth / 2;
+
+  const logo = new Image();
+  logo.src = "logo.png";
+  await new Promise((res) => (logo.onload = res));
+
+  pdf.addImage(logo, "PNG", centerX - 60, 100, 120, 60);
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(26);
+  pdf.setTextColor("#1A3C5E");
+  pdf.text("Your Personalized Intimacy Profile", centerX, 220, { align: "center" });
+
+  pdf.setFontSize(14);
+  pdf.setFont("helvetica", "normal");
+  pdf.text("Based on the Covenant Intimacy Fulfillment Model™", centerX, 250, { align: "center" });
+
+  // ✅ Add name + date
+  const userName = document.getElementById("nameInput").value || "Valued User";
+  const today = new Date().toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+  pdf.setFontSize(12);
+  pdf.text(`Prepared for ${userName} – ${today}`, centerX, 280, { align: "center" });
+
+  // ✅ Intro paragraph
+  pdf.setFontSize(12);
+  pdf.text(
+    "This report highlights your top intimacy needs based on your responses. Use it as a guide to strengthen your connection, grow closer to your spouse, and build a Christ-centered marriage filled with love and purpose.",
+    centerX,
+    330,
+    { align: "center", maxWidth: pageWidth - 100 }
+  );
+
+  // ✅ Copyright footer on cover
+  pdf.setFontSize(10);
+  pdf.setTextColor("#666666");
+  pdf.text("© 2025 HappyMarriageHappyLife.com – All Rights Reserved", centerX, pageHeight - 40, {
+    align: "center",
+  });
+
+  pdf.addPage();
+
+  // ✅ Add content pages
+  yPos = marginY;
+  for (let piece of pieces) {
+    const tempDiv = document.createElement("div");
+    tempDiv.style.width = "700px";
+    tempDiv.appendChild(piece);
+    document.body.appendChild(tempDiv);
+
+    const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true });
+    document.body.removeChild(tempDiv);
+
+    const imgData = canvas.toDataURL("image/png");
+    const imgProps = pdf.getImageProperties(imgData);
+
+    addSectionToPDF(imgData, imgProps);
+  }
+
+  // ✅ Add page number to last page
+  addPageNumber(pdf.internal.getNumberOfPages());
+
+  // ✅ Footer Banner
+  const footerHeight = 40;
+  const footerY = pageHeight - footerHeight;
+  pdf.setFillColor("#4D9DE0");
+  pdf.rect(0, footerY, pageWidth, footerHeight, "F");
+
+  pdf.setTextColor("#FFFFFF");
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(12);
+  pdf.text(
+    "HappyMarriageHappyLife.com  |  Covenant Intimacy Fulfillment Model™ – Helping Couples Build Lasting Love",
+    pageWidth / 2,
+    footerY + 25,
+    { align: "center" }
+  );
+
   pdf.save("Intimacy-Results.pdf");
 }
+
+
+
 </script>
 </body>
 </html>
