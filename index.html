@@ -217,21 +217,34 @@ sendButton.addEventListener("click",async()=>{
 });
 
 /* ✅ PDF Matches Results Page */
-async function generatePDF(){
+async function generatePDF() {
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p","pt","a4");
+  const pdf = new jsPDF("p", "pt", "a4");
 
+  // ✅ Clone results section and remove email form
   const resultClone = document.getElementById("resultSection").cloneNode(true);
-  resultClone.querySelector("#emailSection").remove(); // Remove email inputs
+  const emailForm = resultClone.querySelector("#emailSection");
+  if (emailForm) emailForm.remove();
 
+  // ✅ Insert logo at top of clone
+  const logo = document.createElement("img");
+  logo.src = "logo.png"; // Place your logo.png in same folder
+  logo.style.maxWidth = "200px";
+  logo.style.display = "block";
+  logo.style.margin = "0 auto 20px auto";
+  resultClone.insertBefore(logo, resultClone.firstChild);
+
+  // ✅ Create temp container for rendering
   const tempDiv = document.createElement("div");
-  tempDiv.style.width = "800px"; // fixed width for consistency
+  tempDiv.style.width = "800px";
   tempDiv.appendChild(resultClone);
   document.body.appendChild(tempDiv);
 
+  // ✅ Capture as canvas
   const canvas = await html2canvas(tempDiv, { scale: 2 });
   document.body.removeChild(tempDiv);
 
+  // ✅ Add to PDF
   const imgData = canvas.toDataURL("image/png");
   const imgProps = pdf.getImageProperties(imgData);
   const pdfWidth = pdf.internal.pageSize.getWidth();
