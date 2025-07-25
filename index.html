@@ -166,15 +166,16 @@ document.getElementById("nextButton").addEventListener("click",()=>{
 
 function displayResults() {
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-  const top4 = sorted.slice(0, 4);
-  const moderate4 = sorted.slice(4, 8);
-  const maintenance4 = sorted.slice(8, 12);
+  const priority = sorted.slice(0, 4);
+  const progress = sorted.slice(4, 8);
+  const presence = sorted.slice(8, 12);
 
-  function sectionHTML(title, text, items) {
+  // Helper to create each section
+  function sectionHTML(title, desc, items) {
     return `
       <div style="margin-top:20px;">
         <h3 style="margin-bottom:5px;">${title}</h3>
-        <p style="margin-top:0; margin-bottom:10px; font-size:14px;">${text}</p>
+        <p style="margin-top:0; margin-bottom:10px; font-size:14px;">${desc}</p>
         ${items
           .map(
             ([t, s]) => `
@@ -188,48 +189,45 @@ function displayResults() {
     `;
   }
 
-  // ✅ Removed "Your Full Intimacy Profile" heading
+  // Explanation under the title
+  const explanation = `
+    <p style="font-size:14px; margin-top:5px;">
+      <strong>Explanation of Your Results:</strong> Your Personalized Intimacy Profile is based on the Covenant Intimacy Fulfillment Model™. 
+      We believe God designed every marriage to flourish through all 12 types of intimacy. Each type—spiritual, emotional, physical, and more—plays a vital role in creating a marriage that feels safe, close, and deeply fulfilling.
+      <br><br>
+      Your results are divided into three parts. Each part includes four intimacy types that reflect how you naturally prioritize connection:
+    </p>
+  `;
+
+  // Custom headings + descriptions
+  const priorityTitle = "Priority – Your Highest Intimacy Needs";
+  const priorityDesc = "These are the four areas that matter most to you. When these needs are met, you feel deeply connected and loved.";
+
+  const progressTitle = "Progress – Areas for Growth";
+  const progressDesc = "These are the next four areas that are meaningful but may not feel as urgent as your top priorities. Focusing here helps bring balance and depth to your marriage.";
+
+  const presenceTitle = "Presence – Often Overlooked, Still Essential";
+  const presenceDesc = "These are the last four areas, which scored lowest for you. While they may not feel as important, nurturing them is key to experiencing the full closeness and unity God designed for marriage.";
+
+  const finalReminder = `
+    <p style="margin-top:15px; font-size:14px;">
+      <strong>Remember:</strong> A thriving marriage isn’t just about meeting your top needs. 
+      It’s about valuing and growing in all 12 types of intimacy, because each one reflects a part of God’s beautiful design for oneness in marriage.
+    </p>
+  `;
+
   document.getElementById("descriptions").innerHTML =
-    sectionHTML("Your Top 4 Intimacy Needs", "These are your highest-priority needs.", top4) +
-    sectionHTML("Your Moderate 4 Intimacy Needs", "These are important to keep balanced.", moderate4) +
-    sectionHTML("Your Maintenance 4 Intimacy Areas", "These currently require the least attention.", maintenance4);
+    explanation +
+    sectionHTML(priorityTitle, priorityDesc, priority) +
+    sectionHTML(progressTitle, progressDesc, progress) +
+    sectionHTML(presenceTitle, presenceDesc, presence) +
+    finalReminder;
+
+  renderChart(sorted);
 }
 
+/* ✅ Updated PDF Generator with cover page, new text, page numbers, and smaller footer */
 
-function renderChart(sorted){
-  const ctx=document.getElementById("chart").getContext("2d");
-  new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:sorted.map(([t])=>t),
-      datasets:[{label:'Intimacy Score',data:sorted.map(([_,s])=>s),backgroundColor:sorted.map(([t])=>typeColors[t])}]
-    },
-    options:{responsive:true,scales:{y:{beginAtZero:true,max:30}}}
-  });
-}
-
-/* ✅ Enable Send Button only when filled */
-const nameInput=document.getElementById("nameInput");
-const emailInput=document.getElementById("emailInput");
-const sendButton=document.getElementById("sendButton");
-[nameInput,emailInput].forEach(el=>{
-  el.addEventListener("input",()=>{
-    sendButton.disabled=!(nameInput.value && emailInput.value);
-  });
-});
-
-/* ✅ Send to Formspree + Generate PDF */
-sendButton.addEventListener("click",async()=>{
-  await fetch("https://formspree.io/f/xgvzkwre",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({name:nameInput.value,email:emailInput.value,scores})
-  });
-  generatePDF();
-  document.getElementById("successMessage").style.display = "block";
-});
-
-/* ✅ PDF Matches Results Page + Footer Banner */
 
 async function generatePDF() {
   const { jsPDF } = window.jspdf;
@@ -243,15 +241,13 @@ async function generatePDF() {
 
   let yPos = marginY;
 
-  // ✅ Add page numbers (except cover)
   function addPageNumber(pageNum) {
     pdf.setFontSize(10);
     pdf.setTextColor("#555555");
     pdf.text(`Page ${pageNum}`, pageWidth - 60, pageHeight - 20);
   }
 
-  // ✅ Add each section with page breaks
-  function addSectionToPDF(imgData, imgProps) {
+  function addSectionImage(imgData, imgProps) {
     const imgHeight = (imgProps.height * usableWidth) / imgProps.width;
     if (yPos + imgHeight > pageHeight - 60) {
       addPageNumber(pdf.internal.getNumberOfPages());
@@ -262,12 +258,11 @@ async function generatePDF() {
     yPos += imgHeight + 15;
   }
 
-  // ✅ Clone results page (remove email form)
+  // Clone results without email form
   const resultClone = document.getElementById("resultSection").cloneNode(true);
   const emailForm = resultClone.querySelector("#emailSection");
   if (emailForm) emailForm.remove();
 
-  // ✅ Replace chart canvas with static image
   const chartCanvas = document.getElementById("chart");
   const chartImage = chartCanvas.toDataURL("image/png");
   const clonedChart = resultClone.querySelector("#chart");
@@ -276,16 +271,25 @@ async function generatePDF() {
   chartImg.style.width = "90%";
   clonedChart.replaceWith(chartImg);
 
-  // ✅ Identify pieces to render
   const title = resultClone.querySelector("h2");
   const chart = chartImg;
   const sections = resultClone.querySelectorAll("h3");
 
   const pieces = [];
 
+  // Title + Logo + Explanation
   const titleBlock = document.createElement("div");
   titleBlock.appendChild(resultClone.querySelector("#resultsLogo").cloneNode(true));
   titleBlock.appendChild(title.cloneNode(true));
+
+  const explanationText = document.createElement("p");
+  explanationText.style.fontSize = "14px";
+  explanationText.innerHTML = `
+    <strong>Explanation of Your Results:</strong> Your Personalized Intimacy Profile is based on the Covenant Intimacy Fulfillment Model™. 
+    We believe God designed every marriage to flourish through all 12 types of intimacy. Each type—spiritual, emotional, physical, and more—plays a vital role in creating a marriage that feels safe, close, and deeply fulfilling.<br><br>
+    Your results are divided into three parts. Each part includes four intimacy types that reflect how you naturally prioritize connection:
+  `;
+  titleBlock.appendChild(explanationText);
   pieces.push(titleBlock);
 
   const chartBlock = document.createElement("div");
@@ -293,8 +297,22 @@ async function generatePDF() {
   chartBlock.appendChild(chart.cloneNode(true));
   pieces.push(chartBlock);
 
+  // Sections renamed dynamically
   sections.forEach((section) => {
+    let sectionColor = "#4D9DE0"; // default blue
+    if (section.textContent.includes("Top 4")) {
+      section.textContent = "Priority – Your Highest Intimacy Needs";
+      sectionColor = "#FF4D4D"; // red
+    } else if (section.textContent.includes("Moderate 4")) {
+      section.textContent = "Progress – Areas for Growth";
+      sectionColor = "#4D9DE0"; // brand blue
+    } else if (section.textContent.includes("Maintenance 4")) {
+      section.textContent = "Presence – Often Overlooked, Still Essential";
+      sectionColor = "#A1B56C"; // green
+    }
+
     const block = document.createElement("div");
+    block.dataset.headerColor = sectionColor; // store color for later use
     block.appendChild(section.cloneNode(true));
 
     let sibling = section.nextElementSibling;
@@ -302,56 +320,68 @@ async function generatePDF() {
       block.appendChild(sibling.cloneNode(true));
       sibling = sibling.nextElementSibling;
     }
+
+    if (section.textContent.includes("Presence")) {
+      const reminder = document.createElement("p");
+      reminder.style.fontSize = "14px";
+      reminder.innerHTML =
+        "<strong>Remember:</strong> A thriving marriage isn’t just about meeting your top needs. It’s about valuing and growing in all 12 types of intimacy, because each one reflects a part of God’s beautiful design for oneness in marriage.";
+      block.appendChild(reminder);
+    }
+
     pieces.push(block);
   });
 
-  // ✅ COVER PAGE
+  // 📄 Cover Page
   const centerX = pageWidth / 2;
-
   const logo = new Image();
   logo.src = "logo.png";
   await new Promise((res) => (logo.onload = res));
 
-  pdf.addImage(logo, "PNG", centerX - 60, 100, 120, 60);
+  pdf.addImage(logo, "PNG", centerX - 80, 80, 160, 80);
 
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(26);
+  pdf.setFontSize(28);
   pdf.setTextColor("#1A3C5E");
-  pdf.text("Your Personalized Intimacy Profile", centerX, 220, { align: "center" });
+  pdf.text("Your Personalized Intimacy Profile", centerX, 200, { align: "center" });
 
-  pdf.setFontSize(14);
+  pdf.setFontSize(15);
   pdf.setFont("helvetica", "normal");
-  pdf.text("Based on the Covenant Intimacy Fulfillment Model™", centerX, 250, { align: "center" });
+  pdf.text("Based on the Covenant Intimacy Fulfillment Model™", centerX, 230, { align: "center" });
 
-  // ✅ Add name + date
   const userName = document.getElementById("nameInput").value || "Valued User";
-  const today = new Date().toLocaleDateString(undefined, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const today = new Date().toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
   pdf.setFontSize(12);
-  pdf.text(`Prepared for ${userName} – ${today}`, centerX, 280, { align: "center" });
+  pdf.text(`Prepared for ${userName} – ${today}`, centerX, 260, { align: "center" });
 
-  // ✅ Intro paragraph
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text("Discover Your Path to Deeper Connection", centerX, 310, { align: "center", maxWidth: pageWidth - 80 });
+
+  pdf.setFont("helvetica", "normal");
   pdf.setFontSize(12);
   pdf.text(
-    "This report highlights your top intimacy needs based on your responses. Use it as a guide to strengthen your connection, grow closer to your spouse, and build a Christ-centered marriage filled with love and purpose.",
+    "This profile reveals how you uniquely prioritize the 12 types of intimacy God designed for marriage. See your Priority, Progress, and Presence areas—and learn how each one can bring you and your spouse closer than ever.",
     centerX,
-    330,
-    { align: "center", maxWidth: pageWidth - 100 }
+    340,
+    { align: "center", maxWidth: pageWidth - 80 }
   );
 
-  // ✅ Copyright footer on cover
+  pdf.setFont("helvetica", "italic");
+  pdf.text(
+    "This profile is based on the Covenant Intimacy Fulfillment Model™ (CIFM), developed through the research of Dr. Scott Inman, PhD—founder of the Happy Marriage, Happy Life™ marriage curriculum and resources.",
+    centerX,
+    410,
+    { align: "center", maxWidth: pageWidth - 80 }
+  );
+
   pdf.setFontSize(10);
   pdf.setTextColor("#666666");
-  pdf.text("© 2025 HappyMarriageHappyLife.com – All Rights Reserved", centerX, pageHeight - 40, {
-    align: "center",
-  });
+  pdf.text("© 2025 HappyMarriageHappyLife.com – All Rights Reserved", centerX, pageHeight - 40, { align: "center" });
 
   pdf.addPage();
 
-  // ✅ Add content pages
+  // Render each piece
   yPos = marginY;
   for (let piece of pieces) {
     const tempDiv = document.createElement("div");
@@ -365,17 +395,34 @@ async function generatePDF() {
     const imgData = canvas.toDataURL("image/png");
     const imgProps = pdf.getImageProperties(imgData);
 
-    addSectionToPDF(imgData, imgProps);
+    // Draw colored header bar before adding section
+    const color = piece.dataset.headerColor;
+    if (color) {
+      if (yPos + 50 > pageHeight - 60) {
+        addPageNumber(pdf.internal.getNumberOfPages());
+        pdf.addPage();
+        yPos = marginY;
+      }
+      pdf.setFillColor(color);
+      pdf.rect(marginX, yPos, usableWidth, 25, "F");
+      pdf.setTextColor("#FFFFFF");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      const headerTitle = piece.querySelector("h3")?.textContent || "";
+      pdf.text(headerTitle, marginX + 10, yPos + 17);
+      yPos += 40; // add spacing after header
+    }
+
+    addSectionImage(imgData, imgProps);
   }
 
-  // ✅ Add page number to last page
   addPageNumber(pdf.internal.getNumberOfPages());
 
-  // ✅ Footer Banner
+  // Footer with margins
   const footerHeight = 40;
   const footerY = pageHeight - footerHeight;
   pdf.setFillColor("#4D9DE0");
-  pdf.rect(0, footerY, pageWidth, footerHeight, "F");
+  pdf.rect(marginX, footerY, pageWidth - marginX * 2, footerHeight, "F");
 
   pdf.setTextColor("#FFFFFF");
   pdf.setFont("helvetica", "bold");
@@ -389,7 +436,6 @@ async function generatePDF() {
 
   pdf.save("Intimacy-Results.pdf");
 }
-
 
 
 </script>
