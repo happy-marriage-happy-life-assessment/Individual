@@ -130,13 +130,27 @@ function showQuestion(i){
 document.getElementById("backButton").addEventListener("click",()=>{if(currentQuestion>0){currentQuestion--;showQuestion(currentQuestion);}});
 
 /* ✅ RESULTS + CHART */
-function displayResults(){
-  const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
-  const priority=sorted.slice(0,4),progress=sorted.slice(4,8),presence=sorted.slice(8,12);
-  function sectionHTML(title,text,items){return `<h3>${title}</h3><p>${text}</p>${items.map(([t,s])=>`<div class="description-block" style="border-left:8px solid ${typeColors[t]}"><strong>${t}</strong> (Score: ${s})<br/>${intimacyDescriptions[t]}</div>`).join("")}`;}
-  document.getElementById("descriptions").innerHTML=`<p><strong>Explanation of Your Results:</strong> Based on CIFM.</p>`+sectionHTML("Priority","Top needs",priority)+sectionHTML("Progress","Growth areas",progress)+sectionHTML("Presence","Lower but important",presence);
-  const ctx=document.getElementById("chart").getContext("2d");
-  new Chart(ctx,{type:'bar',data:{labels:sorted.map(([t])=>t),datasets:[{label:'Intimacy Score',data:sorted.map(([_,s])=>s),backgroundColor:sorted.map(([t])=>typeColors[t])}]},options:{responsive:true,scales:{y:{beginAtZero:true,max:30}}}});
+function displayResults() {
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const priority = sorted.slice(0, 4),
+        progress = sorted.slice(4, 8),
+        presence = sorted.slice(8, 12);
+
+  function sectionHTML(title, text, items) {
+    return `<h3>${title}</h3>
+            <p>${text}</p>
+            ${items.map(([t, s]) => 
+              `<div class="description-block" style="border-left:8px solid ${typeColors[t]}">
+                <strong>${t}</strong> (Score: ${s})<br/>${intimacyDescriptions[t]}
+              </div>`).join("")}`;
+  }
+
+  document.getElementById("descriptions").innerHTML =
+    `<p><strong>Explanation of Your Results:</strong> Your Personalized Intimacy Profile is based on the Covenant Intimacy Fulfillment Model™. Each result shows how you naturally prioritize intimacy in your marriage.</p>` +
+    sectionHTML("Priority – Your Highest Intimacy Needs", "These are the areas that matter most to you.", priority) +
+    sectionHTML("Progress – Areas for Growth", "These are meaningful but may not feel as urgent.", progress) +
+    sectionHTML("Presence – Often Overlooked, Still Essential", "Lowest scoring but still important areas.", presence) +
+    `<p><strong>Remember:</strong> A thriving marriage values all 12 types of intimacy.</p>`;
 }
 
 /* ✅ EMAIL + DEBUG */
