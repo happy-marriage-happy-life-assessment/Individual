@@ -167,13 +167,6 @@ async function generatePDF() {
     const marginY = 40;
     const usableWidth = pageWidth - marginX * 2;
 
-    let yPos = marginY;
-
-    // ✅ Capture the chart
-    const chartCanvas = document.getElementById("chart");
-    if (!chartCanvas) throw new Error("Chart not found!");
-    const chartImage = chartCanvas.toDataURL("image/png");
-
     // ✅ Load logo
     const logo = new Image();
     logo.src = "logo.png";
@@ -181,9 +174,13 @@ async function generatePDF() {
 
     // ✅ Cover Page
     pdf.addImage(logo, "PNG", pageWidth / 2 - 90, 70, 180, 90);
+
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(22);
+    pdf.setFontSize(24);
+    pdf.setTextColor("#1A3C5E");
     pdf.text("Your Personalized Intimacy Profile", pageWidth / 2, 200, { align: "center" });
+
+    pdf.setFont("helvetica", "normal");
     pdf.setFontSize(14);
     pdf.text("Based on the Covenant Intimacy Fulfillment Model™", pageWidth / 2, 225, { align: "center" });
 
@@ -192,27 +189,51 @@ async function generatePDF() {
     pdf.setFontSize(12);
     pdf.text(`Prepared for ${userName} – ${today}`, pageWidth / 2, 250, { align: "center" });
 
-    // ✅ Add chart
-    pdf.addImage(chartImage, "PNG", marginX, 280, usableWidth, 200);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(14);
+    pdf.text("Discover Your Path to Deeper Connection", pageWidth / 2, 300, { align: "center", maxWidth: usableWidth });
 
-    // ✅ Add footer on cover page
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(12);
+    pdf.text(
+      "This profile reveals how you uniquely prioritize the 12 types of intimacy God designed for marriage. See your Priority, Progress, and Presence areas—and learn how each one can bring you and your spouse closer than ever.",
+      pageWidth / 2,
+      330,
+      { align: "center", maxWidth: usableWidth }
+    );
+
+    pdf.setFont("helvetica", "italic");
+    pdf.text(
+      "This profile is based on the Covenant Intimacy Fulfillment Model™ (CIFM), developed through the research of Dr. Scott Inman, PhD—founder of the Happy Marriage, Happy Life™ marriage curriculum and resources.",
+      pageWidth / 2,
+      400,
+      { align: "center", maxWidth: usableWidth }
+    );
+
+    // ✅ Footer for cover page
     pdf.setFillColor("#4D9DE0");
     pdf.rect(marginX, pageHeight - 50, usableWidth, 40, "F");
     pdf.setTextColor("#FFFFFF");
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(12);
-    pdf.text("HappyMarriageHappyLife.com  |  Helping Couples Build Lasting Love", pageWidth / 2, pageHeight - 25, { align: "center" });
+    pdf.text(
+      "HappyMarriageHappyLife.com  |  Helping Couples Build Lasting Love",
+      pageWidth / 2,
+      pageHeight - 25,
+      { align: "center" }
+    );
 
-    // ✅ New page for sections
+    // ✅ New page for results
     pdf.addPage();
-    yPos = marginY;
+    let yPos = marginY;
 
-    // ✅ Clone the results section WITHOUT email form
+    // ✅ Clone the results section WITHOUT email form AND WITHOUT chart
     const resultClone = document.getElementById("resultSection").cloneNode(true);
     const emailForm = resultClone.querySelector("#emailSection");
     if (emailForm) emailForm.remove();
+    const chartElement = resultClone.querySelector("#chart");
+    if (chartElement) chartElement.remove(); // remove chart completely
 
-    // ✅ Grab all sections (Priority, Progress, Presence)
     const sections = resultClone.querySelectorAll("h3");
     const pieces = [];
 
@@ -229,7 +250,7 @@ async function generatePDF() {
       pieces.push(block);
     });
 
-    // ✅ Loop through pieces, render with html2canvas
+    // ✅ Render each section with html2canvas
     for (let piece of pieces) {
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "700px";
@@ -259,7 +280,12 @@ async function generatePDF() {
     pdf.setTextColor("#FFFFFF");
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(12);
-    pdf.text("HappyMarriageHappyLife.com  |  Helping Couples Build Lasting Love", pageWidth / 2, pageHeight - 25, { align: "center" });
+    pdf.text(
+      "HappyMarriageHappyLife.com  |  Helping Couples Build Lasting Love",
+      pageWidth / 2,
+      pageHeight - 25,
+      { align: "center" }
+    );
 
     setTimeout(() => pdf.save("Intimacy-Results.pdf"), 300);
     console.log("✅ generatePDF finished");
@@ -267,6 +293,7 @@ async function generatePDF() {
     console.error("❌ PDF ERROR:", err);
   }
 }
+
 
 </script>
 </body>
