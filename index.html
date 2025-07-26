@@ -189,19 +189,24 @@ const intimacyDescriptions = {
 
 const typeColors={Spiritual:"#FF4D4D",Emotional:"#4D9DE0",Intellectual:"#1A3C5E",Physical:"#FDC57B",Sexual:"#92C9D6",Conflict:"#F67599",Partnership:"#D07E5F",Affable:"#A1B56C",Creative:"#C084FC",Financial:"#7BC1D1"};
 
-const scores={}; Object.keys(intimacyDescriptions).forEach(t=>scores[t]=0);
-let currentQuestion=0;
-let answers=Array(questions.length).fill(null);
-let quizFinished=false;
+let scores={}, currentQuestion=0, answers=[], quizFinished=false;
+Object.keys(intimacyDescriptions).forEach(t=>scores[t]=0);
+answers = Array(questions.length).fill(null);
 
-/* ✅ START QUIZ */
-document.getElementById("startQuiz").addEventListener("click",()=>{
-  document.getElementById("introPage").style.display="none";
-  document.getElementById("quizSection").style.display="block";
-  showQuestion(currentQuestion);
-});
+function saveState(){
+  localStorage.setItem("quizState", JSON.stringify({ scores, answers, currentQuestion, quizFinished }));
+}
+function loadState(){
+  const saved = localStorage.getItem("quizState");
+  if(saved){
+    const state = JSON.parse(saved);
+    scores = state.scores;
+    answers = state.answers;
+    currentQuestion = state.currentQuestion;
+    quizFinished = state.quizFinished;
+  }
+}
 
-/* ✅ SHOW QUESTION */
 function showQuestion(i){
   const quizContainer=document.getElementById("quiz");
   quizContainer.innerHTML="";
@@ -230,15 +235,17 @@ function showQuestion(i){
     if(answers[i]===opt.value) btn.style.background="#3a7fbf";
 
     btn.addEventListener("click",()=>{
-      if(quizFinished) return;
       if(answers[i]!==null) scores[q.type]-=answers[i];
       answers[i]=opt.value;
       scores[q.type]+=opt.value;
 
       currentQuestion++;
-      if(currentQuestion<questions.length) showQuestion(currentQuestion);
-      else{
+      if(currentQuestion<questions.length){
+        saveState();
+        showQuestion(currentQuestion);
+      }else{
         quizFinished=true;
+        saveState();
         document.getElementById("quizSection").style.display="none";
         document.getElementById("resultSection").style.display="block";
         displayResults();
@@ -253,10 +260,13 @@ function showQuestion(i){
 }
 
 document.getElementById("backButton").addEventListener("click",()=>{
-  if(currentQuestion>0){ currentQuestion--; showQuestion(currentQuestion); }
+  if(currentQuestion>0){
+    currentQuestion--;
+    saveState();
+    showQuestion(currentQuestion);
+  }
 });
 
-/* ✅ DISPLAY RESULTS */
 function displayResults(){
   const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
   const priority=sorted.slice(0,4),progress=sorted.slice(4,8),presence=sorted.slice(8,12);
@@ -274,7 +284,17 @@ function displayResults(){
     `<p><strong>Remember:</strong> A thriving marriage values all 12 types of intimacy.</p>`;
 }
 
-/* ✅ EMAIL + PDF */
+document.getElementById("startQuiz").addEventListener("click",()=>{
+  document.getElementById("introPage").style.display="none";
+  document.getElementById("quizSection").style.display="block";
+  currentQuestion=0;
+  scores={}; Object.keys(intimacyDescriptions).forEach(t=>scores[t]=0);
+  answers=Array(questions.length).fill(null);
+  quizFinished=false;
+  saveState();
+  showQuestion(currentQuestion);
+});
+
 const nameInput=document.getElementById("nameInput");
 const emailInput=document.getElementById("emailInput");
 const sendButton=document.getElementById("sendButton");
@@ -289,7 +309,17 @@ sendButton.addEventListener("click", async ()=>{
   document.getElementById("successMessage").style.display="block";
 });
 
-/* ✅ PDF GENERATOR (NO GRAPH) */
+window.addEventListener("DOMContentLoaded",()=>{
+  loadState();
+  if(quizFinished){
+    document.getElementById("introPage").style.display="none";
+    document.getElementById("quizSection").style.display="none";
+    document.getElementById("resultSection").style.display="block";
+    displayResults();
+  }
+});
+
+/* ✅ PDF GENERATOR (leave as-is from your code) */
 async function generatePDF(){
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF("p","pt","a4");
