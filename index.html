@@ -7,24 +7,28 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #FFFFFF; color: #1a3c5e; max-width: 900px; margin: auto; padding: 20px; }
-    h1,h2,h3 { text-align: center; }
-    .card { background: #FFF9F2; border: 2px solid #4d9de0; border-radius: 12px; padding: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin: 20px auto; max-width: 750px; text-align: center; }
+    body { font-family: Arial, sans-serif; background: #FFF9F2; color: #1a3c5e; max-width: 900px; margin: auto; padding: 20px; }
+    h1,h2,h3 { text-align: center; line-height: 1.3; }
+    .card { background: #FFFFFF; border: 2px solid #4d9de0; border-radius: 12px; padding: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin: 20px auto; max-width: 750px; text-align: center; line-height: 1.3; }
     .btn, .answer-btn { background: #4d9de0; color: white; font-weight: bold; border: none; border-radius: 8px; padding: 15px 25px; cursor: pointer; margin: 12px auto; display: block; width: 100%; max-width: 500px; text-align: center; touch-action: manipulation; }
     .btn:hover, .answer-btn:hover { background: #3a7fbf; }
     .answer-btn.selected { background: #3a7fbf; transform: scale(0.98); transition: all 0.2s ease; }
+    #backBtn { padding: 8px 15px; max-width: 120px; font-size: 0.9rem; line-height: 1; }
     .hidden { display: none; }
     .progress-bar-container { width: 100%; max-width: 500px; height: 10px; background: #E0E0E0; border-radius: 5px; margin: 10px auto; }
     .progress-bar { height: 100%; background: #FF4D4D; border-radius: 5px; transition: width 0.3s ease; }
-    .result-block { margin: 15px 0; text-align: left; padding: 20px; border-radius: 8px; border-left: 8px solid; background-color: rgba(0,0,0,0.08); }
+    .result-block { margin: 15px 0; text-align: left; padding: 20px; border-radius: 8px; border-left: 8px solid; line-height: 1.3; }
     .logo { display: block; margin: 0 auto 15px auto; max-width: 200px; }
     .question-box { background: #FFFFFF; border: 1px solid #4d9de0; border-radius: 8px; padding: 20px; margin: 15px auto; max-width: 700px; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
     .error { color: red; font-size: 0.8rem; display: none; margin: 5px 0; }
-    .intro-text { font-size: 1rem; line-height: 1.5; margin: 20px 0; text-align: left; }
-    .chart-caption { font-size: 0.9rem; text-align: center; margin: 10px 0; color: #555; }
-    .action-tip { font-style: italic; color: #3a7fbf; margin-top: 5px; }
-    .note { font-style: italic; margin-top: 10px; margin-left: 20px; }
+    .intro-text { font-size: 1rem; line-height: 1.3; margin: 20px 0; text-align: left; }
+    .chart-caption { font-size: 0.9rem; text-align: center; margin: 10px 0; color: #555; line-height: 1.3; }
+    .action-tip { font-style: italic; color: #3a7fbf; margin-top: 5px; line-height: 1.3; }
+    .note { font-style: italic; margin-top: 10px; margin-left: 20px; line-height: 1.3; }
+    .results-list { list-style-position: outside; margin-left: 10px; text-indent: 6px; line-height: 1.3; }
+    .results-list li { margin-bottom: 8px; }
+    .left-align { text-align: left; }
   </style>
 </head>
 <body>
@@ -44,7 +48,7 @@
   <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
   <div class="progress" id="progress"></div>
   <div class="question-box" id="questionContainer" role="radiogroup"></div>
-  <button class="btn" onclick="goBack()" id="backBtn" style="max-width: 150px; display: none;">Previous Question</button>
+  <button class="btn" onclick="goBack()" id="backBtn" style="display: none;">Previous Question</button>
   <p style="color:#A3A3A3; font-size:0.9rem; margin-top:10px;">HappyMarriageHappyLife.com</p>
 </div>
 
@@ -81,34 +85,52 @@ const intimacyDescriptions = {
 };
 
 const typeColors = {
-  Spiritual: "#FF4D4D", Emotional: "#4D9DE0", Commitment: "#1A3C5E",
-  Intellectual: "#C084FC", Affable: "#A1B56C", Recreational: "#FDC57B",
-  Partnership: "#D07E5F", Financial: "#7BC1D1", Creative: "#E085B2",
-  Conflict: "#F67599", Physical: "#92C9D6", Sexual: "#E6A94C"
+  Spiritual: "#6A4C93", Emotional: "#FF7A70", Commitment: "#FFB347",
+  Intellectual: "#4C6B9B", Affable: "#FFB6C1", Recreational: "#4DD2FF",
+  Partnership: "#3CB371", Financial: "#FFD700", Creative: "#FF66CC",
+  Conflict: "#FFA552", Physical: "#FF8C69", Sexual: "#E63946",
+  SanguineExpress: "#FFB347", SanguineReceive: "#FFD580",
+  MelancholyExpress: "#6A4C93", MelancholyReceive: "#A68CC2",
+  SupineExpress: "#88C0D0", SupineReceive: "#B2DFDB",
+  PhlegmaticExpress: "#4CAF50", PhlegmaticReceive: "#A3D977",
+  CholericExpress: "#E63946", CholericReceive: "#FF7A70",
+  SteadyConnector: "#4CAF50", ReassuranceSeeker: "#FFADAD",
+  IndependentConnector: "#88C0D0", GuardedConnector: "#A5A5A5"
 };
 
 const typeColorsWithOpacity = {
-  Spiritual: "rgba(255, 77, 77, 0.08)", Emotional: "rgba(77, 157, 224, 0.08)", Commitment: "rgba(26, 60, 94, 0.08)",
-  Intellectual: "rgba(192, 132, 252, 0.08)", Affable: "rgba(161, 181, 108, 0.08)", Recreational: "rgba(253, 197, 123, 0.08)",
-  Partnership: "rgba(208, 126, 95, 0.08)", Financial: "rgba(123, 193, 209, 0.08)", Creative: "rgba(224, 133, 178, 0.08)",
-  Conflict: "rgba(246, 117, 153, 0.08)", Physical: "rgba(146, 201, 214, 0.08)", Sexual: "rgba(230, 169, 76, 0.08)"
+  Spiritual: "rgba(106, 76, 147, 0.08)", Emotional: "rgba(255, 122, 112, 0.08)", Commitment: "rgba(255, 179, 71, 0.08)",
+  Intellectual: "rgba(76, 107, 155, 0.08)", Affable: "rgba(255, 182, 193, 0.08)", Recreational: "rgba(77, 210, 255, 0.08)",
+  Partnership: "rgba(60, 179, 113, 0.08)", Financial: "rgba(255, 215, 0, 0.08)", Creative: "rgba(255, 102, 204, 0.08)",
+  Conflict: "rgba(255, 165, 82, 0.08)", Physical: "rgba(255, 140, 105, 0.08)", Sexual: "rgba(230, 57, 70, 0.08)",
+  SanguineExpress: "rgba(255, 179, 71, 0.08)", SanguineReceive: "rgba(255, 213, 128, 0.08)",
+  MelancholyExpress: "rgba(106, 76, 147, 0.08)", MelancholyReceive: "rgba(166, 140, 194, 0.08)",
+  SupineExpress: "rgba(136, 192, 208, 0.08)", SupineReceive: "rgba(178, 223, 219, 0.08)",
+  PhlegmaticExpress: "rgba(76, 175, 80, 0.08)", PhlegmaticReceive: "rgba(163, 217, 119, 0.08)",
+  CholericExpress: "rgba(230, 57, 70, 0.08)", CholericReceive: "rgba(255, 122, 112, 0.08)",
+  SteadyConnector: "rgba(76, 175, 80, 0.08)", ReassuranceSeeker: "rgba(255, 173, 173, 0.08)",
+  IndependentConnector: "rgba(136, 192, 208, 0.08)", GuardedConnector: "rgba(165, 165, 165, 0.08)"
 };
 
 const bondingInsights = {
-  "Anchored Connector": { 
-    desc: "Your ability to communicate openly and reconnect quickly strengthens your marriage; encourage your spouse to share openly to maintain this balance. This style fosters resilience in your relationship, allowing you to navigate conflicts with clarity and mutual understanding. Your strength lies in creating a safe space for honest dialogue, which deepens trust over time. By prioritizing open communication, you help your marriage thrive even through challenges.", 
-    tip: "Schedule a weekly check-in to discuss feelings openly and maintain your strong communication." 
+  SteadyConnector: { 
+    desc: "Your ability to communicate openly and reconnect quickly strengthens your marriage. You create a safe space for honest dialogue, fostering resilience and mutual understanding. Your strength lies in maintaining a stable, communicative bond that thrives through challenges.", 
+    challenges: "You may occasionally overlook your spouse’s need for space or deeper reassurance, assuming quick communication resolves all issues.", 
+    tip: "Schedule a weekly check-in to discuss feelings openly and ensure your spouse feels heard." 
   },
-  "Assurance Seeker": { 
-    desc: "You thrive on frequent reassurance, so let your spouse know when you need extra affirmation to feel loved. This need stems from a deep desire for emotional security, which strengthens your connection during challenging moments. Your marriage benefits when your spouse offers consistent verbal or physical affirmations, helping you feel safe and valued. Clear expressions of love keep your bond strong and resilient.", 
+  ReassuranceSeeker: { 
+    desc: "You thrive on frequent reassurance, creating emotional security that strengthens your connection. Your need for affirmation helps your marriage stay emotionally vibrant, especially during tough times.", 
+    challenges: "Your desire for constant reassurance may feel overwhelming to a spouse who expresses love differently.", 
     tip: "Ask your spouse for a daily affirmation, like a kind word or gesture, to feel secure and loved." 
   },
-  "Steady Soul": { 
-    desc: "Your preference for calm, steady connection creates stability; invite your spouse to join you in low-pressure moments to deepen your bond. This style promotes a peaceful environment, allowing your marriage to flourish through quiet consistency. Your calm presence helps your spouse feel grounded, especially during stressful times. Your approach fosters a reliable, nurturing connection.", 
+  IndependentConnector: { 
+    desc: "Your preference for calm, steady connection creates stability. Your peaceful presence helps your spouse feel grounded, promoting a nurturing environment for your marriage to flourish.", 
+    challenges: "Your need for space may be mistaken for emotional distance, potentially leaving your spouse feeling disconnected.", 
     tip: "Plan a quiet evening together each week to foster calm, steady connection without pressure." 
   },
-  "Tender Protector": { 
-    desc: "Building trust over time is key for you; share your need for consistent loyalty to help your spouse support you. Your cautious approach to trust strengthens your marriage by ensuring deep commitment. This style encourages a gradual, dependable bond that grows stronger with each act of loyalty. Your dedication creates a secure foundation for intimacy.", 
+  GuardedConnector: { 
+    desc: "Building trust over time is key for you, ensuring a deep, dependable bond. Your cautious approach strengthens your marriage by fostering loyalty and commitment.", 
+    challenges: "Your guarded nature may slow emotional intimacy, making it harder to open up during conflicts.", 
     tip: "Create a small ritual, like a daily promise or gesture, to build trust with your spouse over time." 
   }
 };
@@ -244,70 +266,70 @@ const questions = [
     {text:"Resolve conflicts respectfully", i:"Conflict"},
     {text:"Learn and grow together", i:"Intellectual"}]},
   {q:"In daily life, I feel closest to my spouse when…", opts:[
-    {text:"We share openly about our day", b:"Anchored Connector"},
-    {text:"They check in with me often", b:"Assurance Seeker"},
-    {text:"We enjoy quiet time together", b:"Steady Soul"},
-    {text:"They prove their loyalty consistently", b:"Tender Protector"}]},
+    {text:"We share openly about our day", b:"Steady Connector"},
+    {text:"They check in with me often", b:"Reassurance Seeker"},
+    {text:"We enjoy quiet time together", b:"Independent Connector"},
+    {text:"They prove their loyalty consistently", b:"Guarded Connector"}]},
   {q:"When conflict happens, I usually…", opts:[
-    {text:"Talk it out calmly", b:"Anchored Connector"},
-    {text:"Seek reassurance and closeness", b:"Assurance Seeker"},
-    {text:"Withdraw to think first", b:"Steady Soul"},
-    {text:"Feel unsure if I can trust or stay close", b:"Tender Protector"}]},
+    {text:"Talk it out calmly", b:"Steady Connector"},
+    {text:"Seek reassurance and closeness", b:"Reassurance Seeker"},
+    {text:"Withdraw to think first", b:"Independent Connector"},
+    {text:"Feel unsure if I can trust or stay close", b:"Guarded Connector"}]},
   {q:"If my spouse seems distant, I…", opts:[
-    {text:"Ask calmly about it", b:"Anchored Connector"},
-    {text:"Worry they’re upset with me", b:"Assurance Seeker"},
-    {text:"Wait for them to come to me", b:"Steady Soul"},
-    {text:"Assume the worst", b:"Tender Protector"}]},
+    {text:"Ask calmly about it", b:"Steady Connector"},
+    {text:"Worry they’re upset with me", b:"Reassurance Seeker"},
+    {text:"Wait for them to come to me", b:"Independent Connector"},
+    {text:"Assume the worst", b:"Guarded Connector"}]},
   {q:"After a fight, I…", opts:[
-    {text:"Try to reconnect quickly", b:"Anchored Connector"},
-    {text:"Need lots of reassurance", b:"Assurance Seeker"},
-    {text:"Prefer space before reconnecting", b:"Steady Soul"},
-    {text:"Struggle to feel safe trusting again", b:"Tender Protector"}]},
+    {text:"Try to reconnect quickly", b:"Steady Connector"},
+    {text:"Need lots of reassurance", b:"Reassurance Seeker"},
+    {text:"Prefer space before reconnecting", b:"Independent Connector"},
+    {text:"Struggle to feel safe trusting again", b:"Guarded Connector"}]},
   {q:"When I feel hurt, I…", opts:[
-    {text:"Express my feelings calmly", b:"Anchored Connector"},
-    {text:"Get anxious or clingy", b:"Assurance Seeker"},
-    {text:"Keep it inside", b:"Steady Soul"},
-    {text:"Pull away or shut down", b:"Tender Protector"}]},
+    {text:"Express my feelings calmly", b:"Steady Connector"},
+    {text:"Get anxious or clingy", b:"Reassurance Seeker"},
+    {text:"Keep it inside", b:"Independent Connector"},
+    {text:"Pull away or shut down", b:"Guarded Connector"}]},
   {q:"I feel safest when…", opts:[
-    {text:"We talk and repair things quickly", b:"Anchored Connector"},
-    {text:"My spouse reassures me often", b:"Assurance Seeker"},
-    {text:"My spouse gives me space", b:"Steady Soul"},
-    {text:"I see proof they can be trusted", b:"Tender Protector"}]},
+    {text:"We talk and repair things quickly", b:"Steady Connector"},
+    {text:"My spouse reassures me often", b:"Reassurance Seeker"},
+    {text:"My spouse gives me space", b:"Independent Connector"},
+    {text:"I see proof they can be trusted", b:"Guarded Connector"}]},
   {q:"If I sense rejection, I…", opts:[
-    {text:"Communicate honestly", b:"Anchored Connector"},
-    {text:"Worry or overthink", b:"Assurance Seeker"},
-    {text:"Avoid conflict", b:"Steady Soul"},
-    {text:"Assume I’ll be let down", b:"Tender Protector"}]},
+    {text:"Communicate honestly", b:"Steady Connector"},
+    {text:"Worry or overthink", b:"Reassurance Seeker"},
+    {text:"Avoid conflict", b:"Independent Connector"},
+    {text:"Assume I’ll be let down", b:"Guarded Connector"}]},
   {q:"I feel most loved when my spouse…", opts:[
     {text:"Surprises me with fun gestures", t:"Sanguine", i:"Affable", domain:"Affection", wanted:true},
-    {text:"Takes charge to support me", t:"Choleric", i:"Partnership", domain:"Affection", wanted:true},
-    {text:"Listens deeply to my thoughts", t:"Melancholy", i:"Emotional", domain:"Affection", wanted:true},
+    {text:"Takes charge to support me", t:"Choleric", i:"Partnership", domain:"Affection", wanted: true},
+    {text:"Listens deeply to my thoughts", t:"Melancholy", i:"Emotional", domain:"Affection", wanted: true},
     {text:"Is quietly present for me", t:"Phlegmatic", i:"Physical", domain:"Affection", wanted:true},
-    {text:"Serves me selflessly", t:"Supine", i:"Spiritual", domain:"Affection", wanted:true}]},
+    {text:"Serves me selflessly", t:"Supine", i:"Spiritual", domain:"Affection", wanted:"true"}]},
   {q:"I feel cared for when my spouse…", opts:[
-    {text:"Plans playful activities", t:"Sanguine", i:"Recreational", domain:"Affection", wanted:true},
-    {text:"Works with me on goals", t:"Choleric", i:"Commitment", domain:"Affection", wanted:true},
-    {text:"Shares deep conversations", t:"Melancholy", i:"Intellectual", domain:"Affection", wanted:true},
-    {text:"Offers calm support", t:"Phlegmatic", i:"Emotional", domain:"Affection", wanted:true},
-    {text:"Sacrifices for my needs", t:"Supine", i:"Spiritual", domain:"Affection", wanted:true}]},
+    {text:"Plans playful mischief", t:"Sanguine", i:"Recreational", domain:"Affection", wanted:"true"},
+    {text:"Works with me on goals", t:"Choleric", i:"Commitment", domain:"Affection", wanted:"true"},
+    {text:"Shares deep conversations", t:"Melancholy", i:"Intellectual", domain:"Affection", wanted:"true"},
+    {text:"Offers calm support", t:"Phlegmatic", i:"Emotional", domain:"Affection", wanted:"true"},
+    {text:"Sacrifices for my needs", t:"Supine", i:"Spiritual", domain:"Affection", wanted:"true"}]},
   {q:"I feel most connected when my spouse…", opts:[
-    {text:"Brings humor and joy", t:"Sanguine", i:"Affable", domain:"Affection", wanted:true},
-    {text:"Takes initiative to help", t:"Choleric", i:"Partnership", domain:"Affection", wanted:true},
-    {text:"Engages in creative ideas", t:"Melancholy", i:"Creative", domain:"Affection", wanted:true},
-    {text:"Is physically affectionate", t:"Phlegmatic", i:"Physical", domain:"Affection", wanted:true},
-    {text:"Prays with me", t:"Supine", i:"Spiritual", domain:"Affection", wanted:true}]},
+    {text:"Brings humor and joy", t:"Sanguine", i:"Affable", domain:"Affection", wanted:"true"},
+    {text:"Takes initiative to help", t:"Choleric", i:"Partnership", domain:"Affection", wanted:"true"},
+    {text:"Engages in creative ideas", t:"Melancholy", i:"Creative", domain:"Affection", wanted:"true"},
+    {text:"Is physically affectionate", t:"Phlegmatic", i:"Physical", domain:"Affection", wanted:"true"},
+    {text:"Prays with me", t:"Supine", i:"Spiritual", domain:"Affection", wanted:"true"}]},
   {q:"I feel valued when my spouse…", opts:[
-    {text:"Keeps things light and fun", t:"Sanguine", i:"Affable", domain:"Affection", wanted:true},
-    {text:"Respects my decisions", t:"Choleric", i:"Commitment", domain:"Affection", wanted:true},
-    {text:"Understands my emotions deeply", t:"Melancholy", i:"Emotional", domain:"Affection", wanted:true},
-    {text:"Stays calm and supportive", t:"Phlegmatic", i:"Physical", domain:"Affection", wanted:true},
-    {text:"Serves without expecting return", t:"Supine", i:"Spiritual", domain:"Affection", wanted:true}]},
+    {text:"Keeps things light and fun", t:"Sanguine", i:"Affable", domain:"Affection", wanted:"true"},
+    {text:"Respects my decisions", t:"Choleric", i:"Commitment", domain:"Affection", wanted:"true"},
+    {text:"Understands my emotions deeply", t:"Melancholy", i:"Emotional", domain:"Affection", wanted:"true"},
+    {text:"Stays calm and supportive", t:"Phlegmatic", i:"Physical", domain:"Affection", wanted:"true"},
+    {text:"Serves without expecting return", t:"Supine", i:"Spiritual", domain:"Affection", wanted:"true"}]},
   {q:"I feel loved when my spouse…", opts:[
-    {text:"Shares spontaneous moments", t:"Sanguine", i:"Recreational", domain:"Affection", wanted:true},
-    {text:"Collaborates on tasks", t:"Choleric", i:"Partnership", domain:"Affection", wanted:true},
-    {text:"Discusses meaningful ideas", t:"Melancholy", i:"Intellectual", domain:"Affection", wanted:true},
-    {text:"Offers quiet companionship", t:"Phlegmatic", i:"Emotional", domain:"Affection", wanted:true},
-    {text:"Shows selfless care", t:"Supine", i:"Spiritual", domain:"Affection", wanted:true}]},
+    {text:"Shares spontaneous adventures", t:"Sanguine", i:"Recreational", domain:"Affection", wanted:"true"},
+    {text:"Collaborates on tasks", t:"Choleric", i:"Partnership", domain:"Affection", wanted:"true"},
+    {text:"Discusses meaningful dreams", t:"Melancholy", i:"Intellectual", domain:"Affection", wanted:"true"},
+    {text:"Offers quiet companionship", t:"Phlegmatic", i:"Emotional", domain:"Affection", wanted:"true"},
+    {text:"Shows selfless care", t:"Supine", i:"Spiritual", domain:"Affection", wanted:"true"}]},
   {q:"In social gatherings, I prefer to…", opts:[
     {text:"Be the life of the party", t:"Sanguine", i:"Affable", domain:"Social"},
     {text:"Lead or organize the group", t:"Choleric", i:"Partnership", domain:"Social"},
@@ -351,7 +373,7 @@ const questions = [
     {text:"Go with the group’s choice", t:"Phlegmatic", i:"Emotional", domain:"Decision"},
     {text:"Let others decide for me", t:"Supine", i:"Commitment", domain:"Decision"}]},
   {q:"In a leadership role, I…", opts:[
-    {text:"Inspire with enthusiasm", t:"Sanguine", i:"Affable", domain:"Decision"},
+    {text:"Inspire enthusiasm", t:"Sanguine", i:"Affable", domain:"Decision"},
     {text:"Direct with confidence", t:"Choleric", i:"Partnership", domain:"Decision"},
     {text:"Plan with precision", t:"Melancholy", i:"Creative", domain:"Decision"},
     {text:"Encourage team harmony", t:"Phlegmatic", i:"Emotional", domain:"Decision"},
@@ -436,7 +458,9 @@ function getAffectionPreferences() {
   };
   return {
     expressed: preferences[highestExpressed].expressed,
-    desired: preferences[highestWanted].desired
+    expressedType: highestExpressed + "Express",
+    desired: preferences[highestWanted].desired,
+    desiredType: highestWanted + "Receive"
   };
 }
 
@@ -465,8 +489,8 @@ function getDecisionLeadershipStyle() {
 }
 
 function getBondingStyle() {
-  const highest = Object.entries(bondingScores).sort((a, b) => b[1] - a[1])[0]?.[0] || "Anchored Connector";
-  return highest;
+  const highest = Object.entries(bondingScores).sort((a, b) => b[1] - a[1])[0]?.[0] || "SteadyConnector";
+  return highest.replace(/\s/g, ""); // Remove spaces to match typeColors keys
 }
 
 /* ============================
@@ -600,8 +624,10 @@ function showResults() {
     const bondingStyle = getBondingStyle();
 
     function sectionHTML(title, text, items) {
-      return `<h3 style="margin-bottom: 10px;">${title}</h3><p>${text}</p>` +
-        items.map(([type, score]) => {
+      return `
+        <h3 style="margin-bottom: 10px;">${title}</h3>
+        <p>${text}</p>
+        ${items.map(([type, score]) => {
           let extraContent = "";
           if (type === "Affable") {
             extraContent = `<p class="note">*Note: Your Social Preferences align with Affable intimacy due to your approach to social engagement: ${socialPreferences}</p>`;
@@ -610,11 +636,13 @@ function showResults() {
           }
           return `
             <div class="result-block" style="border-left:8px solid ${typeColors[type]}; background-color: ${typeColorsWithOpacity[type]};">
-              <strong>${type}</strong> (Score: ${score.toFixed(2)})<br/>${intimacyDescriptions[type].desc}
-              <p class="action-tip">${intimacyDescriptions[type].tip}</p>
+              <strong>${type}</strong> – ${intimacyDescriptions[type].desc}<br/>
+              <span class="action-tip">Tip: ${intimacyDescriptions[type].tip}</span>
               ${extraContent}
             </div>`;
-        }).join("") + `<hr style="margin: 20px 0; border: 1px solid #E0E0E0;">`;
+        }).join("")}
+        <hr style="margin: 30px 0; border: 1px solid #E0E0E0;">
+      `;
     }
 
     const results = document.getElementById("results");
@@ -624,35 +652,58 @@ function showResults() {
     const userName = document.getElementById("nameInput").value || "Valued User";
     const today = new Date().toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
     results.innerHTML = `
-      <p class="intro-text">Discover Your Path to Deeper Connection<br/>
-      This profile reveals how you uniquely prioritize the 12 types of intimacy God designed for marriage. See your Priority, Progress, and Presence areas—and learn how each one can bring you and your spouse closer than ever. This profile is based on the Covenant Intimacy Fulfillment Model™ (CIFM), developed through the research of Dr. Scott Inman, PhD—founder of the Happy Marriage, Happy Life™ marriage curriculum and resources.</p>
+      <p class="intro-text">This profile is designed to guide you toward a Happy Marriage, Happy Life™—a marriage filled with lasting love and fulfillment as God intended.</p>
+      <p class="intro-text">Your results are based on the Covenant Intimacy Fulfillment Model™ (CIFM), developed through the research of Dr. Scott Inman, PhD, founder of the Happy Marriage, Happy Life™ marriage curriculum and resources.</p>
       <h3>Understanding Your Results</h3>
-      <p>Your profile is divided into three categories based on your responses:</p>
-      <ul>
-        <li><strong>Priority Areas</strong>: These are your top four intimacy types, where you naturally invest the most energy. Lean into these strengths to deepen your connection.</li>
-        <li><strong>Progress Areas</strong>: These middle four intimacy types are present but less dominant. Small, intentional efforts here can yield significant growth in your marriage.</li>
-        <li><strong>Presence Areas</strong>: These bottom four intimacy types may feel less natural. Exploring these with your spouse can uncover new ways to connect.</li>
+      <p>Your profile helps you see how you naturally connect, express love, and seek closeness in your marriage. It is divided into three key parts:</p>
+      <ul class="results-list">
+        <li><strong>Affection Preferences</strong> – How you most naturally express love and feel most loved in return.</li>
+        <li><strong>Intimacy Styles</strong> – How you prioritize the 12 types of intimacy God designed for marriage.</li>
+        <li><strong>Connection Patterns</strong> – Your tendencies for emotional bonding and closeness in marriage.</li>
       </ul>
-      <p>Each intimacy type comes with a practical tip to help you and your spouse grow closer. Share this profile with your spouse to spark meaningful conversations and build a stronger, more fulfilling marriage.</p>
-      <hr style="margin: 20px 0; border: 1px solid #E0E0E0;">
-      ${sectionHTML("Your Priority Intimacy Areas", "These are the intimacy types you prioritize most, forming the core of how you connect with your spouse. Embrace these strengths to enhance your marriage.", priority)}
-      ${sectionHTML("Your Progress Intimacy Areas", "These intimacy types are present but less emphasized. Small, consistent efforts here can lead to meaningful growth in your connection.", progress)}
-      ${sectionHTML("Your Presence Intimacy Areas", "These intimacy types are less dominant for you but still valuable. Exploring these areas with your spouse can open new pathways to intimacy.", presence)}
-      <h3>Your Affection Preferences</h3>
-      <p>Your affection preferences reveal how you naturally express love and how you feel most loved by your spouse. Understanding these can help you communicate your needs and appreciate your spouse’s efforts.</p>
-      <div class="result-block" style="border-left:8px solid #4d9de0;">
-        <strong>How You Express Affection</strong><br/>${affectionPrefs.expressed}
+      <hr style="margin: 30px 0; border: 1px solid #E0E0E0;">
+      <h3>Section 1: Affection Preferences Profile</h3>
+      <div class="result-block" style="border-left:8px solid ${typeColors[affectionPrefs.expressedType]}; background-color: ${typeColorsWithOpacity[affectionPrefs.expressedType]};">
+        <strong>How You Express Love</strong><br/>${affectionPrefs.expressed}
       </div>
-      <div class="result-block" style="border-left:8px solid #4d9de0;">
+      <div class="result-block" style="border-left:8px solid ${typeColors[affectionPrefs.desiredType]}; background-color: ${typeColorsWithOpacity[affectionPrefs.desiredType]};">
         <strong>How You Feel Most Loved</strong><br/>${affectionPrefs.desired}
       </div>
-      <hr style="margin: 20px 0; border: 1px solid #E0E0E0;">
-      <h3>Your Bonding Style: ${bondingStyle}</h3>
-      <div class="result-block" style="border-left:8px solid #4d9de0;">
-        ${bondingInsights[bondingStyle].desc}
-        <p class="action-tip">${bondingInsights[bondingStyle].tip}</p>
+      <p class="action-tip">💡 Tip: Understanding each other’s preferences makes everyday affection more meaningful and personal.</p>
+      <hr style="margin: 30px 0; border: 1px solid #E0E0E0;">
+      <h3>Section 2: Intimacy Type Profile</h3>
+      ${sectionHTML("Natural Connection Strengths", "Your top four intimacy types are where you naturally invest the most energy. These strengths come more easily to you and help you and your spouse feel deeply connected.", priority)}
+      ${sectionHTML("Growth Opportunities", "Your middle four intimacy types are present but may not get as much focus. Small, intentional steps in these areas can lead to meaningful growth in your marriage.", progress)}
+      ${sectionHTML("Overlooked Opportunities", "Your bottom four intimacy types are just as important but often receive the least attention. Exploring these areas can open the door to new closeness and joy.", presence)}
+      <h3>Section 3: Connection Patterns Profile</h3>
+      <p>Your primary connection pattern is: <strong>${bondingStyle.replace(/([a-z])([A-Z])/g, '$1 $2')}</strong></p>
+      <div class="result-block" style="border-left:8px solid ${typeColors[bondingStyle]}; background-color: ${typeColorsWithOpacity[bondingStyle]};">
+        <strong>What This Means for Your Marriage</strong><br/>
+        <strong>Strengths:</strong> ${bondingInsights[bondingStyle].desc}<br/>
+        <strong>Challenges:</strong> ${bondingInsights[bondingStyle].challenges}<br/>
+        <span class="action-tip">Growth Tip: ${bondingInsights[bondingStyle].tip}</span>
       </div>
-      <hr style="margin: 20px 0; border: 1px solid #E0E0E0;">
+      <hr style="margin: 30px 0; border: 1px solid #E0E0E0;">
+      <h3>Moving Forward Together</h3>
+      <div class="left-align">
+        <p>Your results are not a label—they’re a starting point for deeper connection and intentional growth.</p>
+        <p>Use this profile as a roadmap to:</p>
+        <ul class="results-list">
+          <li><strong>Celebrate your Natural Connection Strengths</strong>—lean into what already makes your marriage strong.</li>
+          <li><strong>Invest in your Growth Opportunities</strong>—small, consistent actions here can create big breakthroughs.</li>
+          <li><strong>Discover your Overlooked Opportunities</strong>—exploring these areas together can unlock new joy and closeness.</li>
+          <li><strong>Live out your Affection Preferences</strong>—freely show love the way you naturally express it, and let your spouse know how you most enjoy receiving love. Be intentional to show affection in the way your spouse best receives it, and learn to appreciate the unique ways they express love to you.</li>
+        </ul>
+        <p>As you combine these insights with your Affection Preferences and Connection Pattern, you’ll begin to see a clearer path toward a stronger, more fulfilling, Christ-centered marriage.</p>
+        <p><strong>💡 Want to take the next step?</strong></p>
+        <ul class="results-list">
+          <li>Share your results with your spouse and choose one thing you can both do this week to grow closer.</li>
+          <li>Revisit these insights often—connection is built through daily, intentional choices of love, grace, and teamwork.</li>
+          <li>Explore the Happy Marriage, Happy Life™ curriculum and resources at <a href="https://happymarriagehappylife.com">happymarriagehappylife.com</a> for tools, exercises, and guidance to keep your marriage thriving.</li>
+        </ul>
+        <p>Your marriage was designed for lasting love and deep intimacy. This profile is just the beginning of discovering how to build the happy, God-honoring marriage you both desire.</p>
+      </div>
+      <hr style="margin: 30px 0; border: 1px solid #E0E0E0;">
       <p style="text-align:center; color:#A3A3A3; font-size:0.9rem;">Prepared for ${userName} on ${today}<br/>HappyMarriageHappyLife.com</p>
     `;
   } catch (error) {
@@ -702,6 +753,9 @@ function generatePDF(name) {
     const today = new Date().toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
     const normalizedScores = normalizeIntimacyScores();
     const sorted = Object.entries(normalizedScores).sort((a, b) => b[1] - a[1]);
+    const priority = sorted.slice(0, 4);
+    const progress = sorted.slice(4, 8);
+    const presence = sorted.slice(8, 12);
     const affectionPrefs = getAffectionPreferences();
     const bondingStyle = getBondingStyle();
 
@@ -713,51 +767,110 @@ function generatePDF(name) {
 
     doc.setFontSize(10);
     let y = 45;
-    doc.text("Discover Your Path to Deeper Connection", 20, y);
-    y += 5;
-    doc.text("This profile reveals how you prioritize the 12 types of intimacy in marriage.", 20, y, { maxWidth: 170 });
+    doc.text("This profile is designed to guide you toward a Happy Marriage, Happy Life™—a marriage filled with lasting love and fulfillment as God intended.", 20, y, { maxWidth: 170 });
+    y += 10;
+    doc.text("Your results are based on the Covenant Intimacy Fulfillment Model™ (CIFM), developed through the research of Dr. Scott Inman, PhD.", 20, y, { maxWidth: 170 });
     y += 10;
 
-    doc.text("Priority Areas:", 20, y);
+    doc.text("Understanding Your Results", 20, y);
     y += 5;
-    sorted.slice(0, 4).forEach(([type, score]) => {
-      doc.text(`${type} (Score: ${score.toFixed(2)}): ${intimacyDescriptions[type].desc}`, 25, y, { maxWidth: 160 });
-      y += 10;
-    });
+    doc.text("Your profile helps you see how you naturally connect, express love, and seek closeness in your marriage.", 20, y, { maxWidth: 170 });
+    y += 10;
 
-    doc.text("Progress Areas:", 20, y);
+    doc.text("Section 1: Affection Preferences Profile", 20, y);
     y += 5;
-    sorted.slice(4, 8).forEach(([type, score]) => {
-      doc.text(`${type} (Score: ${score.toFixed(2)}): ${intimacyDescriptions[type].desc}`, 25, y, { maxWidth: 160 });
-      y += 10;
-    });
-
-    doc.text("Presence Areas:", 20, y);
+    doc.text("How You Express Love:", 25, y);
     y += 5;
-    sorted.slice(8, 12).forEach(([type, score]) => {
-      doc.text(`${type} (Score: ${score.toFixed(2)}): ${intimacyDescriptions[type].desc}`, 25, y, { maxWidth: 160 });
-      y += 10;
-    });
-
-    if (y > 250) {
-      doc.addPage();
-      y = 20;
-    }
-
-    doc.text("Your Affection Preferences:", 20, y);
-    y += 5;
-    doc.text("How You Express Affection:", 25, y);
-    doc.text(affectionPrefs.expressed, 25, y + 5, { maxWidth: 160 });
-    y += 25;
-    doc.text("How You Feel Most Loved:", 25, y);
-    doc.text(affectionPrefs.desired, 25, y + 5, { maxWidth: 160 });
-    y += 25;
-
-    doc.text(`Your Bonding Style: ${bondingStyle}`, 20, y);
-    y += 5;
-    doc.text(bondingInsights[bondingStyle].desc, 25, y, { maxWidth: 160 });
+    doc.text(affectionPrefs.expressed, 25, y, { maxWidth: 160 });
     y += 20;
-    doc.text(`Action Tip: ${bondingInsights[bondingStyle].tip}`, 25, y, { maxWidth: 160 });
+    doc.text("How You Feel Most Loved:", 25, y);
+    y += 5;
+    doc.text(affectionPrefs.desired, 25, y, { maxWidth: 160 });
+    y += 20;
+    doc.text("Tip: Understanding each other’s preferences makes everyday affection more meaningful.", 25, y, { maxWidth: 160 });
+    y += 10;
+
+    if (y > 250) { doc.addPage(); y = 20; }
+
+    doc.text("Section 2: Intimacy Type Profile", 20, y);
+    y += 5;
+    doc.text("Natural Connection Strengths:", 25, y);
+    y += 5;
+    doc.text("Your top four intimacy types where you naturally invest the most energy.", 25, y, { maxWidth: 160 });
+    y += 10;
+    priority.forEach(([type, score]) => {
+      doc.text(`${type} – ${intimacyDescriptions[type].desc}`, 30, y, { maxWidth: 150 });
+      y += 10;
+      doc.text(`Tip: ${intimacyDescriptions[type].tip}`, 35, y, { maxWidth: 145 });
+      y += 10;
+    });
+
+    doc.text("Growth Opportunities:", 25, y);
+    y += 5;
+    doc.text("Your middle four intimacy types where small steps can lead to growth.", 25, y, { maxWidth: 160 });
+    y += 10;
+    progress.forEach(([type, score]) => {
+      doc.text(`${type} – ${intimacyDescriptions[type].desc}`, 30, y, { maxWidth: 150 });
+      y += 10;
+      doc.text(`Tip: ${intimacyDescriptions[type].tip}`, 35, y, { maxWidth: 145 });
+      y += 10;
+    });
+
+    if (y > 250) { doc.addPage(); y = 20; }
+
+    doc.text("Overlooked Opportunities:", 25, y);
+    y += 5;
+    doc.text("Your bottom four intimacy types that can open new ways to connect.", 25, y, { maxWidth: 160 });
+    y += 10;
+    presence.forEach(([type, score]) => {
+      doc.text(`${type} – ${intimacyDescriptions[type].desc}`, 30, y, { maxWidth: 150 });
+      y += 10;
+      doc.text(`Tip: ${intimacyDescriptions[type].tip}`, 35, y, { maxWidth: 145 });
+      y += 10;
+    });
+
+    if (y > 250) { doc.addPage(); y = 20; }
+
+    doc.text("Section 3: Connection Patterns Profile", 20, y);
+    y += 5;
+    doc.text(`Your primary connection pattern is: ${bondingStyle.replace(/([a-z])([A-Z])/g, '$1 $2')}`, 30, y, { maxWidth: 150 });
+    y += 10;
+    doc.text("What This Means for Your Marriage:", 25, y);
+    y += 5;
+    doc.text(`Strengths: ${bondingInsights[bondingStyle].desc}`, 30, y, { maxWidth: 150 });
+    y += 15;
+    doc.text(`Challenges: ${bondingInsights[bondingStyle].challenges}`, 30, y, { maxWidth: 150 });
+    y += 15;
+    doc.text(`Growth Tip: ${bondingInsights[bondingStyle].tip}`, 30, y, { maxWidth: 150 });
+    y += 10;
+
+    if (y > 250) { doc.addPage(); y = 20; }
+
+    doc.text("Moving Forward Together", 20, y);
+    y += 5;
+    doc.text("Your results are not a label—they’re a starting point for deeper connection and intentional growth.", 20, y, { maxWidth: 170 });
+    y += 10;
+    doc.text("Use this profile as a roadmap to:", 20, y, { maxWidth: 170 });
+    y += 5;
+    doc.text("• Celebrate your Natural Connection Strengths—lean into what already makes your marriage strong.", 25, y, { maxWidth: 160 });
+    y += 5;
+    doc.text("• Invest in your Growth Opportunities—small, consistent actions here can create big breakthroughs.", 25, y, { maxWidth: 160 });
+    y += 5;
+    doc.text("• Discover your Overlooked Opportunities—exploring these areas together can unlock new joy and closeness.", 25, y, { maxWidth: 160 });
+    y += 5;
+    doc.text("• Live out your Affection Preferences—freely show love the way you naturally express it, and let your spouse know how you most enjoy receiving love. Be intentional to show affection in the way your spouse best receives it, and learn to appreciate the unique ways they express love to you.", 25, y, { maxWidth: 160 });
+    y += 15;
+    doc.text("As you combine these insights with your Affection Preferences and Connection Pattern, you’ll begin to see a clearer path toward a stronger, more fulfilling, Christ-centered marriage.", 20, y, { maxWidth: 170 });
+    y += 15;
+    doc.text("Want to take the next step?", 20, y);
+    y += 5;
+    doc.text("• Share your results with your spouse and choose one thing you can both do this week to grow closer.", 25, y, { maxWidth: 160 });
+    y += 5;
+    doc.text("• Revisit these insights often—connection is built through daily, intentional choices of love, grace, and teamwork.", 25, y, { maxWidth: 160 });
+    y += 5;
+    doc.text("• Explore the Happy Marriage, Happy Life™ curriculum and resources at happymarriagehappylife.com for tools, exercises, and guidance to keep your marriage thriving.", 25, y, { maxWidth: 160 });
+    y += 10;
+    doc.text("Your marriage was designed for lasting love and deep intimacy. This profile is just the beginning of discovering how to build the happy, God-honoring marriage you both desire.", 20, y, { maxWidth: 170 });
 
     doc.save(`Marriage_Connection_Profile_${userName.replace(/\s/g, "_")}.pdf`);
   } catch (error) {
