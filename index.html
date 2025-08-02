@@ -975,6 +975,10 @@ async function generatePDF(name) {
     const pdf = new jsPDF("p", "pt", "a4");
     const resultsElement = document.getElementById("results");
 
+    // Margins in points (0.75 inch ≈ 54pt)
+    const marginX = 54;
+    const marginY = 54;
+
     // Logo URL
     const logoUrl = "https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png/v1/fill/w_476,h_194,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Untitled-28_edited.png";
 
@@ -983,7 +987,7 @@ async function generatePDF(name) {
     const imgData = canvas.toDataURL("image/png");
 
     const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+    const pdfWidth = pdf.internal.pageSize.getWidth() - marginX * 2;
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
     // Add logo at top of first page
@@ -993,24 +997,30 @@ async function generatePDF(name) {
         reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(blob);
       }));
-      pdf.addImage(logoImg, "PNG", 30, 30, 150, 60);
+      pdf.addImage(logoImg, "PNG", marginX, marginY, 150, 60);
     } catch (e) {
       console.warn("Logo failed to load.");
     }
 
-    // Offset content below the logo
-    let position = 100;
+    // Add title under the logo with 12pt space after logo
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16); // Slightly smaller than before
+    pdf.setTextColor(26, 60, 94);
+    pdf.text("Your Personalized Connection Profile", pdf.internal.pageSize.getWidth() / 2, marginY + 72 + 12, { align: "center" });
+
+    // Offset content below the title
+    let position = marginY + 72 + 12 + 24; // 12pt gap + extra spacing
     let heightLeft = pdfHeight;
 
-    pdf.addImage(imgData, "PNG", 20, position, pdfWidth, pdfHeight);
-    heightLeft -= pdf.internal.pageSize.getHeight() - 40;
+    pdf.addImage(imgData, "PNG", marginX, position, pdfWidth, pdfHeight);
+    heightLeft -= pdf.internal.pageSize.getHeight() - marginY * 2;
 
     // Add remaining pages if needed
     while (heightLeft > 0) {
-      position = heightLeft - pdfHeight + 20;
+      position = heightLeft - pdfHeight + marginY;
       pdf.addPage();
-      pdf.addImage(imgData, "PNG", 20, position, pdfWidth, pdfHeight);
-      heightLeft -= pdf.internal.pageSize.getHeight() - 40;
+      pdf.addImage(imgData, "PNG", marginX, position, pdfWidth, pdfHeight);
+      heightLeft -= pdf.internal.pageSize.getHeight() - marginY * 2;
     }
 
     pdf.save(`Marriage_Connection_Profile_${name.replace(/\s/g, "_")}.pdf`);
