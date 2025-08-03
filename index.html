@@ -990,26 +990,31 @@ async function generatePDF(name) {
     const pdfWidth = pdf.internal.pageSize.getWidth() - marginX * 2;
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-    // Add logo at top of first page
+    // Add logo at top center of first page with 0.75 inch margin from top
     try {
       const logoImg = await fetch(logoUrl).then(res => res.blob()).then(blob => new Promise(resolve => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(blob);
       }));
-      pdf.addImage(logoImg, "PNG", marginX, marginY, 150, 60);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const logoWidth = 150;
+      const logoHeight = 60;
+      const logoX = (pageWidth - logoWidth) / 2; // center horizontally
+      pdf.addImage(logoImg, "PNG", logoX, marginY, logoWidth, logoHeight);
     } catch (e) {
       console.warn("Logo failed to load.");
     }
 
-    // Add title under the logo with 12pt space after logo
+    // Add title under the logo with 18pt space
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(16); // Slightly smaller than before
+    pdf.setFontSize(15);
     pdf.setTextColor(26, 60, 94);
-    pdf.text("Your Personalized Connection Profile", pdf.internal.pageSize.getWidth() / 2, marginY + 72 + 12, { align: "center" });
+    const titleY = marginY + 60 + 18; // 60 is logo height, 18pt space below
+    pdf.text("Your Personalized Connection Profile", pdf.internal.pageSize.getWidth() / 2, titleY, { align: "center" });
 
     // Offset content below the title
-    let position = marginY + 72 + 12 + 24; // 12pt gap + extra spacing
+    let position = titleY + 24; // add extra space before content
     let heightLeft = pdfHeight;
 
     pdf.addImage(imgData, "PNG", marginX, position, pdfWidth, pdfHeight);
@@ -1029,6 +1034,7 @@ async function generatePDF(name) {
     alert("Failed to generate PDF. Please try again.");
   }
 }
+
 
 </script>
 </body>
