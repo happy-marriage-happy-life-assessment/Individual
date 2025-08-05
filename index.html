@@ -254,10 +254,504 @@ const bondingInsights = {
   }
 };
 
-/* Respect & Recognition Questions */
-const respectRecognitionQuestions = [
+const questions = [
+  // 1–10
   {
-    q: "I feel that my spouse values and respects my opinions when making decisions.",
+    q: "When your spouse is feeling stressed, what's your natural first instinct?",
+    opts: [
+      { text: "I try to lighten the mood with a joke or some fun distraction.", t: "Sanguine", i: "Recreational" },
+      { text: "I take charge and jump into action to solve the problem.", t: "Choleric", i: "Conflict" },
+      { text: "I offer thoughtful advice or try to talk through the deeper issue.", t: "Melancholy", i: "Intellectual" },
+      { text: "I sit with them, listen quietly, and offer a comforting presence.", t: "Phlegmatic", i: "Affable" },
+      { text: "I quietly find ways to help them without even being asked.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "It's a free weekend! What sounds like the perfect plan for you?",
+    opts: [
+      { text: "Doing something spontaneous and exciting, whatever comes to mind!", t: "Sanguine", i: "Recreational" },
+      { text: "Tackling a project or making progress on a personal goal.", t: "Choleric", i: "Partnership" },
+      { text: "Reading a good book, thinking deeply, or working on a creative project.", t: "Melancholy", i: "Creative" },
+      { text: "Relaxing at home with family and enjoying a quiet day.", t: "Phlegmatic", i: "Affable" },
+      { text: "Lending a hand to help someone or serving the family in some way.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "If your spouse is sad, how do you tend to respond?",
+    opts: [
+      { text: "I try my best to make them smile or laugh.", t: "Sanguine", i: "Recreational" },
+      { text: "I want to fix whatever is causing their sadness.", t: "Choleric", i: "Conflict" },
+      { text: "I offer to have a deep, meaningful conversation about it.", t: "Melancholy", i: "Intellectual" },
+      { text: "I give them a hug and comfort them with my physical presence.", t: "Phlegmatic", i: "Physical" },
+      { text: "I perform a kind, helpful act to show I care.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "In a group setting, what is your go-to role?",
+    opts: [
+      { text: "I'm the one talking, joking, and engaging everyone in conversation.", t: "Sanguine", i: "Recreational" },
+      { text: "I tend to take the lead or organize what the group should do.", t: "Choleric", i: "Conflict" },
+      { text: "I usually listen intently and observe everything around me.", t: "Melancholy", i: "Intellectual" },
+      { text: "I stay relaxed and am happy to follow whatever the group decides.", t: "Phlegmatic", i: "Affable" },
+      { text: "I quietly make sure everyone else feels comfortable and supported.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "What does your ideal date night look like?",
+    opts: [
+      { text: "Something new, fun, or completely spontaneous.", t: "Sanguine", i: "Recreational" },
+      { text: "Something productive, like working toward a shared goal or project.", t: "Choleric", i: "Commitment" },
+      { text: "A quiet evening with a deep, meaningful activity or conversation.", t: "Melancholy", i: "Creative" },
+      { text: "A low-key, comfortable night in with no pressure.", t: "Phlegmatic", i: "Affable" },
+      { text: "An evening centered around doing something that serves or honors my spouse.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "How do you typically approach making a decision?",
+    opts: [
+      { text: "I go with what feels the most fun in the moment.", t: "Sanguine", i: "Emotional" },
+      { text: "I make a quick decision and take control of the situation.", t: "Choleric", i: "Conflict" },
+      { text: "I think through all the possible details and consequences first.", t: "Melancholy", i: "Intellectual" },
+      { text: "I go with the flow to keep the peace.", t: "Phlegmatic", i: "Affable" },
+      { text: "I first ask what other people want to do.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "During a conflict, what is your most common reaction?",
+    opts: [
+      { text: "I try to crack a joke or use humor to diffuse the tension.", t: "Sanguine", i: "Emotional" },
+      { text: "I push hard to get to a resolution and find a solution.", t: "Choleric", i: "Conflict" },
+      { text: "I retreat to think about everything before I say anything.", t: "Melancholy", i: "Intellectual" },
+      { text: "I stay calm and make an effort to avoid escalating the argument.", t: "Phlegmatic", i: "Affable" },
+      { text: "I try to concede or please the other person to end the conflict.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "How do you most naturally express affection to your spouse?",
+    opts: [
+      { text: "With playful words, big smiles, and lots of excitement.", t: "Sanguine", i: "Emotional" },
+      { text: "By doing things for them or accomplishing tasks to help.", t: "Choleric", i: "Partnership" },
+      { text: "Through meaningful conversations or writing heartfelt notes.", t: "Melancholy", i: "Creative" },
+      { text: "With physical touch, like a hug, or just being quietly present.", t: "Phlegmatic", i: "Physical" },
+      { text: "By serving them or making a small sacrifice without mentioning it.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "If you suddenly found yourself with an extra hour in your day, how would you spend it?",
+    opts: [
+      { text: "Planning a fun and unexpected activity.", t: "Sanguine", i: "Recreational" },
+      { text: "Using the time to get something important accomplished.", t: "Choleric", i: "Partnership" },
+      { text: "Working on a personal hobby or a creative project I've been thinking about.", t: "Melancholy", i: "Creative" },
+      { text: "Taking the chance to relax or maybe even nap.", t: "Phlegmatic", i: "Affable" },
+      { text: "Finding a way to help my spouse or family with something they need.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "When your spouse forgets to thank you for something you did, how do you feel?",
+    opts: [
+      { text: "I laugh it off; it’s no big deal.", t: "Sanguine", i: "Emotional" },
+      { text: "I'm likely to remind them of the effort I put in.", t: "Choleric", i: "Commitment" },
+      { text: "I feel a bit overlooked but reflect on why it happened.", t: "Melancholy", i: "Intellectual" },
+      { text: "I assume they didn't mean anything by it and let it go.", t: "Phlegmatic", i: "Affable" },
+      { text: "I feel unappreciated and a little hurt, like they don’t see my efforts.", t: "Supine", i: "Commitment" }
+    ]
+  },
+
+  // 11–20
+  {
+    q: "When you're needing encouragement, what kind of support feels most meaningful to you?",
+    opts: [
+      { text: "Something fun to lift my spirits and help me laugh again.", t: "Sanguine", i: "Recreational" },
+      { text: "A reminder of my goals and someone helping me get back on track.", t: "Choleric", i: "Commitment" },
+      { text: "Deep words of affirmation that show they truly understand me.", t: "Melancholy", i: "Emotional" },
+      { text: "A quiet gesture of presence or physical reassurance.", t: "Phlegmatic", i: "Physical" },
+      { text: "Someone noticing my needs and helping me without me even asking for it.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "How do you typically respond when your spouse has a need?",
+    opts: [
+      { text: "I bring fun or distraction to brighten their mood.", t: "Sanguine", i: "Emotional" },
+      { text: "I take charge and help them find a solution quickly.", t: "Choleric", i: "Conflict" },
+      { text: "I try to deeply understand and offer meaningful support.", t: "Melancholy", i: "Emotional" },
+      { text: "I stay close and give them space if that's what they need.", t: "Phlegmatic", i: "Affable" },
+      { text: "I try to anticipate their needs and offer help behind the scenes.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "Your spouse wants to try something new. What's your immediate response?",
+    opts: [
+      { text: "I'm instantly excited and ready to jump in and try it!", t: "Sanguine", i: "Emotional" },
+      { text: "I evaluate how it aligns with our shared goals first.", t: "Choleric", i: "Commitment" },
+      { text: "I want to understand the deeper meaning or reason behind it.", t: "Melancholy", i: "Intellectual" },
+      { text: "I'll go along if it feels peaceful and won't cause any disruption.", t: "Phlegmatic", i: "Affable" },
+      { text: "I wait for them to take the lead, then quietly follow along.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "Which kind of compliment truly means the most to you?",
+    opts: [
+      { text: "'You’re so fun and make everything more enjoyable!'", t: "Sanguine", i: "Emotional" },
+      { text: "'You always get things done and keep us moving forward.'", t: "Choleric", i: "Partnership" },
+      { text: "'You’re so thoughtful and deep—your insight really moves me.'", t: "Melancholy", i: "Creative" },
+      { text: "'You're so calm and easy to be around—I feel safe with you.'", t: "Phlegmatic", i: "Affable" },
+      { text: "'You're so loyal and sacrificial—you love deeply without needing recognition.'", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "During a busy season, what keeps you feeling connected to your spouse?",
+    opts: [
+      { text: "Little moments of fun and laughter together.", t: "Sanguine", i: "Emotional" },
+      { text: "When we’re working as a team and checking off goals.", t: "Choleric", i: "Partnership" },
+      { text: "Knowing they are thinking of me and sharing meaningful thoughts.", t: "Melancholy", i: "Emotional" },
+      { text: "Physical closeness and gentle reassurance.", t: "Phlegmatic", i: "Physical" },
+      { text: "When they show care in small, behind-the-scenes ways.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "What kind of date night would help you feel most loved right now?",
+    opts: [
+      { text: "Something spontaneous and exciting!", t: "Sanguine", i: "Recreational" },
+      { text: "Working on a shared goal or project together.", t: "Choleric", i: "Partnership" },
+      { text: "A heart-to-heart conversation over dinner.", t: "Melancholy", i: "Intellectual" },
+      { text: "Just sitting close and relaxing with no pressure.", t: "Phlegmatic", i: "Physical" },
+      { text: "Doing something that shows they were thinking of me without being asked.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "What's your biggest strength when it comes to connecting with others?",
+    opts: [
+      { text: "Creating fun and making memories together.", t: "Sanguine", i: "Emotional" },
+      { text: "Getting things done and showing love through actions.", t: "Choleric", i: "Partnership" },
+      { text: "Offering deep understanding and emotional insight.", t: "Melancholy", i: "Emotional" },
+      { text: "Being calm, peaceful, and emotionally steady.", t: "Phlegmatic", i: "Physical" },
+      { text: "Serving faithfully and consistently, even when it's unnoticed.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What drains you the most in your relationship?",
+    opts: [
+      { text: "Boredom and a routine with no spontaneity.", t: "Sanguine", i: "Recreational" },
+      { text: "Lack of progress or feeling stuck in disorganization.", t: "Choleric", i: "Conflict" },
+      { text: "Surface-level talk with no emotional depth.", t: "Melancholy", i: "Emotional" },
+      { text: "Too much conflict or emotional pressure.", t: "Phlegmatic", i: "Affable" },
+      { text: "Feeling unseen, unappreciated, or taken for granted.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What’s one simple thing your spouse could do to instantly connect with you?",
+    opts: [
+      { text: "Do something fun and unexpected with me.", t: "Sanguine", i: "Recreational" },
+      { text: "Help me with a project or take initiative with something important.", t: "Choleric", i: "Partnership" },
+      { text: "Share something vulnerable or emotionally meaningful.", t: "Melancholy", i: "Emotional" },
+      { text: "Offer gentle affection or quality time with no pressure.", t: "Phlegmatic", i: "Physical" },
+      { text: "Notice and appreciate the small things I’ve done.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What makes you feel most disconnected in your marriage?",
+    opts: [
+      { text: "A lack of shared joy or spontaneity.", t: "Sanguine", i: "Recreational" },
+      { text: "Feeling like things aren’t getting done or we’re drifting off course.", t: "Choleric", i: "Partnership" },
+      { text: "When we stop having meaningful or deep conversations.", t: "Melancholy", i: "Emotional" },
+      { text: "Feeling emotionally overwhelmed or pushed to change.", t: "Phlegmatic", i: "Affable" },
+      { text: "Feeling ignored, overlooked, or that my efforts don’t matter.", t: "Supine", i: "Commitment" }
+    ]
+  },
+
+  // 21–30
+  {
+    q: "After a long day, how do you typically initiate a connection with your spouse?",
+    opts: [
+      { text: "I crack a joke or share a fun story to lighten the mood.", t: "Sanguine", i: "Recreational" },
+      { text: "I check in about what needs to get done or how their day went.", t: "Choleric", i: "Partnership" },
+      { text: "I ask meaningful questions or share something reflective.", t: "Melancholy", i: "Intellectual" },
+      { text: "I sit near them or give them a quiet hug.", t: "Phlegmatic", i: "Physical" },
+      { text: "I notice what they need and quietly help without calling attention to it.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "When you're feeling overwhelmed, what do you most hope your spouse will do?",
+    opts: [
+      { text: "Give me a hug, make me laugh, or do something fun to reset.", t: "Sanguine", i: "Emotional" },
+      { text: "Step in and take something off my plate.", t: "Choleric", i: "Partnership" },
+      { text: "Listen to my deeper feelings and help me process them.", t: "Melancholy", i: "Emotional" },
+      { text: "Just be with me without needing to fix it.", t: "Phlegmatic", i: "Affable" },
+      { text: "Quietly meet my needs before I even ask.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "How do you most naturally express appreciation to your spouse?",
+    opts: [
+      { text: "With excitement, physical touch, compliments, or playful energy.", t: "Sanguine", i: "Emotional" },
+      { text: "By doing something productive for them.", t: "Choleric", i: "Partnership" },
+      { text: "Through a service or practical task for them.", t: "Melancholy", i: "Creative" },
+      { text: "A warm gesture like a hug or sharing quiet time.", t: "Phlegmatic", i: "Physical" },
+      { text: "Through a quiet act of service or loyalty.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What kind of connection do you crave most when life feels chaotic?",
+    opts: [
+      { text: "Laughter and light-hearted fun together.", t: "Sanguine", i: "Recreational" },
+      { text: "Feeling like we’re still working toward our goals as a team.", t: "Choleric", i: "Partnership" },
+      { text: "Problem-solving, emotional depth, and a meaningful conversation.", t: "Melancholy", i: "Intellectual" },
+      { text: "A peaceful presence with no demands or expectations.", t: "Phlegmatic", i: "Affable" },
+      { text: "Knowing they notice and care for me without being asked.", t: "Supine", i: "Partnership" }
+    ]
+  },
+  {
+    q: "What do you most want your spouse to understand about how you show love?",
+    opts: [
+      { text: "I love through joy and making life more fun.", t: "Sanguine", i: "Recreational" },
+      { text: "I show love by helping us move forward and meet goals.", t: "Choleric", i: "Partnership" },
+      { text: "My love runs deep even when I don't always show it.", t: "Melancholy", i: "Emotional" },
+      { text: "My love is steady and always there.", t: "Phlegmatic", i: "Physical" },
+      { text: "I love by serving and sacrificing, even if no one notices.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "When do you feel most connected with your spouse?",
+    opts: [
+      { text: "When we’re laughing and enjoying something fun together.", t: "Sanguine", i: "Recreational" },
+      { text: "When we’re making progress on something together.", t: "Choleric", i: "Partnership" },
+      { text: "When we’re having a heartfelt or meaningful conversation.", t: "Melancholy", i: "Emotional" },
+      { text: "When we’re sharing physical closeness in a quiet moment.", t: "Phlegmatic", i: "Physical" },
+      { text: "When they’re quietly doing something to care for me.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What's your response when your spouse forgets something important to you?",
+    opts: [
+      { text: "I impulsively share my feelings.", t: "Sanguine", i: "Emotional" },
+      { text: "I might get frustrated and remind them why it mattered.", t: "Choleric", i: "Conflict" },
+      { text: "I take it personally and wonder if they truly know me.", t: "Melancholy", i: "Emotional" },
+      { text: "I try not to let it bother me and stay calm.", t: "Phlegmatic", i: "Affable" },
+      { text: "I feel hurt but probably won’t say anything.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "Which of these best describes your idea of comfort from your spouse?",
+    opts: [
+      { text: "They give me a big hug and do something fun or spontaneous to lift my mood.", t: "Sanguine", i: "Recreational" },
+      { text: "They jump in and take care of what’s overwhelming me.", t: "Choleric", i: "Partnership" },
+      { text: "They speak into my heart with understanding and care.", t: "Melancholy", i: "Emotional" },
+      { text: "They sit beside me or hold me quietly.", t: "Phlegmatic", i: "Physical" },
+      { text: "They notice what I need and serve me with tenderness.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "How do you feel when your spouse makes a big decision without you?",
+    opts: [
+      { text: "A little hurt, but I try to stay light-hearted about it.", t: "Sanguine", i: "Emotional" },
+      { text: "Frustrated—I want to be involved in decisions.", t: "Choleric", i: "Conflict" },
+      { text: "Disconnected—it makes me question how close we are.", t: "Melancholy", i: "Intellectual" },
+      { text: "Resigned—I don’t like conflict and let it go.", t: "Phlegmatic", i: "Affable" },
+      { text: "Unimportant—it confirms the feeling that my input doesn’t matter.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "Which of these is most life-giving to you in your relationship?",
+    opts: [
+      { text: "Shared laughter and playful moments.", t: "Sanguine", i: "Recreational" },
+      { text: "Working together on meaningful goals.", t: "Choleric", i: "Partnership" },
+      { text: "Being respected, known, and understood.", t: "Melancholy", i: "Emotional" },
+      { text: "Having calm, comforting closeness.", t: "Phlegmatic", i: "Affable" },
+      { text: "Feeling seen and appreciated for my loyalty and efforts.", t: "Supine", i: "Commitment" }
+    ]
+  },
+
+  // 31–39
+  {
+    q: "How do you typically initiate affection with your spouse?",
+    opts: [
+      { text: "With playful physical affection, fun surprises, or teasing words.", t: "Sanguine", i: "Sexual" },
+      { text: "By doing something helpful or taking initiative to get things done.", t: "Choleric", i: "Partnership" },
+      { text: "Through heartfelt words or by seeking a moment of deep connection.", t: "Melancholy", i: "Emotional" },
+      { text: "With a gentle presence, a hug, or a kind, thoughtful act.", t: "Phlegmatic", i: "Physical" },
+      { text: "By quietly doing something sacrificial and thoughtful for them.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "When you’re sharing something vulnerable, which response from your spouse feels most validating?",
+    opts: [
+      { text: "They smile, lighten the mood, or enthusiastically affirm me.", t: "Sanguine", i: "Emotional" },
+      { text: "They listen and then help me fix the issue or clarify what to do next.", t: "Choleric", i: "Conflict" },
+      { text: "They ask follow-up questions and truly reflect on what I shared.", t: "Melancholy", i: "Intellectual" },
+      { text: "They nod, stay present, and give a warm gesture like a touch or hug.", t: "Phlegmatic", i: "Physical" },
+      { text: "They quietly hold space for me and later show they remembered it.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What makes you feel most affirmed and valued as a spouse?",
+    opts: [
+      { text: "Knowing I bring joy and make things lighter and more fun.", t: "Sanguine", i: "Affable" },
+      { text: "Seeing our goals move forward because of my effort.", t: "Choleric", i: "Partnership" },
+      { text: "Being seen for my depth, wisdom, or creativity.", t: "Melancholy", i: "Creative" },
+      { text: "Being appreciated for my steady love and calming presence.", t: "Phlegmatic", i: "Physical" },
+      { text: "When they recognize how deeply I care, even when I’m quiet.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "How do you feel most loved during a conflict?",
+    opts: [
+      { text: "When they don’t lose the lightness or hope in the moment.", t: "Sanguine", i: "Emotional" },
+      { text: "When they stay direct but respectful and work toward a solution.", t: "Choleric", i: "Conflict" },
+      { text: "When they try to understand what’s beneath the surface.", t: "Melancholy", i: "Emotional" },
+      { text: "When they stay calm and don’t pressure me.", t: "Phlegmatic", i: "Affable" },
+      { text: "When they notice I’m overwhelmed and don’t demand more from me.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "Which scenario best describes your ideal end to a long day?",
+    opts: [
+      { text: "Laughing in bed or watching something fun together.", t: "Sanguine", i: "Recreational" },
+      { text: "Catching up on tasks or discussing the next day’s goals.", t: "Choleric", i: "Partnership" },
+      { text: "Talking deeply about something meaningful.", t: "Melancholy", i: "Intellectual" },
+      { text: "Snuggling in silence or holding hands before sleep.", t: "Phlegmatic", i: "Physical" },
+      { text: "Realizing they took care of something so I could rest.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What type of intimacy do you often long for but rarely ask for?",
+    opts: [
+      { text: "Playful physical touch or spontaneous moments.", t: "Sanguine", i: "Sexual" },
+      { text: "Help and initiative in shared responsibilities.", t: "Choleric", i: "Partnership" },
+      { text: "Emotional insight and a meaningful conversation.", t: "Melancholy", i: "Emotional" },
+      { text: "Peaceful presence and gentle connection.", t: "Phlegmatic", i: "Physical" },
+      { text: "Affirmation through selfless acts and service.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What makes you feel safest in your marriage?",
+    opts: [
+      { text: "Knowing we can laugh, flirt, and enjoy each other.", t: "Sanguine", i: "Sexual" },
+      { text: "Trusting that my spouse is reliable and takes initiative.", t: "Choleric", i: "Partnership" },
+      { text: "Feeling emotionally seen and deeply understood.", t: "Melancholy", i: "Emotional" },
+      { text: "Knowing I won’t be pressured to be someone I’m not.", t: "Phlegmatic", i: "Affable" },
+      { text: "Knowing they will love me sacrificially even if I don’t ask.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What creates tension for you in your marriage more than anything else?",
+    opts: [
+      { text: "A loss of playfulness, connection, or shared joy.", t: "Sanguine", i: "Recreational" },
+      { text: "Disorganization or a lack of follow-through on goals.", t: "Choleric", i: "Conflict" },
+      { text: "Feeling misunderstood or disrespected.", t: "Melancholy", i: "Intellectual" },
+      { text: "Pressure to change or dealing with too much conflict.", t: "Phlegmatic", i: "Affable" },
+      { text: "Feeling taken for granted or not being appreciated.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "How do you typically respond to disconnection in your marriage?",
+    opts: [
+      { text: "I try to bring lightheartedness and fun back to our interactions.", t: "Sanguine", i: "Recreational" },
+      { text: "I get frustrated and push for us to work on a solution.", t: "Choleric", i: "Conflict" },
+      { text: "I retreat inward and try to understand what's happening.", t: "Melancholy", i: "Intellectual" },
+      { text: "I pull away slightly, hoping the tension will pass peacefully.", t: "Phlegmatic", i: "Affable" },
+      { text: "I feel hurt and tend to serve even more, hoping it will close the gap.", t: "Supine", i: "Commitment" }
+    ]
+  },
+
+  // 40–48
+  {
+    q: "What makes you feel most seen and understood in your relationship?",
+    opts: [
+      { text: "When they laugh with me and genuinely enjoy my presence.", t: "Sanguine", i: "Emotional" },
+      { text: "When they trust my ability to lead or handle a situation.", t: "Choleric", i: "Partnership" },
+      { text: "When they engage in meaningful conversations and reflect on my words.", t: "Melancholy", i: "Intellectual" },
+      { text: "When they give me space to just be and feel accepted for who I am.", t: "Phlegmatic", i: "Physical" },
+      { text: "When they remember the small, quiet things I do for them.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "Imagine your spouse is giving you a gift. Which kind would feel most meaningful to you?",
+    opts: [
+      { text: "A surprise experience or something fun we can do together!", t: "Sanguine", i: "Recreational" },
+      { text: "Something practical that supports our shared goals.", t: "Choleric", i: "Partnership" },
+      { text: "A thoughtful, symbolic gift with a deep, personal meaning.", t: "Melancholy", i: "Creative" },
+      { text: "Something cozy or comforting that brings me a sense of peace.", t: "Phlegmatic", i: "Physical" },
+      { text: "A gift that shows they were thinking of me without being told to.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "When you're upset, what do you most need to feel better?",
+    opts: [
+      { text: "A distraction or something fun to lift my mood.", t: "Sanguine", i: "Recreational" },
+      { text: "Someone to help me fix the problem quickly.", t: "Choleric", i: "Conflict" },
+      { text: "Empathy and someone to help me explore the emotions underneath.", t: "Melancholy", i: "Emotional" },
+      { text: "A calm environment and someone who will just be present with me.", t: "Phlegmatic", i: "Affable" },
+      { text: "Gentle, empathetic reassurance through service or consistency.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What's the best way your spouse can show you respect?",
+    opts: [
+      { text: "By valuing my ideas and including me in the fun.", t: "Sanguine", i: "Affable" },
+      { text: "By following through and working with me toward our shared goals.", t: "Choleric", i: "Partnership" },
+      { text: "By taking the time to understand my inner world.", t: "Melancholy", i: "Emotional" },
+      { text: "By accepting my steady nature without trying to change me.", t: "Phlegmatic", i: "Physical" },
+      { text: "By honoring my efforts and loyalty, even when they're unseen.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What kind of surprise would feel the most special to you?",
+    opts: [
+      { text: "A spontaneous outing or a fun moment together.", t: "Sanguine", i: "Recreational" },
+      { text: "A planned accomplishment or a goal checked off for me.", t: "Choleric", i: "Partnership" },
+      { text: "A handwritten note or a gift with personal, deep meaning.", t: "Melancholy", i: "Creative" },
+      { text: "A peaceful act of service done without fanfare.", t: "Phlegmatic", i: "Affable" },
+      { text: "Something quietly thoughtful that shows they were paying attention.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "Which of these would restore connection fastest after an argument?",
+    opts: [
+      { text: "Laughing together or sharing a lighthearted moment.", t: "Sanguine", i: "Recreational" },
+      { text: "A plan to move forward and address the problem.", t: "Choleric", i: "Conflict" },
+      { text: "A heartfelt conversation and a sincere apology.", t: "Melancholy", i: "Emotional" },
+      { text: "A peaceful gesture or quiet physical reassurance.", t: "Phlegmatic", i: "Physical" },
+      { text: "An act of service or a small kindness that shows they still care.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "How do you prefer to show love to your spouse?",
+    opts: [
+      { text: "Through physical affection or shared fun and high emotional energy.", t: "Sanguine", i: "Recreational" },
+      { text: "By taking responsibility and helping us achieve our goals.", t: "Choleric", i: "Partnership" },
+      { text: "Through words of affirmation and deep conversations.", t: "Melancholy", i: "Emotional" },
+      { text: "Through gentle presence and physical comfort.", t: "Phlegmatic", i: "Physical" },
+      { text: "Through faithful, quiet service and loyalty.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  {
+    q: "What helps you feel most emotionally secure in your marriage?",
+    opts: [
+      { text: "Knowing we can laugh and have fun no matter what.", t: "Sanguine", i: "Affable" },
+      { text: "Seeing consistent effort toward our shared life.", t: "Choleric", i: "Partnership" },
+      { text: "Having my inner world known and accepted.", t: "Melancholy", i: "Emotional" },
+      { text: "Feeling their steady, unrushed presence.", t: "Phlegmatic", i: "Physical" },
+      { text: "Being cherished and chosen, even without words.", t: "Supine", i: "Commitment" }
+    ]
+  },
+  // Q48 (added to complete 48)
+  {
+    q: "Which weekly ritual would most strengthen your connection right now?",
+    opts: [
+      { text: "A playful date or shared fun activity.", t: "Sanguine", i: "Recreational" },
+      { text: "A focused planning check-in to align goals.", t: "Choleric", i: "Partnership" },
+      { text: "A deep-conversation night to share hearts.", t: "Melancholy", i: "Emotional" },
+      { text: "A quiet walk or cuddle time with no agenda.", t: "Phlegmatic", i: "Physical" },
+      { text: "A small, consistent act of service they do for me.", t: "Supine", i: "Commitment" }
+    ]
+  }
+  const questions = [
+  // Questions 1–48 (already finalized, shown previously — not reprinting here for brevity)
+  // ...
+
+  // Questions 49–53: Respect & Recognition
+  {
+    q: "Thinking about how you and your spouse make decisions together, do you feel your opinions are truly valued and respected?",
     opts: [
       { text: "Strongly Agree", rr: 3 },
       { text: "Agree", rr: 2 },
@@ -267,300 +761,46 @@ const respectRecognitionQuestions = [
     ]
   },
   {
-    q: "My spouse and I share similar core values and life goals.",
+    q: "When you look at your core values and life goals, do you feel you and your spouse are aligned?",
     opts: [
       { text: "Strongly Agree", rr: 3 },
-      { text: " Agree", rr: 2 },
+      { text: "Agree", rr: 2 },
       { text: "Somewhat Agree", rr: 1 },
       { text: "Disagree", rr: 0 },
       { text: "Strongly Disagree", rr: 0 }
     ]
   },
   {
-    q: "I feel appreciated for the unique strengths and contributions I bring to our marriage.",
+    q: "Do you feel your spouse appreciates the unique strengths and contributions you bring to your marriage?",
     opts: [
       { text: "Strongly Agree", rr: 3 },
-      { text: " Agree", rr: 2 },
+      { text: "Agree", rr: 2 },
       { text: "Somewhat Agree", rr: 1 },
       { text: "Disagree", rr: 0 },
       { text: "Strongly Disagree", rr: 0 }
     ]
   },
   {
-    q: "When I express my needs or boundaries, my spouse listens and takes them seriously.",
+    q: "When you express your needs or boundaries, does your spouse listen and take them seriously?",
     opts: [
       { text: "Strongly Agree", rr: 3 },
-      { text: " Agree", rr: 2 },
+      { text: "Agree", rr: 2 },
       { text: "Somewhat Agree", rr: 1 },
       { text: "Disagree", rr: 0 },
       { text: "Strongly Disagree", rr: 0 }
     ]
   },
   {
-    q: "We regularly talk about and support each other’s long-term dreams and priorities.",
+    q: "How often do you and your spouse talk about and support each other's long-term dreams and priorities?",
     opts: [
       { text: "Strongly Agree", rr: 3 },
-      { text: " Agree", rr: 2 },
+      { text: "Agree", rr: 2 },
       { text: "Somewhat Agree", rr: 1 },
       { text: "Disagree", rr: 0 },
       { text: "Strongly Disagree", rr: 0 }
     ]
   }
 ];
-
-/* Questions Array */
-const questions = [
-  {q:"When your spouse is stressed, you naturally…", opts:[
-    {text:"Crack a joke or lighten the mood", t:"Sanguine", i:"Affable"},
-    {text:"Take charge and fix the issue", t:"Choleric", i:"Partnership"},
-    {text:"Offer thoughtful solutions or deep advice", t:"Melancholy", i:"Intellectual"},
-    {text:"Sit close, listen, and reassure quietly", t:"Phlegmatic", i:"Emotional"},
-    {text:"Pray or serve without being asked", t:"Supine", i:"Spiritual"}]},
-  {q:"On a weekend, you prefer to…", opts:[
-    {text:"Do something fun or spontaneous", t:"Sanguine", i:"Recreational"},
-    {text:"Work on a project or goal", t:"Choleric", i:"Partnership"},
-    {text:"Read, think, or create", t:"Melancholy", i:"Creative"},
-    {text:"Relax with family quietly", t:"Phlegmatic", i:"Emotional"},
-    {text:"Help or serve in some way", t:"Supine", i:"Spiritual"}]},
-  {q:"When your spouse is sad, you tend to…", opts:[
-    {text:"Make them laugh", t:"Sanguine", i:"Affable"},
-    {text:"Try to fix their problem", t:"Choleric", i:"Commitment"},
-    {text:"Offer a deep talk", t:"Melancholy", i:"Emotional"},
-    {text:"Give comfort through presence", t:"Phlegmatic", i:"Physical"},
-    {text:"Do a kind, helpful act", t:"Supine", i:"Spiritual"}]},
-  {q:"In group settings, you…", opts:[
-    {text:"Talk and engage everyone", t:"Sanguine", i:"Affable"},
-    {text:"Take the lead or organize", t:"Choleric", i:"Partnership"},
-    {text:"Listen and analyze", t:"Melancholy", i:"Intellectual"},
-    {text:"Stay relaxed and follow along", t:"Phlegmatic", i:"Emotional"},
-    {text:"Quietly support others", t:"Supine", i:"Spiritual"}]},
-  {q:"When planning a date night, you prefer…", opts:[
-    {text:"Something fun or surprising", t:"Sanguine", i:"Recreational"},
-    {text:"Something productive or goal-oriented", t:"Choleric", i:"Commitment"},
-    {text:"A deep, meaningful activity", t:"Melancholy", i:"Creative"},
-    {text:"Something low-key and comforting", t:"Phlegmatic", i:"Physical"},
-    {text:"Something that serves or honors your spouse", t:"Supine", i:"Spiritual"}]},
-  {q:"When making decisions, you…", opts:[
-    {text:"Go with what feels fun", t:"Sanguine", i:"Affable"},
-    {text:"Decide quickly and take charge", t:"Choleric", i:"Partnership"},
-    {text:"Think through details", t:"Melancholy", i:"Intellectual"},
-    {text:"Go along to keep peace", t:"Phlegmatic", i:"Emotional"},
-    {text:"Ask what others want first", t:"Supine", i:"Commitment"}]},
-  {q:"During conflict, you are most likely to…", opts:[
-    {text:"Joke to ease tension", t:"Sanguine", i:"Affable"},
-    {text:"Push for solutions", t:"Choleric", i:"Conflict"},
-    {text:"Retreat to think first", t:"Melancholy", i:"Intellectual"},
-    {text:"Stay calm and avoid escalation", t:"Phlegmatic", i:"Emotional"},
-    {text:"Try to please the other person", t:"Supine", i:"Commitment"}]},
-  {q:"When expressing affection, you…", opts:[
-    {text:"Use fun words and excitement", t:"Sanguine", i:"Affable"},
-    {text:"Do things for your spouse", t:"Choleric", i:"Partnership"},
-    {text:"Write or say meaningful things", t:"Melancholy", i:"Creative"},
-    {text:"Use touch or quiet presence", t:"Phlegmatic", i:"Physical"},
-    {text:"Serve or sacrifice quietly", t:"Supine", i:"Spiritual"}]},
-  {q:"If you had extra time in the day, you would…", opts:[
-    {text:"Plan a fun activity", t:"Sanguine", i:"Recreational"},
-    {text:"Get something accomplished", t:"Choleric", i:"Partnership"},
-    {text:"Work on a personal project", t:"Melancholy", i:"Creative"},
-    {text:"Relax or nap", t:"Phlegmatic", i:"Emotional"},
-    {text:"Help your spouse or family", t:"Supine", i:"Spiritual"}]},
-  {q:"When your spouse forgets to thank you, you…", opts:[
-    {text:"Laugh it off", t:"Sanguine", i:"Affable"},
-    {text:"Remind them of your effort", t:"Choleric", i:"Commitment"},
-    {text:"Feel hurt but stay quiet", t:"Melancholy", i:"Emotional"},
-    {text:"Assume they didn’t mean it", t:"Phlegmatic", i:"Physical"},
-    {text:"Keep serving anyway", t:"Supine", i:"Spiritual"}]},
-  {q:"I feel most loved when my spouse…", opts:[
-    {text:"Plans fun time together", i:"Recreational"},
-    {text:"Prays with me", i:"Spiritual"},
-    {text:"Shows physical affection", i:"Physical"},
-    {text:"Makes joint decisions with me", i:"Partnership"},
-    {text:"Talks deeply with me", i:"Emotional"}]},
-  {q:"When I feel disconnected, I wish we could…", opts:[
-    {text:"Share laughs and inside jokes", i:"Affable"},
-    {text:"Work on shared goals", i:"Commitment"},
-    {text:"Have a deep talk", i:"Emotional"},
-    {text:"Be affectionate without pressure", i:"Physical"},
-    {text:"Explore our sexual connection", i:"Sexual"}]},
-  {q:"My favorite quality time is…", opts:[
-    {text:"Spontaneous outings", i:"Recreational"},
-    {text:"Talking about dreams", i:"Creative"},
-    {text:"Cuddling or being close", i:"Physical"},
-    {text:"Learning and growing together", i:"Intellectual"},
-    {text:"Serving in faith together", i:"Spiritual"}]},
-  {q:"I feel safest in marriage when…", opts:[
-    {text:"We solve conflict well", i:"Conflict"},
-    {text:"We’re united in big decisions", i:"Commitment"},
-    {text:"We’re consistently affectionate", i:"Physical"},
-    {text:"We’re laughing and having fun", i:"Affable"},
-    {text:"We resolve disagreements respectfully", i:"Conflict"}]},
-  {q:"I feel proud of our marriage when…", opts:[
-    {text:"We manage life and money well", i:"Financial"},
-    {text:"We pray and serve together", i:"Spiritual"},
-    {text:"We stay playful", i:"Affable"},
-    {text:"We build or create something together", i:"Creative"},
-    {text:"We plan our finances together", i:"Financial"}]},
-  {q:"After a long day, what makes me feel most connected?", opts:[
-    {text:"Snuggling or holding hands", i:"Physical"},
-    {text:"Sharing a fun moment", i:"Affable"},
-    {text:"Working together on something simple", i:"Partnership"},
-    {text:"Talking about the day", i:"Emotional"},
-    {text:"Praying together", i:"Spiritual"}]},
-  {q:"I feel most cared for when…", opts:[
-    {text:"My spouse does tasks for me", i:"Partnership"},
-    {text:"We pray together", i:"Spiritual"},
-    {text:"They listen deeply", i:"Emotional"},
-    {text:"We laugh together", i:"Affable"},
-    {text:"They surprise me with affection", i:"Physical"}]},
-  {q:"A great day together includes…", opts:[
-    {text:"A fun activity", i:"Recreational"},
-    {text:"A meaningful talk", i:"Intellectual"},
-    {text:"Mutual decision-making", i:"Commitment"},
-    {text:"Spiritual connection", i:"Spiritual"},
-    {text:"Physical affection", i:"Physical"}]},
-  {q:"When we argue, what helps me feel safe?", opts:[
-    {text:"Humor", i:"Affable"},
-    {text:"Clear solutions", i:"Conflict"},
-    {text:"Being held", i:"Physical"},
-    {text:"Praying together", i:"Spiritual"},
-    {text:"Deep talk to understand each other", i:"Emotional"}]},
-  {q:"I feel closest when…", opts:[
-    {text:"We share passionate moments", i:"Sexual"},
-    {text:"We achieve something together", i:"Partnership"},
-    {text:"We talk deeply", i:"Emotional"},
-    {text:"We share our faith", i:"Spiritual"},
-    {text:"We are physically close", i:"Physical"}]},
-  {q:"I feel most connected when we…", opts:[
-    {text:"Enjoy passionate intimacy", i:"Sexual"},
-    {text:"Laugh and have fun", i:"Recreational"},
-    {text:"Work on shared goals", i:"Partnership"},
-    {text:"Resolve conflicts respectfully", i:"Conflict"},
-    {text:"Learn and grow together", i:"Intellectual"}]},
-  {q:"In daily life, I feel closest to my spouse when…", opts:[
-    {text:"We share openly about our day", b:"SteadyConnector"},
-    {text:"They check in with me often", b:"ReassuranceSeeker"},
-    {text:"We enjoy quiet time together", b:"IndependentConnector"},
-    {text:"They prove their loyalty consistently", b:"GuardedConnector"}]},
-  {q:"When conflict happens, I usually…", opts:[
-    {text:"Talk it out calmly", b:"SteadyConnector"},
-    {text:"Seek reassurance and closeness", b:"ReassuranceSeeker"},
-    {text:"Withdraw to think first", b:"IndependentConnector"},
-    {text:"Feel unsure if I can trust or stay close", b:"GuardedConnector"}]},
-  {q:"If my spouse seems distant, I…", opts:[
-    {text:"Ask calmly about it", b:"SteadyConnector"},
-    {text:"Worry they’re upset with me", b:"ReassuranceSeeker"},
-    {text:"Wait for them to come to me", b:"IndependentConnector"},
-    {text:"Assume the worst", b:"GuardedConnector"}]},
-  {q:"After a fight, I…", opts:[
-    {text:"Try to reconnect quickly", b:"SteadyConnector"},
-    {text:"Need lots of reassurance", b:"ReassuranceSeeker"},
-    {text:"Prefer space before reconnecting", b:"IndependentConnector"},
-    {text:"Struggle to feel safe trusting again", b:"GuardedConnector"}]},
-  {q:"When I feel hurt, I…", opts:[
-    {text:"Express my feelings calmly", b:"SteadyConnector"},
-    {text:"Get anxious or clingy", b:"ReassuranceSeeker"},
-    {text:"Keep it inside", b:"IndependentConnector"},
-    {text:"Pull away or shut down", b:"GuardedConnector"}]},
-  {q:"I feel safest when…", opts:[
-    {text:"We talk and repair things quickly", b:"SteadyConnector"},
-    {text:"My spouse reassures me often", b:"ReassuranceSeeker"},
-    {text:"My spouse gives me space", b:"IndependentConnector"},
-    {text:"I see proof they can be trusted", b:"GuardedConnector"}]},
-  {q:"If I sense rejection, I…", opts:[
-    {text:"Communicate honestly", b:"SteadyConnector"},
-    {text:"Worry or overthink", b:"ReassuranceSeeker"},
-    {text:"Avoid conflict", b:"IndependentConnector"},
-    {text:"Assume I’ll be let down", b:"GuardedConnector"}]},
-  {q:"I feel most loved when my spouse…", opts:[
-    {text:"Surprises me with fun gestures", t:"Sanguine", i:"Affable", domain:"Affection", wanted: true},
-    {text:"Takes charge to support me", t:"Choleric", i:"Partnership", domain:"Affection", wanted: true},
-    {text:"Listens deeply to my thoughts", t:"Melancholy", i:"Emotional", domain:"Affection", wanted: true},
-    {text:"Is quietly present for me", t:"Phlegmatic", i:"Physical", domain:"Affection", wanted: true},
-    {text:"Serves me selflessly", t:"Supine", i:"Spiritual", domain:"Affection", wanted: true}]},
-  {q:"I feel cared for when my spouse…", opts:[
-    {text:"Plans playful mischief", t:"Sanguine", i:"Recreational", domain:"Affection", wanted: true},
-    {text:"Works with me on goals", t:"Choleric", i:"Commitment", domain:"Affection", wanted: true},
-    {text:"Shares deep conversations", t:"Melancholy", i:"Intellectual", domain:"Affection", wanted: true},
-    {text:"Offers calm support", t:"Phlegmatic", i:"Emotional", domain:"Affection", wanted: true},
-    {text:"Sacrifices for my needs", t:"Supine", i:"Spiritual", domain:"Affection", wanted: true}]},
-  {q:"I feel most connected when my spouse…", opts:[
-    {text:"Brings humor and joy", t:"Sanguine", i:"Affable", domain:"Affection", wanted: true},
-    {text:"Takes initiative to help", t:"Choleric", i:"Partnership", domain:"Affection", wanted: true},
-    {text:"Engages in creative ideas", t:"Melancholy", i:"Creative", domain:"Affection", wanted: true},
-    {text:"Is physically affectionate", t:"Phlegmatic", i:"Physical", domain:"Affection", wanted: true},
-    {text:"Prays with me", t:"Supine", i:"Spiritual", domain:"Affection", wanted: true}]},
-  {q:"I feel valued when my spouse…", opts:[
-    {text:"Keeps things light and fun", t:"Sanguine", i:"Affable", domain:"Affection", wanted: true},
-    {text:"Respects my decisions", t:"Choleric", i:"Commitment", domain:"Affection", wanted: true},
-    {text:"Understands my emotions deeply", t:"Melancholy", i:"Emotional", domain:"Affection", wanted: true},
-    {text:"Stays calm and supportive", t:"Phlegmatic", i:"Physical", domain:"Affection", wanted: true},
-    {text:"Serves without expecting return", t:"Supine", i:"Spiritual", domain:"Affection", wanted: true}]},
-  {q:"I feel loved when my spouse…", opts:[
-    {text:"Shares spontaneous adventures", t:"Sanguine", i:"Recreational", domain:"Affection", wanted: true},
-    {text:"Collaborates on tasks", t:"Choleric", i:"Partnership", domain:"Affection", wanted: true},
-    {text:"Discusses meaningful dreams", t:"Melancholy", i:"Intellectual", domain:"Affection", wanted: true},
-    {text:"Offers quiet companionship", t:"Phlegmatic", i:"Emotional", domain:"Affection", wanted: true},
-    {text:"Shows selfless care", t:"Supine", i:"Spiritual", domain:"Affection", wanted: true}]},
-  {q:"In social gatherings, I prefer to…", opts:[
-    {text:"Be the life of the party", t:"Sanguine", i:"Affable", domain:"Social"},
-    {text:"Lead or organize the group", t:"Choleric", i:"Partnership", domain:"Social"},
-    {text:"Observe and reflect quietly", t:"Melancholy", i:"Intellectual", domain:"Social"},
-    {text:"Blend in calmly with others", t:"Phlegmatic", i:"Emotional", domain:"Social"},
-    {text:"Support others quietly", t:"Supine", i:"Spiritual", domain:"Social"}]},
-  {q:"When meeting new people, I…", opts:[
-    {text:"Eagerly start conversations", t:"Sanguine", i:"Affable", domain:"Social"},
-    {text:"Take charge of introductions", t:"Choleric", i:"Partnership", domain:"Social"},
-    {text:"Listen and assess first", t:"Melancholy", i:"Intellectual", domain:"Social"},
-    {text:"Stay relaxed and approachable", t:"Phlegmatic", i:"Emotional", domain:"Social"},
-    {text:"Offer help or support", t:"Supine", i:"Spiritual", domain:"Social"}]},
-  {q:"At a party, I enjoy…", opts:[
-    {text:"Mingling with everyone", t:"Sanguine", i:"Recreational", domain:"Social"},
-    {text:"Organizing activities", t:"Choleric", i:"Partnership", domain:"Social"},
-    {text:"Having deep conversations", t:"Melancholy", i:"Creative", domain:"Social"},
-    {text:"Staying low-key with a few", t:"Phlegmatic", i:"Emotional", domain:"Social"},
-    {text:"Helping the host or guests", t:"Supine", i:"Spiritual", domain:"Social"}]},
-  {q:"In group discussions, I…", opts:[
-    {text:"Keep things lively and fun", t:"Sanguine", i:"Affable", domain:"Social"},
-    {text:"Guide the conversation", t:"Choleric", i:"Commitment", domain:"Social"},
-    {text:"Analyze and share insights", t:"Melancholy", i:"Intellectual", domain:"Social"},
-    {text:"Listen and agree to keep peace", t:"Phlegmatic", i:"Emotional", domain:"Social"},
-    {text:"Support others’ ideas", t:"Supine", i:"Spiritual", domain:"Social"}]},
-  {q:"I feel comfortable socially when…", opts:[
-    {text:"I can be outgoing and playful", t:"Sanguine", i:"Affable", domain:"Social"},
-    {text:"I can lead or direct", t:"Choleric", i:"Partnership", domain:"Social"},
-    {text:"I can share thoughtful ideas", t:"Melancholy", i:"Intellectual", domain:"Social"},
-    {text:"I can stay calm and included", t:"Phlegmatic", i:"Emotional", domain:"Social"},
-    {text:"I can help others feel included", t:"Supine", i:"Spiritual", domain:"Social"}]},
-  {q:"When leading a project, I…", opts:[
-    {text:"Make it fun for the team", t:"Sanguine", i:"Affable", domain:"Decision"},
-    {text:"Take charge decisively", t:"Choleric", i:"Partnership", domain:"Decision"},
-    {text:"Plan carefully with details", t:"Melancholy", i:"Intellectual", domain:"Decision"},
-    {text:"Support the team calmly", t:"Phlegmatic", i:"Emotional", domain:"Decision"},
-    {text:"Follow others’ lead willingly", t:"Supine", i:"Commitment", domain:"Decision"}]},
-  {q:"When making decisions, I prefer to…", opts:[
-    {text:"Choose what feels exciting", t:"Sanguine", i:"Recreational", domain:"Decision"},
-    {text:"Decide quickly and firmly", t:"Choleric", i:"Partnership", domain:"Decision"},
-    {text:"Analyze all options thoroughly", t:"Melancholy", i:"Intellectual", domain:"Decision"},
-    {text:"Go with the group’s choice", t:"Phlegmatic", i:"Emotional", domain:"Decision"},
-    {text:"Let others decide for me", t:"Supine", i:"Commitment", domain:"Decision"}]},
-  {q:"In a leadership role, I…", opts:[
-    {text:"Inspire enthusiasm", t:"Sanguine", i:"Affable", domain:"Decision"},
-    {text:"Direct with confidence", t:"Choleric", i:"Partnership", domain:"Decision"},
-    {text:"Plan with precision", t:"Melancholy", i:"Creative", domain:"Decision"},
-    {text:"Encourage team harmony", t:"Phlegmatic", i:"Emotional", domain:"Decision"},
-    {text:"Support the leader’s vision", t:"Supine", i:"Commitment", domain:"Decision"}]},
-  {q:"When managing conflict, I…", opts:[
-    {text:"Use humor to defuse tension", t:"Sanguine", i:"Affable", domain:"Decision"},
-    {text:"Push for a quick resolution", t:"Choleric", i:"Conflict", domain:"Decision"},
-    {text:"Analyze the issue deeply", t:"Melancholy", i:"Intellectual", domain:"Decision"},
-    {text:"Stay calm to keep peace", t:"Phlegmatic", i:"Emotional", domain:"Decision"},
-    {text:"Yield to others’ preferences", t:"Supine", i:"Commitment", domain:"Decision"}]},
-  {q:"I feel confident in control when…", opts:[
-    {text:"The process is fun", t:"Sanguine", i:"Recreational", domain:"Decision"},
-    {text:"I can lead decisively", t:"Choleric", i:"Partnership", domain:"Decision"},
-    {text:"I’ve planned thoroughly", t:"Melancholy", i:"Intellectual", domain:"Decision"},
-    {text:"Everyone agrees calmly", t:"Phlegmatic", i:"Emotional", domain:"Decision"},
-    {text:"Others take the lead", t:"Supine", i:"Commitment", domain:"Decision"}]}
 ].concat(respectRecognitionQuestions);
 
 /* State Variables */
