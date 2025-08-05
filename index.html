@@ -1115,14 +1115,21 @@ function showResults() {
       This section explores the twelve distinct ways people connect with each other. Based on your answers, we've organized your results into three categories.
       </p>
       
-      ${sectionHTML("Natural Connection Strengths", "Your top four intimacy types are where you naturally invest the most energy.", priority)}
-      ${sectionHTML("Growth Opportunities", "Your middle four intimacy types can grow with intentional focus.", progress)}
-      ${sectionHTML("Overlooked Opportunities", "Your lowest four intimacy types may need more attention.", presence)}
+      ${sectionHTML("Natural Connection Strengths", "These are your top four intimacy types, representing where you naturally invest the most energy. This is how you are most likely to feel connected and to connect with others.", priority)}
+      ${sectionHTML("Growth Opportunities", "These middle four intimacy types are familiar but aren't your typical "go-to" methods for feeling loved. You can grow in these areas with intentional focus.", progress)}
+      ${sectionHTML("Overlooked Opportunities", "These lowest four intimacy types are areas you may be neglecting in your own needs or those of your spouse. Giving them more attention can open up new pathways to connection.", presence)}
 
       <!-- Section 2: Relational Dynamics -->
       <h3>Section 2: Relational Dynamics</h3>
+      <p class="intro-text">
+      Understanding these dynamics can provide insight into the core drivers of your interactions and motivations.
+      </p>
 
       <h4>Compassion and Care</h4>
+       <p class="intro-text">
+      This dynamic represents your innate capacity to show empathy, concern, and kindness toward others. It measures how you tend to express nurturing support and how you desire to receive care and comfort in your relationships.
+      </p>
+      
       <div class="result-block" style="border-left:8px solid ${typeColors[affectionPrefs.expressedType]}; background-color:${typeColorsWithOpacity[affectionPrefs.expressedType]};">
         <strong>How You Express Love:</strong> ${affectionPrefs.expressed}
       </div>
@@ -1131,6 +1138,10 @@ function showResults() {
       </div>
 
       <h4>Social Preferences</h4>
+      <p class="intro-text">
+      This dynamic explores how you prefer to engage with the world around you, specifically regarding your social interactions. It reveals whether you are energized by being with others (extraversion) or find renewal in solitude (introversion) and how these preferences impact your relational needs.      
+      </p>
+
       <div class="result-block" style="border-left:8px solid #FFB347; background-color:rgba(255,179,71,0.08);">
         <strong>Your Social Energy:</strong>
         <p style="margin:0 0 12px 0; line-height:1.3;">${socialDescriptions[highestSocial]}</p>
@@ -1138,6 +1149,10 @@ function showResults() {
       </div>
 
       <h4>Power and Control</h4>
+      <p class="intro-text">
+      This dynamic uncovers your comfort level with influence and authority within a relationship. It reflects how you navigate decision-making, manage responsibilities, and how you respond to direction from others.
+      </p>
+
       <div class="result-block" style="border-left:8px solid #4d9de0; background-color:rgba(77,157,224,0.08);">
         <strong>Your Leadership Style in Marriage:</strong>
         <p style="margin:0 0 12px 0; line-height:1.3;">${decisionLeadershipStyle}</p>
@@ -1145,6 +1160,10 @@ function showResults() {
       </div>
 
       <h4>Respect and Recognition</h4>
+      <p class="intro-text">
+      This dynamic highlights your desire for affirmation and validation. It indicates how you seek to be valued and esteemed by your partner, and how you, in turn, show appreciation and honor to them.
+      </p>
+      
       <div class="result-block" style="border-left:8px solid #8A2BE2; background-color:rgba(138,43,226,0.08);">
         <strong>Your Respect & Recognition Alignment:</strong>
         <p style="margin:0 0 12px 0; line-height:1.3;">Based on your answers, you ${respectText}</p>
@@ -1153,7 +1172,10 @@ function showResults() {
       <!-- Section 3: Connection and Conflict Patterns -->
       <hr style="margin: 30px 0; border: 1px solid #E0E0E0;">
       <h3>Section 3: Connection and Conflict Patterns</h3>
-
+      <p class="intro-text">
+      Everyone has a unique pattern for how they approach connection and conflict. Your results here will illuminate how you tend to respond to perceived conflict and how you desire to repair after it. Learning about your own strengths, challenges, and weaknesses in this area is key to building a healthier, more resilient relationship. We hope these results provide a helpful starting point for a deeper conversation with your spouse.
+      </p>
+      
       <div class="result-block" style="border-left:8px solid ${typeColors[bondingStyle]}; background-color:${typeColorsWithOpacity[bondingStyle]};">
         <strong>Primary Connection Pattern:</strong>
         <p style="margin:0 0 12px 0; line-height:1.3;">${bondingStyle.replace(/([a-z])([A-Z])/g, '$1 $2')}</p>
