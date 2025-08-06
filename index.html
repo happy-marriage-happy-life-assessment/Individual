@@ -1037,6 +1037,7 @@ function goBack() {
 }
 
 /* Show Results */
+<script>
 function showResults() {
   try {
     document.getElementById('quizPage')?.classList.add('hidden');
@@ -1162,38 +1163,51 @@ function showResults() {
   }
 }
 
-
 async function generatePDF(name) {
   try {
+    const resultsElement = document.getElementById("results");
+    if (!resultsElement) {
+      alert("Results section not found. Cannot generate PDF.");
+      return;
+    }
+
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF("p", "pt", "a4");
-    const resultsElement = document.getElementById("results");
 
     const marginX = 54;
     const marginY = 54;
 
     const logoUrl = "https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png/v1/fill/w_476,h_194,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Untitled-28_edited.png";
 
-    const canvas = await html2canvas(resultsElement, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+    let canvas;
+    try {
+      canvas = await html2canvas(resultsElement, { scale: 2 });
+    } catch (e) {
+      console.error("Canvas render failed:", e);
+      alert("Could not render results to image. Please try again.");
+      return;
+    }
 
+    const imgData = canvas.toDataURL("image/png");
     const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth() - marginX * 2;
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
     try {
-      const logoImg = await fetch(logoUrl).then(res => res.blob()).then(blob => new Promise(resolve => {
+      const logoBlob = await fetch(logoUrl).then(res => res.blob());
+      const logoBase64 = await new Promise(resolve => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      }));
-      const pageWidth = pdf.internal.pageSize.getWidth();
+        reader.readAsDataURL(logoBlob);
+      });
+
       const logoWidth = 150;
       const logoHeight = 60;
-      const logoX = (pageWidth - logoWidth) / 2;
-      pdf.addImage(logoImg, "PNG", logoX, marginY, logoWidth, logoHeight);
-    } catch (e) {
-      console.warn("Logo failed to load.");
+      const logoX = (pdf.internal.pageSize.getWidth() - logoWidth) / 2;
+
+      pdf.addImage(logoBase64, "PNG", logoX, marginY, logoWidth, logoHeight);
+    } catch (err) {
+      console.warn("Logo image failed to load:", err);
     }
 
     pdf.setFont("helvetica", "bold");
@@ -1202,25 +1216,27 @@ async function generatePDF(name) {
     const titleY = marginY + 60 + 18;
     pdf.text("Your Personalized Connection Profile", pdf.internal.pageSize.getWidth() / 2, titleY, { align: "center" });
 
-    let position = titleY + 24;
+    let contentY = titleY + 24;
     let heightLeft = pdfHeight;
 
-    pdf.addImage(imgData, "PNG", marginX, position, pdfWidth, pdfHeight);
+    pdf.addImage(imgData, "PNG", marginX, contentY, pdfWidth, pdfHeight);
     heightLeft -= pdf.internal.pageSize.getHeight() - marginY * 2;
 
     while (heightLeft > 0) {
-      position = heightLeft - pdfHeight + marginY;
+      contentY = heightLeft - pdfHeight + marginY;
       pdf.addPage();
-      pdf.addImage(imgData, "PNG", marginX, position, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, "PNG", marginX, contentY, pdfWidth, pdfHeight);
       heightLeft -= pdf.internal.pageSize.getHeight() - marginY * 2;
     }
 
-    pdf.save(`Marriage_Connection_Profile_${name.replace(/\s/g, "_")}.pdf`);
+    const safeName = name ? name.replace(/\s+/g, "_") : "User";
+    pdf.save(`Marriage_Connection_Profile_${safeName}.pdf`);
   } catch (err) {
     console.error("PDF Generation Error:", err);
     alert("Failed to generate PDF. Please try again.");
   }
 }
+
 </script>
 </body>
 </html>
