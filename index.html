@@ -1048,7 +1048,9 @@ function showResults() {
     const progress = sorted.slice(4, 8);
     const presence = sorted.slice(8, 12);
 
-    const socialPreferences = getSocialPreferences?.() || "N/A";
+    const socialPreferences = getSocialPreferences?.() || {};
+    const highestSocial = socialPreferences.highestType || "Sanguine";
+
     const decisionLeadershipStyle = getDecisionLeadershipStyle?.() || "N/A";
     const affectionPrefs = getAffectionPreferences?.() || {
       expressedType: "Unknown",
@@ -1103,10 +1105,10 @@ function showResults() {
         This profile is designed to guide you toward a <strong>Happy Marriage, Happy Life™</strong>—a marriage filled with lasting love and fulfillment as God intended.
       </p>
       <p class="intro-text">
-        Your results are based on the <strong>Covenant Intimacy Fulfillment Model™ (CIFM)</strong>, developed through the research of Dr. Scott Inman, PhD, founder of the <strong>Happy Marriage, Happy Life™</strong> marriage curriculum and resources.
+        Your results are based on the <strong>Covenant Intimacy Fulfillment Model™ (CIFM)</strong>, developed through the research of Dr. Scott Inman, PhD.
       </p>
       <p class="intro-text">
-        Think of this assessment as a unique map to help you better understand the person you and your spouse are designed to be. <strong>To be known is to be intimate.</strong> We encourage you to engage with these results openly and introspectively.
+        To be known is to be intimate. Use this map to better understand yourself and your spouse. These are not test scores—they’re discoveries.
       </p>
 
       <hr style="margin: 30px 0; border: 1px solid #E0E0E0;">
@@ -1120,7 +1122,6 @@ function showResults() {
       <p class="intro-text">Understanding these dynamics can provide insight into the core drivers of your interactions and motivations.</p>
 
       <h4>Compassion and Care</h4>
-      <p class="intro-text">This dynamic represents your capacity to show empathy and receive care.</p>
       <div class="result-block" style="border-left:8px solid ${typeColors?.[affectionPrefs.expressedType] || "#ccc"}; background-color:${typeColorsWithOpacity?.[affectionPrefs.expressedType] || "#f9f9f9"};">
         <strong>How You Express Love:</strong> ${affectionPrefs.expressed}
       </div>
@@ -1129,37 +1130,32 @@ function showResults() {
       </div>
 
       <h4>Social Preferences</h4>
-      <p class="intro-text">How you recharge socially and your energy flow.</p>
       <div class="result-block" style="border-left:8px solid #FFB347; background-color:rgba(255,179,71,0.08);">
         <strong>Your Social Energy:</strong>
-        <p style="margin:0 0 12px 0;">${socialDescriptions?.[socialPreferences] || "Social style description unavailable."}</p>
-        <em>This is how you balance connection and space.</em>
+        <p style="margin:0 0 12px 0;">${socialDescriptions?.[highestSocial] || "Social style description unavailable."}</p>
+        <em>This is how you recharge and interact with others.</em>
       </div>
 
       <h4>Power and Control</h4>
-      <p class="intro-text">How you manage leadership and decisions in marriage.</p>
       <div class="result-block" style="border-left:8px solid #4d9de0; background-color:rgba(77,157,224,0.08);">
         <strong>Your Leadership Style in Marriage:</strong>
         <p>${decisionLeadershipStyle}</p>
-        <em>Use this to foster mutual respect and collaboration.</em>
       </div>
 
       <h4>Respect and Recognition</h4>
-      <p class="intro-text">How you value and feel valued in your relationship.</p>
       <div class="result-block" style="border-left:8px solid #8A2BE2; background-color:rgba(138,43,226,0.08);">
         <strong>Your Respect & Recognition Alignment:</strong>
-        <p>Based on your answers, you ${respectText}</p>
+        <p>${respectText}</p>
       </div>
 
       <hr style="margin: 30px 0;">
       <h3>Section 3: Connection and Conflict Patterns</h3>
-      <p class="intro-text">Your tendencies in approaching or resolving conflict.</p>
       <div class="result-block" style="border-left:8px solid ${typeColors?.[bondingKey] || "#ccc"}; background-color:${typeColorsWithOpacity?.[bondingKey] || "#f9f9f9"};">
-        <strong>Primary Connection Pattern:</strong> ${bondingLabel}
-        <br><strong>Strengths:</strong> ${bondingInsights?.[bondingKey]?.desc || "Not available."}
-        <br><strong>Challenges:</strong> ${bondingInsights?.[bondingKey]?.challenges || "Not available."}
-        <br><strong>Conflict Style:</strong> ${conflictStyles?.[bondingKey] || "Not available."}
-        <br><strong>Growth Tip:</strong> ${bondingInsights?.[bondingKey]?.tip || "Not available."}
+        <strong>Primary Connection Pattern:</strong> ${bondingLabel}<br/>
+        <strong>Strengths:</strong> ${bondingInsights?.[bondingKey]?.desc || "Not available."}<br/>
+        <strong>Challenges:</strong> ${bondingInsights?.[bondingKey]?.challenges || "Not available."}<br/>
+        <strong>Conflict Style:</strong> ${conflictStyles?.[bondingKey] || "Not available."}<br/>
+        <strong>Growth Tip:</strong> ${bondingInsights?.[bondingKey]?.tip || "Not available."}
       </div>
 
       <hr><p style="text-align:center;">HappyMarriageHappyLife.com</p>
