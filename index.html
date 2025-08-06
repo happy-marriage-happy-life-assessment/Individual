@@ -1180,17 +1180,30 @@ function showResults() {
       <hr style="margin: 30px 0;">
 <div style="line-height: 1.3; margin-top: 10px;">
   <h3>Section 3: Connection and Conflict Patterns</h3>
+
   <p class="intro-text">
-    Everyone has a unique pattern for how they approach connection and conflict. Your results here will illuminate how you tend to respond to perceived conflict and how you desire to repair after it. Learning about your own strengths, challenges, and weaknesses in this area is key to building a healthier, more resilient relationship. We hope these results provide a helpful starting point for a deeper conversation with your spouse.
+    Everyone has a unique pattern for how they approach connection and conflict. Your results here will illuminate how you tend to respond to perceived conflict and how you desire to repair after it.
   </p>
-  <div class="result-block" style="border-left:8px solid ${typeColors?.[bondingKey] || "#ccc"}; background-color:${typeColorsWithOpacity?.[bondingKey] || "#f9f9f9"}; line-height: 1.3; margin-top: 10px;">
-    <strong>Primary Connection Pattern:</strong> ${bondingLabel}<br/>
-    <strong>Strengths:</strong> ${bondingInsights?.[bondingKey]?.desc || "Not available."}<br/>
-    <strong>Challenges:</strong> ${bondingInsights?.[bondingKey]?.challenges || "Not available."}<br/>
-    <strong>Conflict Style:</strong> ${conflictStyles?.[bondingKey] || "Not available."}<br/>
-    <strong>Growth Tip:</strong> ${bondingInsights?.[bondingKey]?.tip || "Not available."}
+  <p class="intro-text">
+    Learning about your own strengths, challenges, and weaknesses in this area is key to building a healthier, more resilient relationship.
+  </p>
+  <p class="intro-text">
+    We hope these results provide a helpful starting point for a deeper conversation with your spouse.
+  </p>
+
+  <div class="result-block" style="border-left:8px solid ${typeColors?.[bondingKey] || "#ccc"}; background-color:${typeColorsWithOpacity?.[bondingKey] || "#f9f9f9"}; line-height: 1.3; margin-top: 10px; padding: 10px 15px;">
+    <p><strong>Primary Connection Pattern:</strong> ${bondingLabel}</p>
+
+    <p><strong>Strengths:</strong> ${bondingInsights?.[bondingKey]?.desc || "Not available."}</p>
+
+    <p><strong>Challenges:</strong> ${bondingInsights?.[bondingKey]?.challenges || "Not available."}</p>
+
+    <p><strong>Conflict Style:</strong> ${conflictStyles?.[bondingKey] || "Not available."}</p>
+
+    <p><strong>Tip:</strong> <em style="color: #1a3c5e;">${bondingInsights?.[bondingKey]?.tip || "Not available."}</em></p>
   </div>
 </div>
+
 
       <hr><p style="text-align:center;">HappyMarriageHappyLife.com</p>
     `;
