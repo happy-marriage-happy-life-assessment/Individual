@@ -19,6 +19,23 @@
       padding: 20px; 
       box-sizing: border-box; 
     }
+
+    #resultPage {
+      line-height: 1.3;
+      color: #1a3c5e;
+      font-family: Arial, sans-serif;
+    }
+
+    .result-block {
+      margin-bottom: 16px;
+      page-break-inside: avoid;
+    }
+
+    .intro-text {
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
     h1, h2, h3 { text-align: center; line-height: 1.3; }
     .card { 
       background: #FFFFFF; 
@@ -1214,74 +1231,105 @@ function showResults() {
 }
 
 /* PDF File */
-async function generatePDF(name) {
-  try {
-    const resultsElement = document.getElementById("results");
-    if (!resultsElement) {
-      alert("Results section not found. Cannot generate PDF.");
-      return;
-    }
+  // Validate form and trigger PDF download
+  function validateAndSend() {
+    try {
+      const name = document.getElementById("nameInput")?.value.trim();
+      const email = document.getElementById("emailInput")?.value.trim();
 
+      let valid = true;
+
+      if (!name) {
+        document.getElementById("nameError").style.display = "block";
+        valid = false;
+      } else {
+        document.getElementById("nameError").style.display = "none";
+      }
+
+      if (!email || !email.includes("@")) {
+        document.getElementById("emailError").style.display = "block";
+        valid = false;
+      } else {
+        document.getElementById("emailError").style.display = "none";
+      }
+
+      if (valid) {
+        generatePDF(name);
+      }
+    } catch (error) {
+      console.error("Validation error:", error);
+      alert("Something went wrong. Please check your form and try again.");
+    }
+  }
+
+  // Generate PDF from results page
+  async function generatePDF(name) {
+  try {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF("p", "pt", "a4");
+    const resultsElement = document.getElementById("resultPage");
 
     const marginX = 54;
     const marginY = 54;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const contentMaxHeight = pageHeight - marginY * 2;
 
-    const logoUrl = "https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png/v1/fill/w_476,h_194,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Untitled-28_edited.png";
-
-    let canvas;
-    try {
-      canvas = await html2canvas(resultsElement, { scale: 2 });
-    } catch (e) {
-      console.error("Canvas render failed:", e);
-      alert("Could not render results to image. Please try again.");
-      return;
-    }
-
-    const imgData = canvas.toDataURL("image/png");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth() - marginX * 2;
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-    try {
-      const logoBlob = await fetch(logoUrl).then(res => res.blob());
-      const logoBase64 = await new Promise(resolve => {
+    // Load logo
+    const logoUrl = "https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png";
+    const logoImg = await fetch(logoUrl).then(res => res.blob()).then(blob => {
+      return new Promise(resolve => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(logoBlob);
+        reader.readAsDataURL(blob);
       });
+    });
 
-      const logoWidth = 150;
-      const logoHeight = 60;
-      const logoX = (pdf.internal.pageSize.getWidth() - logoWidth) / 2;
+    // Render canvas of results
+    const canvas = await html2canvas(resultsElement, {
+      scale: 2,
+      scrollY: -window.scrollY
+    });
+    const imgData = canvas.toDataURL("image/png");
 
-      pdf.addImage(logoBase64, "PNG", logoX, marginY, logoWidth, logoHeight);
-    } catch (err) {
-      console.warn("Logo image failed to load:", err);
-    }
+    const imgProps = pdf.getImageProperties(imgData);
+    const imgWidth = pageWidth - marginX * 2;
+    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
+    // Add logo manually at top of first page
+    const logoWidth = 150;
+    const logoHeight = 60;
+    const logoX = (pageWidth - logoWidth) / 2;
+    pdf.addImage(logoImg, "PNG", logoX, marginY, logoWidth, logoHeight);
+
+    // Title under logo
+    const titleY = marginY + logoHeight + 18;
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(15);
     pdf.setTextColor(26, 60, 94);
-    const titleY = marginY + 60 + 18;
-    pdf.text("Your Personalized Connection Profile", pdf.internal.pageSize.getWidth() / 2, titleY, { align: "center" });
+    pdf.text("Your Personalized Connection Profile", pageWidth / 2, titleY, { align: "center" });
 
-    let contentY = titleY + 24;
-    let heightLeft = pdfHeight;
+    // Start rendering content below title
+    let position = titleY + 24;
+    let heightLeft = imgHeight;
+    let pageNumber = 1;
 
-    pdf.addImage(imgData, "PNG", marginX, contentY, pdfWidth, pdfHeight);
-    heightLeft -= pdf.internal.pageSize.getHeight() - marginY * 2;
+    pdf.addImage(imgData, "PNG", marginX, position, imgWidth, imgHeight);
 
+    heightLeft -= (pageHeight - position - marginY);
+
+    // Render only IF content exceeds the first page
     while (heightLeft > 0) {
-      contentY = heightLeft - pdfHeight + marginY;
+      position = marginY;
       pdf.addPage();
-      pdf.addImage(imgData, "PNG", marginX, contentY, pdfWidth, pdfHeight);
-      heightLeft -= pdf.internal.pageSize.getHeight() - marginY * 2;
+      pageNumber++;
+
+      const offset = imgHeight - heightLeft;
+      pdf.addImage(imgData, "PNG", marginX, position - offset, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - marginY * 2);
     }
 
-    const safeName = name ? name.replace(/\s+/g, "_") : "User";
-    pdf.save(`Marriage_Connection_Profile_${safeName}.pdf`);
+    pdf.save(`Marriage_Connection_Profile_${name.replace(/\s/g, "_")}.pdf`);
   } catch (err) {
     console.error("PDF Generation Error:", err);
     alert("Failed to generate PDF. Please try again.");
