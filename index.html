@@ -1108,20 +1108,39 @@ function showResults() {
         Your results are based on the <strong>Covenant Intimacy Fulfillment Model™ (CIFM)</strong>, developed through the research of Dr. Scott Inman, PhD.
       </p>
       <p class="intro-text">
-        To be known is to be intimate. Use this map to better understand yourself and your spouse. These are not test scores—they’re discoveries.
+        Think of this assessment as a unique map to help you better understand the person you and your spouse are designed to be. <strong>To be known is to be intimate.</strong> Engage with these results introspectively. There are no right or wrong answers—only discovery.
       </p>
 
       <hr style="margin: 30px 0; border: 1px solid #E0E0E0;">
       <h3>Section 1: Intimacy Type Profile</h3>
-      <p class="intro-text">This section explores the twelve distinct ways people connect with each other. Based on your answers, we've organized your results into three categories.</p>
-      ${sectionHTML("Natural Connection Strengths", "These are your top four intimacy types…", priority)}
-      ${sectionHTML("Growth Opportunities", "These middle four intimacy types…", progress)}
-      ${sectionHTML("Overlooked Opportunities", "These lowest four intimacy types…", presence)}
+      <p class="intro-text">
+        This section explores the twelve distinct ways people connect with each other. Based on your answers, we've organized your results into three categories.
+      </p>
+      ${sectionHTML(
+        "Natural Connection Strengths",
+        "These are your top four intimacy types, representing where you naturally invest the most energy. This is how you are most likely to feel connected and to connect with others.",
+        priority
+      )}
+      ${sectionHTML(
+        "Growth Opportunities",
+        "These middle four intimacy types are familiar but aren’t your typical go-to methods for feeling loved. You can grow in these areas with intentional focus.",
+        progress
+      )}
+      ${sectionHTML(
+        "Overlooked Opportunities",
+        "These lowest four intimacy types are areas you may be neglecting in your own needs or those of your spouse. Giving them more attention can open up new pathways to connection.",
+        presence
+      )}
 
       <h3>Section 2: Relational Dynamics</h3>
-      <p class="intro-text">Understanding these dynamics can provide insight into the core drivers of your interactions and motivations.</p>
+      <p class="intro-text">
+        Understanding these dynamics can provide insight into the core drivers of your interactions and motivations.
+      </p>
 
       <h4>Compassion and Care</h4>
+      <p class="intro-text">
+        This dynamic represents your innate capacity to show empathy, concern, and kindness toward others. It measures how you tend to express nurturing support and how you desire to receive care and comfort in your relationships.
+      </p>
       <div class="result-block" style="border-left:8px solid ${typeColors?.[affectionPrefs.expressedType] || "#ccc"}; background-color:${typeColorsWithOpacity?.[affectionPrefs.expressedType] || "#f9f9f9"};">
         <strong>How You Express Love:</strong> ${affectionPrefs.expressed}
       </div>
@@ -1130,19 +1149,29 @@ function showResults() {
       </div>
 
       <h4>Social Preferences</h4>
+      <p class="intro-text">
+        This dynamic explores how you prefer to engage with the world around you, specifically regarding your social interactions. It reveals whether you are energized by being with others (extraversion) or find renewal in solitude (introversion) and how these preferences impact your relational needs.
+      </p>
       <div class="result-block" style="border-left:8px solid #FFB347; background-color:rgba(255,179,71,0.08);">
         <strong>Your Social Energy:</strong>
-        <p style="margin:0 0 12px 0;">${socialDescriptions?.[highestSocial] || "Social style description unavailable."}</p>
-        <em>This is how you recharge and interact with others.</em>
+        <p>${socialDescriptions?.[highestSocial]}</p>
+        <em>This is how you recharge and engage socially, helping you and your spouse balance connection and personal space.</em>
       </div>
 
       <h4>Power and Control</h4>
+      <p class="intro-text">
+        This dynamic uncovers your comfort level with influence and authority within a relationship. It reflects how you navigate decision-making, manage responsibilities, and how you respond to direction from others.
+      </p>
       <div class="result-block" style="border-left:8px solid #4d9de0; background-color:rgba(77,157,224,0.08);">
         <strong>Your Leadership Style in Marriage:</strong>
         <p>${decisionLeadershipStyle}</p>
+        <em>This reflects how you approach decision-making and power. Use this awareness to ensure balance, shared respect, and collaboration.</em>
       </div>
 
       <h4>Respect and Recognition</h4>
+      <p class="intro-text">
+        This dynamic highlights your desire for affirmation and validation. It indicates how you seek to be valued and esteemed by your partner, and how you, in turn, show appreciation and honor to them.
+      </p>
       <div class="result-block" style="border-left:8px solid #8A2BE2; background-color:rgba(138,43,226,0.08);">
         <strong>Your Respect & Recognition Alignment:</strong>
         <p>${respectText}</p>
@@ -1150,6 +1179,9 @@ function showResults() {
 
       <hr style="margin: 30px 0;">
       <h3>Section 3: Connection and Conflict Patterns</h3>
+      <p class="intro-text">
+        Everyone has a unique pattern for how they approach connection and conflict. Your results here will illuminate how you tend to respond to perceived conflict and how you desire to repair after it. Learning about your own strengths, challenges, and weaknesses in this area is key to building a healthier, more resilient relationship. We hope these results provide a helpful starting point for a deeper conversation with your spouse.
+      </p>
       <div class="result-block" style="border-left:8px solid ${typeColors?.[bondingKey] || "#ccc"}; background-color:${typeColorsWithOpacity?.[bondingKey] || "#f9f9f9"};">
         <strong>Primary Connection Pattern:</strong> ${bondingLabel}<br/>
         <strong>Strengths:</strong> ${bondingInsights?.[bondingKey]?.desc || "Not available."}<br/>
@@ -1166,6 +1198,7 @@ function showResults() {
   }
 }
 
+/* PDF File */
 async function generatePDF(name) {
   try {
     const resultsElement = document.getElementById("results");
