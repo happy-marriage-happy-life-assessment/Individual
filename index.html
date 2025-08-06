@@ -1076,6 +1076,14 @@ function showResults() {
           : "may desire more recognition and alignment on values and goals."
         : "respect score unavailable.";
 
+    const socialDescriptions = {
+      Sanguine: "You enjoy being outgoing and engaging socially, bringing energy and fun to group settings. Your lively presence draws others in, creating a warm atmosphere. You thrive in dynamic interactions that spark joy.",
+      Choleric: "You prefer leading and organizing social interactions, taking charge to ensure everyone is included. Your confidence guides groups effectively, fostering structure. You excel in directing social dynamics with purpose.",
+      Melancholy: "You enjoy observing and having deep conversations, connecting thoughtfully with others. Your reflective nature fosters meaningful exchanges, valuing quality over quantity. You shine in intimate, insightful discussions.",
+      Phlegmatic: "You prefer calm, low‑key social interactions, blending in comfortably with others. Your relaxed demeanor creates a peaceful environment, making others feel at ease. You value harmonious, understated connections.",
+      Supine: "You support others quietly in social settings, helping everyone feel included. Your selfless approach fosters warmth and inclusion, often behind the scenes. You find peace in serving others socially."
+    };
+
     function sectionHTML(title, text, items) {
       return `
         <h4>${title}</h4>
