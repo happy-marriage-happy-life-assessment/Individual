@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Marriage Connection Assessment</title>
 
-  <!-- Required libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- html2pdf (bundles html2canvas + jsPDF) -->
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
-  <!-- Google Fonts for heading styles -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -79,7 +76,6 @@
     .logo { display: block; margin: 0 auto 15px auto; max-width: 200px; }
     .question-box { background: #FFFFFF; border: 1px solid #4D9DE0; border-radius: 8px; padding: 20px; margin: 15px auto; max-width: 700px; text-align: left; }
 
-    /* No tips in couples view; solo view never uses this class anyway now */
     .action-tip { display:none; }
 
     .results-list { list-style-position: outside; margin-left: 20px; text-align: left; }
@@ -126,7 +122,7 @@
       top: 0;
       width: 2px;
       height: 100%;
-      background: #4D9DE0; /* single light-blue center line */
+      background: #4D9DE0;
       transform: translateX(-1px);
     }
     .partner-card { border: none; }
@@ -142,7 +138,6 @@
 
     .handoff { border: 2px dashed #4D9DE0; border-radius: 12px; padding: 20px; background: #FFFFFF; }
 
-    /* Print/PDF tweaks */
     @media print {
       .btn { display:none !important; }
       .card { border: none; box-shadow: none; }
@@ -203,7 +198,7 @@
   </div>
 
   <script>
-    /* Intimacy Descriptions (tips retained for solo only) */
+    /* Intimacy Descriptions */
     const intimacyDescriptions = {
       Spiritual: { desc: "You value a shared faith or sense of purpose, connecting through beliefs and values that guide your life together." },
       Emotional: { desc: "You seek emotional safety and vulnerability, thriving when you feel deeply known and understood." },
@@ -283,7 +278,7 @@
       }
     };
 
-    /* Questions (unchanged from your original) */
+    /* Questions */
     const questions = [
       { q: "When your spouse is stressed, what's your first instinct?",
         opts: [
@@ -519,7 +514,52 @@
       showQuestion();
     }
 
-    /* Solo build (brief; couples view is the focus here) */
+    /* Solo (use couples layout, single column) */
+    function renderSinglePartnerReport(nameLabel){
+      const built = summarizeForProfile();
+      const single = { name: nameLabel, ...built };
+
+      const container = document.createElement("div");
+      container.id = "singleReport";
+
+      // Same couples sections 1 & 2
+      container.innerHTML = section1CIFM();
+      container.innerHTML += section2Intro();
+
+      // Single column partner details (reuses couples component)
+      container.innerHTML += `
+        <div class="partner-card">
+          <div class="partner-inner">${partnerColumnHTML(single)}</div>
+        </div>
+      `;
+
+      // Download button (single)
+      container.innerHTML += `
+        <div class="section-divider"></div>
+        <button id="downloadPdfBtnSingle" class="btn" style="max-width:260px;">Download Your PDF</button>
+      `;
+
+      const resultsEl = document.getElementById('results');
+      resultsEl.innerHTML = ""; 
+      resultsEl.appendChild(container);
+
+      document.getElementById('resultsHeader').textContent = `${nameLabel}'s Connection Profile`;
+
+      // Wire PDF for single report
+      document.getElementById("downloadPdfBtnSingle").onclick = () => {
+        const filename = `${nameLabel}-Marriage-Connection-Report.pdf`.replace(/\s+/g,'_');
+        html2pdf().set({
+          margin:       [0.5,0.5,0.5,0.5],
+          filename,
+          image:        { type:'jpeg', quality:0.98 },
+          html2canvas:  { scale:2, useCORS:true },
+          jsPDF:        { unit:'in', format:'letter', orientation:'portrait' },
+          pagebreak:    { mode:['css','legacy'] }
+        }).from(document.getElementById('singleReport')).save();
+      };
+    }
+
+    /* Original solo builder remains (unused now) */
     function buildSoloHTML(nameLabel){
       const normalized = normalizeIntimacyScores();
       const sorted = Object.entries(normalized).sort((a,b)=>b[1]-a[1]);
@@ -581,8 +621,8 @@
 
       if (mode === "solo") {
         const name = document.getElementById("partnerAName").value.trim() || "You";
-        document.getElementById('resultsHeader').textContent = "Your Personalized Connection Profile";
-        document.getElementById('results').innerHTML = buildSoloHTML(name);
+        // New: use couples layout in solo, single column
+        renderSinglePartnerReport(name);
         document.getElementById('coupleFlowBtns').classList.add('hidden');
         return;
       }
@@ -592,7 +632,7 @@
       const built = summarizeForProfile();
       if (partnerIndex===0) {
         profiles[0] = { name, ...built };
-        // Handoff screen (no solo results)
+        // Handoff screen
         document.getElementById('resultsHeader').textContent = "Partner Handoff";
         document.getElementById('results').innerHTML = `
           <div class="handoff">
@@ -729,7 +769,6 @@
     function renderCoupleComparison(){
       const A = profiles[0], B = profiles[1];
 
-      // Top-4 overlap box
       const topA = A.priority.map(([t])=>t);
       const topB = B.priority.map(([t])=>t);
       const overlap = topA.filter(t=>topB.includes(t));
@@ -746,14 +785,11 @@
         </div>
       `;
 
-      // Build the page in required order
       const container = document.createElement("div");
       container.id = "couplesReport";
 
-      // Section 1 (before Couples View and Personalized Conflict)
       container.innerHTML = section1CIFM();
 
-      // Couples View + Section 2 intro
       container.innerHTML += `
         <div class="section-divider"></div>
         <h3 class="section-title">Couples View: Side-by-Side Results</h3>
@@ -765,19 +801,14 @@
         </div>
       `;
 
-      // Personalized Conflict section AFTER the grid (per your correction)
       container.innerHTML += couplesConflictSection(A,B);
-
-      // Shared Sections 5 & 6 (not divided)
       container.innerHTML += sections5and6Shared();
 
-      // Download button
       container.innerHTML += `
         <div class="section-divider"></div>
         <button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download Couples PDF</button>
       `;
 
-      // Render and wire PDF
       document.getElementById('resultsHeader').textContent = "Couples Comparison Profiles";
       const resultsEl = document.getElementById('results');
       resultsEl.innerHTML = ""; resultsEl.appendChild(container);
