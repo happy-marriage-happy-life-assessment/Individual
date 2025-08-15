@@ -1,3 +1,4 @@
+<!-- file: index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,66 +6,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Marriage Connection Assessment</title>
 
+  <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&display=swap" rel="stylesheet">
 
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      background: #FFF9F2; 
-      color: #1A3C5E; 
-      max-width: 900px; 
-      margin: auto; 
-      padding: 20px; 
-      box-sizing: border-box; 
-    }
-
+    body { font-family: Arial, sans-serif; background: #FFF9F2; color: #1A3C5E; max-width: 900px; margin: auto; padding: 20px; box-sizing: border-box; }
     #resultPage { line-height: 1.3; color: #1A3C5E; }
 
     .result-block {
-      margin-bottom: 16px;
-      page-break-inside: avoid;
-      padding: 20px;
-      border-left: 8px solid;
-      border-radius: 8px;
-      background: #FFFFFF;
-      opacity: 0;
-      transform: translateY(10px);
-      animation: fadeIn 0.5s ease forwards;
+      margin-bottom: 16px; page-break-inside: avoid; padding: 20px;
+      border-left: 8px solid; border-radius: 8px; background: #FFFFFF;
+      opacity: 0; transform: translateY(10px); animation: fadeIn 0.5s ease forwards;
     }
     @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+    /* Ensures PDFs aren't blank due to animations/transforms */
+    .pdf-mode .result-block { opacity: 1 !important; transform: none !important; animation: none !important; }
+    .pdf-mode .card { box-shadow: none !important; }
 
     .intro-text { margin-bottom: 10px; line-height: 1.3; text-align: left; }
     h1, h2, h3, h4 { text-align: center; line-height: 1.3; }
 
-    .card { 
-      background: #FFFFFF; 
-      border: 2px solid #4D9DE0; 
-      border-radius: 12px; 
-      padding: 25px; 
-      box-shadow: 0 8px 25px rgba(0,0,0,0.08); 
-      margin: 20px auto; 
-      max-width: 750px; 
-      text-align: center; 
-    }
+    .card { background: #FFFFFF; border: 2px solid #4D9DE0; border-radius: 12px; padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin: 20px auto; max-width: 750px; text-align: center; }
 
-    .btn, .answer-btn { 
-      background: #4D9DE0; 
-      color: white; 
-      font-weight: bold; 
-      border: none; 
-      border-radius: 8px; 
-      padding: 15px 25px; 
-      cursor: pointer; 
-      margin: 12px auto; 
-      display: block; 
-      width: 100%; 
-      max-width: 500px; 
-      text-align: center; 
-      touch-action: manipulation; 
-    }
+    .btn, .answer-btn { background: #4D9DE0; color: white; font-weight: bold; border: none; border-radius: 8px; padding: 15px 25px;
+                        cursor: pointer; margin: 12px auto; display: block; width: 100%; max-width: 500px; text-align: center; touch-action: manipulation; }
     .btn:hover, .answer-btn:hover { background: #3A7FBF; }
     .answer-btn.selected { background: #3A7FBF; transform: scale(0.98); transition: all 0.2s ease; }
     #backBtn { padding: 8px 15px; max-width: 120px; font-size: 0.9rem; }
@@ -77,7 +48,6 @@
     .question-box { background: #FFFFFF; border: 1px solid #4D9DE0; border-radius: 8px; padding: 20px; margin: 15px auto; max-width: 700px; text-align: left; }
 
     .action-tip { display:none; }
-
     .results-list { list-style-position: outside; margin-left: 20px; text-align: left; }
     .results-list li { margin-bottom: 8px; }
 
@@ -87,44 +57,14 @@
 
     .cifm-diagram { text-align: center; margin: 20px 0; font-size: 0.9rem; }
 
-    .section-title {
-      color: #1A3C5E;
-      font-family: 'Open Sans', sans-serif;
-      font-size: 16pt;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .subsection-title {
-      color: #1A3C5E;
-      font-family: 'Roboto', sans-serif;
-      font-size: 14pt;
-      font-weight: 600;
-      text-align: center;
-      margin: 15px 0;
-    }
+    .section-title { color: #1A3C5E; font-family: 'Open Sans', sans-serif; font-size: 16pt; font-weight: 700; text-align: center; margin-bottom: 10px; }
+    .subsection-title { color: #1A3C5E; font-family: 'Roboto', sans-serif; font-size: 14pt; font-weight: 600; text-align: center; margin: 15px 0; }
     .section-divider { height: 1pt; background-color: #FF4D4D; width: 100%; max-width: 750px; margin: 25pt auto; }
     .subsection-divider { height: 1pt; background-color: rgba(77, 157, 224, 0.5); width: 100%; max-width: 750px; margin: 15pt auto; }
 
     /* Couples Compare */
-    .couple-grid { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 20px; 
-      align-items: start; 
-      position: relative;
-      padding: 10px 0;
-    }
-    .couple-grid::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 0;
-      width: 2px;
-      height: 100%;
-      background: #4D9DE0;
-      transform: translateX(-1px);
-    }
+    .couple-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; position: relative; padding: 10px 0; }
+    .couple-grid::before { content: ""; position: absolute; left: 50%; top: 0; width: 2px; height: 100%; background: #4D9DE0; transform: translateX(-1px); }
     .partner-card { border: none; }
     .partner-inner { border-radius: 12px; padding: 16px; }
     .partner-header { font-weight: 700; text-align: center; margin-bottom: 6px; }
@@ -143,7 +83,6 @@
       .card { border: none; box-shadow: none; }
       body { background: white; }
     }
-
     @media (max-width: 600px) {
       .couple-grid { grid-template-columns: 1fr; }
       .couple-grid::before { display:none; }
@@ -278,7 +217,7 @@
       }
     };
 
-    /* Questions */
+    /* Questions (unchanged) */
     const questions = [
       { q: "When your spouse is stressed, what's your first instinct?",
         opts: [
@@ -401,17 +340,12 @@
     function resetScores(){
       tempScores = {}; wantedTempScores = {}; socialTempScores = {}; decisionTempScores = {};
       TRAITS.forEach(t=>{ tempScores[t]=0; wantedTempScores[t]=0; socialTempScores[t]=0; decisionTempScores[t]=0; });
-      intimacyScores = {};
-      Object.keys(intimacyDescriptions).forEach(k => intimacyScores[k] = 0);
-      bondingScores = {};
-      respectRecognitionScore = 0;
-      answers = [];
+      intimacyScores = {}; Object.keys(intimacyDescriptions).forEach(k => intimacyScores[k] = 0);
+      bondingScores = {}; respectRecognitionScore = 0; answers = [];
     }
     function normalizeIntimacyScores(){
       const counts = { Spiritual:0, Emotional:3, Commitment:2, Intellectual:3, Affable:4, Recreational:3, Partnership:4, Stability:2, Creative:2, Conflict:2, Physical:2, Sexual:0 };
-      const out = {};
-      Object.keys(intimacyDescriptions).forEach(k => out[k] = counts[k] ? (intimacyScores[k]/counts[k])*3 : 0);
-      return out;
+      const out = {}; Object.keys(intimacyDescriptions).forEach(k => out[k] = counts[k] ? (intimacyScores[k]/counts[k])*3 : 0); return out;
     }
     function getAffectionPreferences(){
       const sortTop = obj => Object.entries(obj).sort((a,b)=>b[1]-a[1])[0][0];
@@ -514,148 +448,7 @@
       showQuestion();
     }
 
-    /* Solo (use couples layout, single column) */
-    function renderSinglePartnerReport(nameLabel){
-      const built = summarizeForProfile();
-      const single = { name: nameLabel, ...built };
-
-      const container = document.createElement("div");
-      container.id = "singleReport";
-
-      // Same couples sections 1 & 2
-      container.innerHTML = section1CIFM();
-      container.innerHTML += section2Intro();
-
-      // Single column partner details (reuses couples component)
-      container.innerHTML += `
-        <div class="partner-card">
-          <div class="partner-inner">${partnerColumnHTML(single)}</div>
-        </div>
-      `;
-
-      // Download button (single)
-      container.innerHTML += `
-        <div class="section-divider"></div>
-        <button id="downloadPdfBtnSingle" class="btn" style="max-width:260px;">Download Your PDF</button>
-      `;
-
-      const resultsEl = document.getElementById('results');
-      resultsEl.innerHTML = ""; 
-      resultsEl.appendChild(container);
-
-      document.getElementById('resultsHeader').textContent = `${nameLabel}'s Connection Profile`;
-
-      // Wire PDF for single report
-      document.getElementById("downloadPdfBtnSingle").onclick = () => {
-        const filename = `${nameLabel}-Marriage-Connection-Report.pdf`.replace(/\s+/g,'_');
-        html2pdf().set({
-          margin:       [0.5,0.5,0.5,0.5],
-          filename,
-          image:        { type:'jpeg', quality:0.98 },
-          html2canvas:  { scale:2, useCORS:true },
-          jsPDF:        { unit:'in', format:'letter', orientation:'portrait' },
-          pagebreak:    { mode:['css','legacy'] }
-        }).from(document.getElementById('singleReport')).save();
-      };
-    }
-
-    /* Original solo builder remains (unused now) */
-    function buildSoloHTML(nameLabel){
-      const normalized = normalizeIntimacyScores();
-      const sorted = Object.entries(normalized).sort((a,b)=>b[1]-a[1]);
-      const priority = sorted.slice(0,4), progress = sorted.slice(4,8), presence = sorted.slice(8,12);
-      const affectionPrefs = getAffectionPreferences();
-      const social = getSocialPreferences();
-      const decision = getDecisionLeadershipStyle();
-      const bondingKey = getBondingStyle();
-      const bondingLabel = bondingKey.replace(/([a-z])([A-Z])/g,'$1 $2');
-
-      function listBlocks(title, items){
-        return `
-          <div class="subsection-divider"></div>
-          <h4 class="subsection-title">${title}</h4>
-          ${items.map(([type])=>`
-            <div class="result-block" style="border-left:8px solid ${typeColors[type]}; background:${typeColorsWithOpacity[type]};">
-              <strong>${type}</strong> – ${intimacyDescriptions[type].desc}
-            </div>`).join("")}
-        `;
-      }
-
-      return `
-        <div class="section-divider"></div>
-        <h3 class="section-title">Section 1: Exploring the Covenant Intimacy Fulfillment Model™ (CIFM)</h3>
-        <ul class="results-list">
-          <li><strong>Core:</strong> Spiritual, Emotional, Commitment</li>
-          <li><strong>Relational:</strong> Intellectual, Affable, Recreational</li>
-          <li><strong>Partnership:</strong> Partnership, Stability, Creative, Conflict</li>
-          <li><strong>Physical:</strong> Physical, Sexual</li>
-        </ul>
-
-        <div class="section-divider"></div>
-        <h3 class="section-title">Section 2: ${nameLabel}'s Intimacy Type Preferences</h3>
-        ${listBlocks("Core Connection Strengths",priority)}
-        ${listBlocks("Areas for Growth",progress)}
-        ${listBlocks("Untapped Opportunities",presence)}
-
-        <div class="section-divider"></div>
-        <h3 class="section-title">Section 3: ${nameLabel}'s Relational Dynamics</h3>
-        <div class="result-block" style="border-left:8px solid ${typeColors[affectionPrefs.expressedType]}; background:${typeColorsWithOpacity[affectionPrefs.expressedType]};"><strong>Express:</strong> ${affectionPrefs.expressed}</div>
-        <div class="result-block" style="border-left:8px solid ${typeColors[affectionPrefs.desiredType]}; background:${typeColorsWithOpacity[affectionPrefs.desiredType]};"><strong>Feel Loved:</strong> ${affectionPrefs.desired}</div>
-        <div class="result-block" style="border-left:8px solid #FFB347; background:rgba(255,179,71,0.08);"><strong>Social Style:</strong> ${social}</div>
-        <div class="result-block" style="border-left:8px solid #4D9DE0; background:rgba(77,157,224,0.08);"><strong>Decision Style:</strong> ${decision}</div>
-
-        <div class="section-divider"></div>
-        <h3 class="section-title">Section 4: ${nameLabel}'s Connection Pattern</h3>
-        <div class="result-block" style="border-left:8px solid ${typeColors[bondingKey]}; background:${typeColorsWithOpacity[bondingKey]};">
-          <strong>${bondingLabel}</strong>
-          <p><strong>Strengths:</strong> ${bondingInsights[bondingKey].desc}</p>
-          <p><strong>Challenges:</strong> ${bondingInsights[bondingKey].challenges}</p>
-          <p><strong>Conflict Style:</strong> ${bondingInsights[bondingKey].conflictStyle}</p>
-        </div>
-      `;
-    }
-
-    function showResults(){
-      document.getElementById('quizPage').classList.add('hidden');
-      document.getElementById('resultPage').classList.remove('hidden');
-
-      if (mode === "solo") {
-        const name = document.getElementById("partnerAName").value.trim() || "You";
-        // New: use couples layout in solo, single column
-        renderSinglePartnerReport(name);
-        document.getElementById('coupleFlowBtns').classList.add('hidden');
-        return;
-      }
-
-      // Couples
-      const name = partnerIndex===0 ? (partnerAName||"Partner A") : (partnerBName||"Partner B");
-      const built = summarizeForProfile();
-      if (partnerIndex===0) {
-        profiles[0] = { name, ...built };
-        // Handoff screen
-        document.getElementById('resultsHeader').textContent = "Partner Handoff";
-        document.getElementById('results').innerHTML = `
-          <div class="handoff">
-            <h3 class="section-title" style="margin-top:0;">Thank you, ${name}!</h3>
-            <p class="intro-text">We’ll reveal the combined results once both partners finish.</p>
-            <p class="intro-text"><strong>Please pass the device to ${partnerBName||"Partner B"}</strong> to begin.</p>
-          </div>`;
-        const btns = document.getElementById('coupleFlowBtns');
-        btns.classList.remove('hidden');
-        document.getElementById('startPartnerBBtn').onclick = () => {
-          partnerIndex = 1;
-          resetScores(); index=0;
-          document.getElementById('resultPage').classList.add('hidden');
-          document.getElementById('quizTitle').textContent = `Intimacy Profile Assessment — ${partnerBName||"Partner B"}`;
-          document.getElementById('quizPage').classList.remove('hidden');
-          showQuestion();
-        };
-      } else {
-        profiles[1] = { name, ...built };
-        renderCoupleComparison();
-      }
-    }
-
+    /* ===== Shared summarizer used by both solo + couple ===== */
     function summarizeForProfile(){
       const normalized = normalizeIntimacyScores();
       const sorted = Object.entries(normalized).sort((a,b)=>b[1]-a[1]);
@@ -668,7 +461,35 @@
       return { priority, progress, presence, affectionPrefs, socialPreferences, decisionLeadershipStyle, bondingKey, bondingLabel };
     }
 
-    /* === Couples page sections === */
+    /* ===== PDF helper: fixes "blank PDF" by disabling animations during capture ===== */
+    function generatePdfFor(elementId, filename){
+      const el = document.getElementById(elementId);
+      if(!el) return;
+      document.body.classList.add('pdf-mode'); // prevent transform/opacity issues
+      const worker = html2pdf().set({
+        margin: [0.5,0.5,0.5,0.5],
+        filename,
+        image: { type:'jpeg', quality:0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          scrollY: -window.scrollY // avoid shifted capture
+        },
+        jsPDF: { unit:'in', format:'letter', orientation:'portrait' },
+        pagebreak: { mode:['css'] }
+      }).from(el).save();
+
+      // remove the class after save completes to restore animations
+      if (worker && typeof worker.then === 'function') {
+        worker.then(()=>document.body.classList.remove('pdf-mode'))
+              .catch(()=>document.body.classList.remove('pdf-mode'));
+      } else {
+        document.body.classList.remove('pdf-mode');
+      }
+    }
+
+    /* ===== Couples page sections reused for solo ===== */
     function section1CIFM(){
       return `
         <div class="section-divider"></div>
@@ -727,6 +548,34 @@
       `;
     }
 
+    /* ===== SOLO: render same look as couples but single column ===== */
+    function renderSinglePartnerReport(nameLabel){
+      const built = summarizeForProfile();
+      const single = { name: nameLabel, ...built };
+
+      const container = document.createElement("div");
+      container.id = "singleReport";
+
+      container.innerHTML = section1CIFM();
+      container.innerHTML += section2Intro();
+      container.innerHTML += `
+        <div class="partner-card"><div class="partner-inner">${partnerColumnHTML(single)}</div></div>
+        <div class="section-divider"></div>
+        <button id="downloadPdfBtnSingle" class="btn" style="max-width:260px;">Download Your PDF</button>
+      `;
+
+      const resultsEl = document.getElementById('results');
+      resultsEl.innerHTML = ""; resultsEl.appendChild(container);
+
+      document.getElementById('resultsHeader').textContent = `${nameLabel}'s Connection Profile`;
+
+      document.getElementById("downloadPdfBtnSingle").onclick = () => {
+        const filename = `${nameLabel}-Marriage-Connection-Report.pdf`.replace(/\s+/g,'_');
+        generatePdfFor('singleReport', filename);
+      };
+    }
+
+    /* ===== COUPLES: render compare page + PDF button ===== */
     function couplesConflictSection(A,B){
       const aToB = conflictStrategies[A.bondingKey][B.bondingKey];
       const bToA = conflictStrategies[B.bondingKey][A.bondingKey];
@@ -789,7 +638,6 @@
       container.id = "couplesReport";
 
       container.innerHTML = section1CIFM();
-
       container.innerHTML += `
         <div class="section-divider"></div>
         <h3 class="section-title">Couples View: Side-by-Side Results</h3>
@@ -800,10 +648,8 @@
           <div class="partner-card"><div class="partner-inner">${partnerColumnHTML(B)}</div></div>
         </div>
       `;
-
       container.innerHTML += couplesConflictSection(A,B);
       container.innerHTML += sections5and6Shared();
-
       container.innerHTML += `
         <div class="section-divider"></div>
         <button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download Couples PDF</button>
@@ -815,19 +661,52 @@
 
       document.getElementById("downloadPdfBtn").onclick = () => {
         const filename = `${A.name}-${B.name}-Marriage-Connection-Report.pdf`.replace(/\s+/g,'_');
-        html2pdf().set({
-          margin:       [0.5,0.5,0.5,0.5],
-          filename,
-          image:        { type:'jpeg', quality:0.98 },
-          html2canvas:  { scale:2, useCORS:true },
-          jsPDF:        { unit:'in', format:'letter', orientation:'portrait' },
-          pagebreak:    { mode:['css','legacy'] }
-        }).from(document.getElementById('couplesReport')).save();
+        generatePdfFor('couplesReport', filename); // fixes blank PDF
       };
 
       document.getElementById('quizPage').classList.add('hidden');
       document.getElementById('resultPage').classList.remove('hidden');
       document.getElementById('coupleFlowBtns').classList.add('hidden');
+    }
+
+    /* ===== Results routing ===== */
+    function showResults(){
+      document.getElementById('quizPage').classList.add('hidden');
+      document.getElementById('resultPage').classList.remove('hidden');
+
+      if (mode === "solo") {
+        const name = document.getElementById("partnerAName").value.trim() || "You";
+        renderSinglePartnerReport(name); // << use couples layout in solo
+        document.getElementById('coupleFlowBtns').classList.add('hidden');
+        return;
+      }
+
+      // Couples flow
+      const name = partnerIndex===0 ? (partnerAName||"Partner A") : (partnerBName||"Partner B");
+      const built = summarizeForProfile();
+      if (partnerIndex===0) {
+        profiles[0] = { name, ...built };
+        document.getElementById('resultsHeader').textContent = "Partner Handoff";
+        document.getElementById('results').innerHTML = `
+          <div class="handoff">
+            <h3 class="section-title" style="margin-top:0;">Thank you, ${name}!</h3>
+            <p class="intro-text">We’ll reveal the combined results once both partners finish.</p>
+            <p class="intro-text"><strong>Please pass the device to ${partnerBName||"Partner B"}</strong> to begin.</p>
+          </div>`;
+        const btns = document.getElementById('coupleFlowBtns');
+        btns.classList.remove('hidden');
+        document.getElementById('startPartnerBBtn').onclick = () => {
+          partnerIndex = 1;
+          resetScores(); index=0;
+          document.getElementById('resultPage').classList.add('hidden');
+          document.getElementById('quizTitle').textContent = `Intimacy Profile Assessment — ${partnerBName||"Partner B"}`;
+          document.getElementById('quizPage').classList.remove('hidden');
+          showQuestion();
+        };
+      } else {
+        profiles[1] = { name, ...built };
+        renderCoupleComparison();
+      }
     }
   </script>
 </body>
