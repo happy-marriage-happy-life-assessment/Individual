@@ -9,6 +9,8 @@
 <title>Marriage Connection Assessment — Individual</title>
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
+<!-- PDF -->
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <style>
   body { font-family: Arial, sans-serif; background:#FFF9F2; color:#1A3C5E; max-width: 980px; margin:auto; padding:20px; box-sizing:border-box; }
   h1,h2,h3,h4{ text-align:center; line-height:1.25; }
@@ -136,8 +138,8 @@
 </div>
 
 <script>
-/* ===== Build marker ===== */
-const BUILD = "individual-v4";
+/* ===== Build marker (so you can confirm it loaded) ===== */
+const BUILD = "individual-v5";
 console.log("Loaded build:", BUILD);
 document.addEventListener('DOMContentLoaded', () => {
   const i = document.getElementById('buildBadgeIntro');
@@ -269,7 +271,30 @@ const patternDetail = {
   }
 };
 
-/* ===== Flow/State ===== */
+/* ===== Autosave / Restore ===== */
+const STORAGE_KEY = "mca_individual_state_v1";
+
+function saveState(){
+  const state = { yourName, step, answers };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+}
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const s = JSON.parse(raw);
+    if(!s || typeof s !== 'object') return false;
+    yourName = s.yourName || yourName;
+    step = Number.isInteger(s.step) ? s.step : step;
+    answers = s.answers || answers;
+    return true;
+  } catch(e){ return false; }
+}
+function clearState(){
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+}
+
+/* ================== Flow/State ================== */
 let yourName = "";
 const TOTAL_STEPS = 13;
 let step = 0;
@@ -283,9 +308,19 @@ let answers = {
   bond: {}
 };
 
-/* ===== Boot ===== */
+/* ===== Start button with restore ===== */
 document.getElementById('startBtn').onclick = () => {
-  yourName = document.getElementById('yourName').value.trim();
+  const typed = document.getElementById('yourName').value.trim();
+  if(typed) yourName = typed;
+
+  const restored = loadState();
+  if(restored && yourName){
+    hideAllPages();
+    document.getElementById('quizPage').classList.remove('hidden');
+    document.getElementById('quizTitle').textContent = `Assessment — ${yourName}`;
+    renderStep();
+    return;
+  }
   if(!yourName){ alert("Please enter your name to begin."); return; }
   hideAllPages();
   document.getElementById('quizPage').classList.remove('hidden');
@@ -294,6 +329,7 @@ document.getElementById('startBtn').onclick = () => {
   renderStep();
 };
 document.getElementById('backBtn').onclick = () => { if(step>0){ step--; renderStep(); } };
+
 function hideAllPages(){
   document.getElementById('introPage').classList.add('hidden');
   document.getElementById('quizPage').classList.add('hidden');
@@ -308,66 +344,115 @@ function renderStep(){
   box.innerHTML = "";
   document.getElementById('backBtn').style.display = step>0 ? 'block' : 'none';
 
-  if(step===0) return renderRankUI(box);
-  if(step===1) return renderPick2(box, "How you give love — choose your Top 2", "expressedTop2");
-  if(step===2) return renderPick2(box, "How you feel most loved — choose your Top 2", "desiredTop2");
-  if(step===3) return renderSingleList(box, "In groups, I usually…", [
-    ["E","Bring energy and get people talking."],
-    ["S","Organize or give structure to the time."],
-    ["R","Connect deeply with one or two people."],
-    ["A","Keep it light, calm, and agreeable."],
-    ["U","Make sure everyone feels included."]
-  ], key => { answers.social["social1"]=key; next(); });
-  if(step===4) return renderSingleList(box, "Planning social time, I prefer…", [
-    ["E","Lively, people-filled activities."],
-    ["S","A clear plan that keeps us on track."],
-    ["R","Meaningful, low-key connection."],
-    ["A","Relaxed, pressure-free time."],
-    ["U","Including others thoughtfully."]
-  ], key => { answers.social["social2"]=key; next(); });
-  if(step===5) return renderSingleList(box, "When a decision is needed, I tend to…", [
-    ["E","Choose the fun option and keep momentum."],
-    ["S","Decide quickly and set direction."],
-    ["R","Analyze details before choosing."],
-    ["A","Seek harmony and avoid friction."],
-    ["U","Support the plan and contribute steadily."]
-  ], key => { answers.decision["decision1"]=key; next(); });
-  if(step===6) return renderSingleList(box, "On shared projects at home, I usually…", [
-    ["E","Keep things upbeat and moving."],
-    ["S","Take the lead and drive results."],
-    ["R","Plan details and set a thoughtful pace."],
-    ["A","Stay flexible and avoid conflict."],
-    ["U","Pitch in steadily and support the plan."]
-  ], key => { answers.decision["decision2"]=key; next(); });
-  if(step===7) return renderSingleList(box, "I feel my opinions are respected in our relationship.", [
-    [3,"Strongly Agree"], [2,"Agree"], [1,"Disagree"], [0,"Strongly Disagree"]
-  ], val => { answers.rr.rr1 = Number(val); next(); });
-  if(step===8) return renderSingleList(box, "We are aligned on core values and honor our covenant.", [
-    [3,"Strongly Agree"], [2,"Agree"], [1,"Disagree"], [0,"Strongly Disagree"]
-  ], val => { answers.rr.rr2 = Number(val); next(); });
-  if(step===9) return renderSingleList(box, "During conflict, I naturally…", [
-    ["SteadyConnector","Use humor to lower tension."],
-    ["ReassuranceSeeker","Push for quick resolution."],
-    ["IndependentConnector","Withdraw to think it through."],
-    ["IndependentConnector","Stay calm to avoid escalation."],
-    ["GuardedConnector","Concede just to end it."]
-  ], key => { answers.bond["bond1"]=key; next(); });
-  if(step===10) return renderSingleList(box, "When I feel unappreciated, I tend to…", [
-    ["SteadyConnector","Laugh it off and move on."],
-    ["ReassuranceSeeker","Remind my spouse of my effort."],
-    ["IndependentConnector","Feel overlooked and pull back."],
-    ["IndependentConnector","Let it go to keep peace."],
-    ["GuardedConnector","Feel hurt and shut down."]
-  ], key => { answers.bond["bond2"]=key; next(); });
-  if(step===11) return renderSingleList(box, "After a disagreement, I prefer to…", [
-    ["ReassuranceSeeker","Repair quickly together."],
-    ["IndependentConnector","Pause, then reconnect with a plan."]
-  ], key => { answers.bond["bond3"]=key; next(); });
-  if(step===12) return renderSingleList(box, "When overwhelmed, I prefer to…", [
-    ["ReassuranceSeeker","Seek closeness and reassurance now."],
-    ["IndependentConnector","Have space first, then return to talk."]
-  ], key => { answers.bond["bond4"]=key; finalize(); });
+  if(step===0) { renderRankUI(box); saveState(); return; }
+
+  if(step===1) { renderPick2(box, "How you give love — choose your Top 2", "expressedTop2"); saveState(); return; }
+  if(step===2) { renderPick2(box, "How you feel most loved — choose your Top 2", "desiredTop2"); saveState(); return; }
+
+  if(step===3) return renderSingleList(box,
+    "In groups, I usually…",
+    [
+      ["E","Bring energy and get people talking."],
+      ["S","Organize or give structure to the time."],
+      ["R","Connect deeply with one or two people."],
+      ["A","Keep it light, calm, and agreeable."],
+      ["U","Make sure everyone feels included."]
+    ],
+    val => { answers.social["social1"]=val; saveState(); next(); }
+  );
+
+  if(step===4) return renderSingleList(box,
+    "Planning social time, I prefer…",
+    [
+      ["E","Lively, people-filled activities."],
+      ["S","A clear plan that keeps us on track."],
+      ["R","Meaningful, low-key connection."],
+      ["A","Relaxed, pressure-free time."],
+      ["U","Including others thoughtfully."]
+    ],
+    val => { answers.social["social2"]=val; saveState(); next(); }
+  );
+
+  if(step===5) return renderSingleList(box,
+    "When a decision is needed, I tend to…",
+    [
+      ["E","Choose the fun option and keep momentum."],
+      ["S","Decide quickly and set direction."],
+      ["R","Analyze details before choosing."],
+      ["A","Seek harmony and avoid friction."],
+      ["U","Support the plan and contribute steadily."]
+    ],
+    val => { answers.decision["decision1"]=val; saveState(); next(); }
+  );
+
+  if(step===6) return renderSingleList(box,
+    "On shared projects at home, I usually…",
+    [
+      ["E","Keep things upbeat and moving."],
+      ["S","Take the lead and drive results."],
+      ["R","Plan details and set a thoughtful pace."],
+      ["A","Stay flexible and avoid conflict."],
+      ["U","Pitch in steadily and support the plan."]
+    ],
+    val => { answers.decision["decision2"]=val; saveState(); next(); }
+  );
+
+  if(step===7) return renderSingleList(box,
+    "I feel my opinions are respected in our relationship.",
+    [[3,"Strongly Agree"], [2,"Agree"], [1,"Disagree"], [0,"Strongly Disagree"]],
+    val => { answers.rr.rr1 = Number(val); saveState(); next(); }
+  );
+
+  if(step===8) return renderSingleList(box,
+    "We are aligned on core values and honor our covenant.",
+    [[3,"Strongly Agree"], [2,"Agree"], [1,"Disagree"], [0,"Strongly Disagree"]],
+    val => { answers.rr.rr2 = Number(val); saveState(); next(); }
+  );
+
+  if(step===9) return renderSingleList(box,
+    "During conflict, I naturally…",
+    [
+      ["SteadyConnector","Use humor to lower tension."],
+      ["ReassuranceSeeker","Push for quick resolution."],
+      ["IndependentConnector","Withdraw to think it through."],
+      ["IndependentConnector","Stay calm to avoid escalation."],
+      ["GuardedConnector","Concede just to end it."]
+    ],
+    val => { answers.bond["bond1"]=val; saveState(); next(); }
+  );
+
+  if(step===10) return renderSingleList(box,
+    "When I feel unappreciated, I tend to…",
+    [
+      ["SteadyConnector","Laugh it off and move on."],
+      ["ReassuranceSeeker","Remind my spouse of my effort."],
+      ["IndependentConnector","Feel overlooked and pull back."],
+      ["IndependentConnector","Let it go to keep peace."],
+      ["GuardedConnector","Feel hurt and shut down."]
+    ],
+    val => { answers.bond["bond2"]=val; saveState(); next(); }
+  );
+
+  if(step===11) return renderSingleList(box,
+    "After a disagreement, I prefer to…",
+    [
+      ["ReassuranceSeeker","Repair quickly together."],
+      ["IndependentConnector","Pause, then reconnect with a plan."]
+    ],
+    val => { answers.bond["bond3"]=val; saveState(); next(); }
+  );
+
+  if(step===12) return renderSingleList(box,
+    "When overwhelmed, I prefer to…",
+    [
+      ["ReassuranceSeeker","Seek closeness and reassurance now."],
+      ["IndependentConnector","Have space first, then return to talk."]
+    ],
+    val => { answers.bond["bond4"]=val; saveState(); finalize(); }
+  );
 }
+
+function next(){ step++; renderStep(); }
 
 /* ===== Rank UI ===== */
 function renderRankUI(root){
@@ -377,32 +462,49 @@ function renderRankUI(root){
     <h3 style="text-align:center;">Rank the 12 Intimacy Types</h3>
     <p class="rank-help">Drag to reorder (or use ↑ / ↓). Place your most important at the top.</p>
     <ul id="rankList" class="rank-list"></ul>
-    <button id="rankContinue" class="btn" style="max-width:260px;">Save Ranking & Continue</button>
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+      <button id="rankNext" class="btn" style="max-width:260px;">Save Ranking & Continue</button>
+    </div>
   `;
   root.appendChild(wrap);
+
   const ul = wrap.querySelector('#rankList');
   refreshRankList(ul);
+
   let dragEl = null;
-  ul.addEventListener('dragstart', e=>{ if(e.target.classList.contains('rank-item')){ dragEl=e.target; e.dataTransfer.effectAllowed='move'; e.target.classList.add('dragging'); }});
-  ul.addEventListener('dragend', ()=>{ if(dragEl){ dragEl.classList.remove('dragging'); dragEl=null; }});
+  ul.addEventListener('dragstart', e=>{
+    if(e.target.classList.contains('rank-item')){
+      dragEl = e.target; e.dataTransfer.effectAllowed='move'; e.target.classList.add('dragging');
+    }
+  });
+  ul.addEventListener('dragend', e=>{ if(dragEl){ dragEl.classList.remove('dragging'); dragEl=null; }});
   ul.addEventListener('dragover', e=>{
     e.preventDefault();
     const after = getAfter(ul, e.clientY);
     const dragging = ul.querySelector('.dragging');
     if(!dragging) return;
-    if(!after) ul.appendChild(dragging); else ul.insertBefore(dragging, after);
+    if(after==null) ul.appendChild(dragging); else ul.insertBefore(dragging, after);
   });
-  ul.addEventListener('drop', ()=>{ answers.rank = [...ul.querySelectorAll('.rank-item')].map(li=>li.dataset.key); refreshRankList(ul); });
+  ul.addEventListener('drop', ()=>{
+    answers.rank = [...ul.querySelectorAll('.rank-item')].map(li=>li.dataset.key);
+    saveState();
+    refreshRankList(ul);
+  });
+
   function getAfter(container, y){
-    const els=[...container.querySelectorAll('.rank-item:not(.dragging)')];
-    return els.reduce((closest,child)=>{
-      const box=child.getBoundingClientRect(); const offset=y-box.top-box.height/2;
-      if(offset<0 && offset>closest.offset) return {offset,element:child}; else return closest;
-    }, {offset:-Infinity}).element;
+    const els = [...container.querySelectorAll('.rank-item:not(.dragging)')];
+    return els.reduce((closest, child)=>{
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height/2;
+      if(offset<0 && offset>closest.offset) return {offset, element:child};
+      else return closest;
+    }, {offset: Number.NEGATIVE_INFINITY}).element;
   }
-  document.getElementById('rankContinue').onclick = ()=>{
+
+  document.getElementById('rankNext').onclick = ()=>{
     answers.rank = [...ul.querySelectorAll('.rank-item')].map(li=>li.dataset.key);
     if(answers.rank.length!==12){ alert("Please rank all 12 types."); return; }
+    saveState();
     next();
   };
 }
@@ -425,13 +527,19 @@ function refreshRankList(ul){
       </div>
     `;
     const [upBtn, downBtn] = li.querySelectorAll('.rank-actions button');
-    upBtn.onclick = ()=>{ const i=answers.rank.indexOf(k); if(i>0){ [answers.rank[i-1],answers.rank[i]]=[answers.rank[i],answers.rank[i-1]]; refreshRankList(ul);} };
-    downBtn.onclick = ()=>{ const i=answers.rank.indexOf(k); if(i<answers.rank.length-1){ [answers.rank[i+1],answers.rank[i]]=[answers.rank[i],answers.rank[i+1]]; refreshRankList(ul);} };
+    upBtn.onclick = () => {
+      const i = answers.rank.indexOf(k);
+      if(i>0){ [answers.rank[i-1], answers.rank[i]] = [answers.rank[i], answers.rank[i-1]]; saveState(); refreshRankList(ul); }
+    };
+    downBtn.onclick = () => {
+      const i = answers.rank.indexOf(k);
+      if(i<answers.rank.length-1){ [answers.rank[i+1], answers.rank[i]] = [answers.rank[i], answers.rank[i+1]]; saveState(); refreshRankList(ul); }
+    };
     ul.appendChild(li);
   });
 }
 
-/* ===== Pick-2 ===== */
+/* ===== Pick-2 with Back/Next ===== */
 const affectionOptions = [
   {key:"Playful", text:"Playful moments and upbeat encouragement"},
   {key:"Initiative", text:"Taking initiative—removing stressors"},
@@ -441,33 +549,45 @@ const affectionOptions = [
 ];
 function renderPick2(root, title, field){
   const selected = answers[field] || [];
-  const div = document.createElement('div');
-  div.innerHTML = `<h3 style="text-align:center;">${title}</h3>
+  root.innerHTML = `
+    <h3 style="text-align:center;">${title}</h3>
     <p class="rank-help">Tap to select two. Your first tap is #1, second is #2. Tap again to unselect.</p>
     <div id="pick2Wrap" style="text-align:center;"></div>
-    <p style="text-align:center; margin-top:8px;">Selected: <strong>${selected.length ? selected.map((k,i)=>`${i+1}. ${labelFor(k)}`).join("  ") : "—"}</strong></p>`;
-  root.appendChild(div);
-  const wrap = div.querySelector('#pick2Wrap');
+    <p style="text-align:center; margin-top:8px;">Selected: <strong>${selected.length ? selected.map((k,i)=>`${i+1}. ${labelFor(k)}`).join("  ") : "—"}</strong></p>
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+      <button id="prevBtn" class="btn" style="max-width:160px;">Back</button>
+      <button id="nextBtn" class="btn" style="max-width:160px; ${selected.length===2?'':'opacity:.6; pointer-events:none;'}">Next</button>
+    </div>
+  `;
+  const wrap = root.querySelector('#pick2Wrap');
+  const prevBtn = root.querySelector('#prevBtn');
+  const nextBtn = root.querySelector('#nextBtn');
+
   affectionOptions.forEach(o=>{
     const pill = document.createElement('span');
     pill.className = 'pill' + (selected.includes(o.key) ? ' selected' : '');
     pill.textContent = o.text;
     pill.onclick = ()=>{
-      if(selected.includes(o.key)){
-        answers[field] = selected.filter(x=>x!==o.key);
-        renderStep();
+      const sel = answers[field] || [];
+      if(sel.includes(o.key)){
+        answers[field] = sel.filter(x=>x!==o.key);
       }else{
-        if(selected.length<2){
-          answers[field] = [...selected, o.key];
-          if(answers[field].length===2) { next(); return; }
-          renderStep();
-        }
+        if(sel.length<2){ answers[field] = [...sel, o.key]; }
       }
+      saveState();
+      renderStep(); // re-render same step to update selected and next button
     };
     wrap.appendChild(pill);
   });
+
+  prevBtn.onclick = ()=>{ if(step>0){ step--; saveState(); renderStep(); } };
+  nextBtn.onclick = ()=>{
+    if((answers[field]||[]).length!==2) return;
+    step++;
+    saveState();
+    renderStep();
+  };
 }
-/* helper used in the “Selected:” line */
 function labelFor(k){
   return {
     Playful:"Playful moments",
@@ -478,19 +598,45 @@ function labelFor(k){
   }[k] || k;
 }
 
-/* ===== Single-choice helper ===== */
+/* ===== Single-choice with Back/Next & hint ===== */
 function renderSingleList(root, title, options, onPick){
-  root.innerHTML = `<h3 style="text-align:center;">${title}</h3><div class="vertical-list"></div>`;
+  let picked = null;
+  root.innerHTML = `
+    <h3 style="text-align:center;">${title}</h3>
+    <p style="text-align:center; margin-top:-6px; color:#4a607a;">
+      <em>Please answer based on your relationship with your spouse.</em>
+    </p>
+    <div class="vertical-list"></div>
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+      <button id="prevBtn" class="btn" style="max-width:160px;">Back</button>
+      <button id="nextBtn" class="btn" style="max-width:160px; opacity:.6; pointer-events:none;">Next</button>
+    </div>
+  `;
   const v = root.querySelector('.vertical-list');
+  const prevBtn = root.querySelector('#prevBtn');
+  const nextBtn = root.querySelector('#nextBtn');
+
   options.forEach(([val, txt])=>{
     const b = document.createElement('button');
     b.className = 'answer-btn';
     b.textContent = txt;
-    b.onclick = ()=> onPick(val);
+    b.onclick = ()=>{
+      picked = val;
+      v.querySelectorAll('.answer-btn').forEach(x=> x.style.outline='none');
+      b.style.outline = '3px solid #3A7FBF';
+      nextBtn.style.opacity = '1';
+      nextBtn.style.pointerEvents = 'auto';
+      saveState();
+    };
     v.appendChild(b);
   });
+
+  prevBtn.onclick = ()=>{ if(step>0){ step--; saveState(); renderStep(); } };
+  nextBtn.onclick = ()=>{
+    if(picked===null) return;
+    onPick(picked); // onPick calls next()
+  };
 }
-function next(){ step++; (step<TOTAL_STEPS)? renderStep() : finalize(); }
 
 /* ===== Finalize → Results ===== */
 function finalize(){
@@ -536,7 +682,7 @@ function finalize(){
   renderResults(profile);
 }
 
-/* ===== Render Results ===== */
+/* ===== Render Results + PDF ===== */
 function renderResults(p){
   hideAllPages();
   document.getElementById('resultPage').classList.remove('hidden');
@@ -640,8 +786,31 @@ function renderResults(p){
     </div>
   `;
 
+  /* Download PDF button */
+  const dl = document.createElement('div');
+  dl.style.textAlign = 'center';
+  dl.innerHTML = `<button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download PDF</button>`;
+  container.appendChild(dl);
+
   document.getElementById('results').innerHTML = "";
   document.getElementById('results').appendChild(container);
+
+  document.getElementById('downloadPdfBtn').onclick = async ()=>{
+    const target = document.getElementById('soloReport');
+    const filename = `${(p.name||'Your')}-Connection-Profile.pdf`.replace(/\s+/g,'_');
+    const opt = {
+      margin: [0.5, 0.5, 0.5, 0.5],
+      filename,
+      image: { type: 'png', quality: 1 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+      pagebreak: { mode: ['css','legacy'] }
+    };
+    await html2pdf().set(opt).from(target).save();
+  };
+
+  /* Clear saved state so a new session starts fresh */
+  clearState();
 }
 
 /* ===== Helpers ===== */
