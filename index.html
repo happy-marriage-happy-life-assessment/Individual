@@ -80,7 +80,7 @@
   @media (max-width:700px){ .thank-title{ font-size:3.2rem; } }
   @media (max-width:420px){ .thank-title{ font-size:2.6rem; } }
 
-  /* Print tweaks for “Download PDF” (Print dialog) */
+  /* Print tweaks (for “Download PDF” = Print dialog) */
   @media print {
     .btn, .rank-actions, .rank-help { display:none !important; }
     .card { border:none; box-shadow:none; }
@@ -139,9 +139,8 @@
 </div>
 
 <script>
-/* ===== Build marker ===== */
-const BUILD = "individual-v6";
-console.log("Loaded build:", BUILD);
+/* ===== Build badge ===== */
+const BUILD = "individual-v7";
 document.addEventListener('DOMContentLoaded', () => {
   const i = document.getElementById('buildBadgeIntro');
   const r = document.getElementById('buildBadgeResults');
@@ -189,7 +188,7 @@ const scripture = {
   thankYou: "“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12"
 };
 
-/* Temperament mapping */
+/* Temperament helpers */
 function temperamentAccentFromKey(k){
   const map = {
     E: { color: typeColors.Emotional,    bg: typeOpac.Emotional    },
@@ -205,7 +204,7 @@ function temperamentAccentFromAffKey(k){
   return temperamentAccentFromKey(t);
 }
 
-/* Compassion & Care copy */
+/* Copy for Compassion & Care */
 const affEXP = {
   Playful: "You naturally lift the mood with humor, lightness, and spontaneous moments that say, “I’m with you.” You turn ordinary spaces into warm, safe places.",
   Initiative: "You show love by stepping in and taking pressure off—solving problems, removing obstacles, and protecting what matters.",
@@ -221,7 +220,7 @@ const affDES = {
   Support: "You feel honored when your spouse helps practically—sharing responsibilities and showing up consistently in the daily things."
 };
 
-/* Social/Decision hints */
+/* Social/Decision details */
 const temperamentDetails = {
   E: { looks:"You energize the room and move things forward with enthusiasm.",
        watch:"Fast pace can out-run deeper needs or quieter voices.",
@@ -240,7 +239,7 @@ const temperamentDetails = {
        tip:"Voice one specific need and one boundary you appreciate." }
 };
 
-/* Connection Pattern details */
+/* Connection Pattern copy */
 const patternDetail = {
   SteadyConnector: {
     connectionType: "Harmony-focused and steady—your presence calms the room and keeps connection safe.",
@@ -288,15 +287,13 @@ let answers = {
 };
 
 function saveState(){
-  const state = { yourName, step, answers };
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ yourName, step, answers })); } catch(e){}
 }
 function loadState(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return false;
     const s = JSON.parse(raw);
-    if(!s || typeof s !== 'object') return false;
     yourName = s.yourName || yourName;
     step = Number.isInteger(s.step) ? s.step : step;
     answers = s.answers || answers;
@@ -307,38 +304,28 @@ function clearState(){
   try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
 }
 
-/* ===== Boot ===== */
+/* ===== Boot (simplified: always start on click, restore if present) ===== */
 document.getElementById('startBtn').onclick = () => {
   const typed = document.getElementById('yourName').value.trim();
-  if(typed) yourName = typed;
+  if (typed) yourName = typed;
 
+  // Try restore; if restored but name missing, keep typed; if no name, block.
   const restored = loadState();
-  if(restored && yourName){
-    hideAllPages();
-    document.getElementById('quizPage').classList.remove('hidden');
-    document.getElementById('quizTitle').textContent = `Assessment — ${yourName}`;
-    renderStep();
+  if (!yourName) {
+    alert("Please enter your name to begin.");
     return;
   }
-  if(!yourName){ alert("Please enter your name to begin."); return; }
   hideAllPages();
   document.getElementById('quizPage').classList.remove('hidden');
   document.getElementById('quizTitle').textContent = `Assessment — ${yourName}`;
-  step = 0;
+  if (!restored) { step = 0; saveState(); }
   renderStep();
 };
 
-function hideAllPages(){
-  document.getElementById('introPage').classList.add('hidden');
-  document.getElementById('quizPage').classList.add('hidden');
-  document.getElementById('resultPage').classList.add('hidden');
-}
-
-/* ===== Step Renderer (auto-advance; no next/back) ===== */
+/* ===== Step Renderer (auto-advance) ===== */
 function renderStep(){
   document.getElementById('progress').textContent = `Step ${step+1} of ${TOTAL_STEPS}`;
   document.getElementById('progressBar').style.width = `${((step+1)/TOTAL_STEPS)*100}%`;
-
   const box = document.getElementById('questionContainer');
   box.innerHTML = "";
 
@@ -415,7 +402,6 @@ function renderStep(){
     ["IndependentConnector","Have space first, then return to talk."]
   ], val => { answers.bond["bond4"]=val; saveState(); finalize(); });
 }
-
 function next(){ step++; renderStep(); }
 
 /* ===== Rank UI ===== */
@@ -441,7 +427,7 @@ function renderRankUI(root){
       dragEl = e.target; e.dataTransfer.effectAllowed='move'; e.target.classList.add('dragging');
     }
   });
-  ul.addEventListener('dragend', e=>{ if(dragEl){ dragEl.classList.remove('dragging'); dragEl=null; }});
+  ul.addEventListener('dragend', ()=>{ if(dragEl){ dragEl.classList.remove('dragging'); dragEl=null; }});
   ul.addEventListener('dragover', e=>{
     e.preventDefault();
     const after = getAfter(ul, e.clientY);
@@ -491,14 +477,8 @@ function refreshRankList(ul){
       </div>
     `;
     const [upBtn, downBtn] = li.querySelectorAll('.rank-actions button');
-    upBtn.onclick = () => {
-      const i = answers.rank.indexOf(k);
-      if(i>0){ [answers.rank[i-1], answers.rank[i]] = [answers.rank[i], answers.rank[i-1]]; saveState(); refreshRankList(ul); }
-    };
-    downBtn.onclick = () => {
-      const i = answers.rank.indexOf(k);
-      if(i<answers.rank.length-1){ [answers.rank[i+1], answers.rank[i]] = [answers.rank[i], answers.rank[i+1]]; saveState(); refreshRankList(ul); }
-    };
+    upBtn.onclick = () => { const i = answers.rank.indexOf(k); if(i>0){ [answers.rank[i-1], answers.rank[i]] = [answers.rank[i], answers.rank[i-1]]; saveState(); refreshRankList(ul); } };
+    downBtn.onclick = () => { const i = answers.rank.indexOf(k); if(i<answers.rank.length-1){ [answers.rank[i+1], answers.rank[i]] = [answers.rank[i], answers.rank[i+1]]; saveState(); refreshRankList(ul); } };
     ul.appendChild(li);
   });
 }
@@ -530,7 +510,7 @@ function renderPick2(root, title, field){
       if(sel.includes(o.key)){
         answers[field] = sel.filter(x=>x!==o.key);
         saveState();
-        renderStep(); // update selected text
+        renderStep();
       }else{
         if(sel.length<2){
           answers[field] = [...sel, o.key];
@@ -562,19 +542,16 @@ function renderSingleList(root, title, options, onPick){
     <div class="vertical-list"></div>
   `;
   const v = root.querySelector('.vertical-list');
-
   options.forEach(([val, txt])=>{
     const b = document.createElement('button');
     b.className = 'answer-btn';
     b.textContent = txt;
-    b.onclick = ()=>{
-      onPick(val);
-    };
+    b.onclick = ()=> onPick(val);
     v.appendChild(b);
   });
 }
 
-/* ===== Finalize → Results ===== */
+/* ===== Finalize & render results ===== */
 function finalize(){
   const socialCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.social).forEach(k=> socialCounts[k]++);
   const decisionCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
@@ -618,7 +595,7 @@ function finalize(){
   renderResults(profile);
 }
 
-/* ===== Render Results + Print-as-PDF ===== */
+/* ===== Render Results + “Download PDF” (Print dialog) ===== */
 function renderResults(p){
   hideAllPages();
   document.getElementById('resultPage').classList.remove('hidden');
@@ -663,3 +640,215 @@ function renderResults(p){
     <div class="verse">“See, I am doing a new thing! … Do you not perceive it?” — Isaiah 43:19</div>
     <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>
     ${typesColumn(p.name, p.untappedTypes)}
+
+    ${promptsBlock([
+      "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
+      "<em>Try it:</em> Design a tiny experiment you can do this week.",
+      "<em>Reflect:</em> What did you enjoy or learn?"
+    ])}
+  `;
+
+  /* Section 2 */
+  container.innerHTML += `
+    <div class="section-divider"></div>
+    <h3 class="section-title">Section 2: Relational Dynamics</h3>
+    <div class="intro-text">
+      These everyday rhythms shape your connection—how you care, engage socially, share influence, and honor one another.
+    </div>
+
+    <div class="subsection-divider"></div>
+    <h4 class="subsection-title">Compassion & Care</h4>
+    <div class="verse">${scripture.compassionCare}</div>
+    <p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>
+    ${compassionColumn(p)}
+
+    <div class="subsection-divider"></div>
+    <h4 class="subsection-title">Social Preferences</h4>
+    <div class="verse">${scripture.socialEngagement}</div>
+    ${temperamentBlock(p.name, "Your Social Energy", buildTemperamentText(p.socialTop, p.socialSummary), p.socialTop)}
+
+    <div class="subsection-divider"></div>
+    <h4 class="subsection-title">Power & Control</h4>
+    <div class="verse">${scripture.decisionLeadership}</div>
+    ${temperamentBlock(p.name, "Your Leadership Style", buildTemperamentText(p.decisionTop, p.decisionSummary), p.decisionTop)}
+
+    <div class="subsection-divider"></div>
+    <h4 class="subsection-title">Respect & Recognition</h4>
+    <div class="verse">${scripture.respectRecognition}</div>
+    ${rrCard(p)}
+  `;
+
+  /* Section 3 */
+  container.innerHTML += `
+    <div class="section-divider"></div>
+    <h3 class="section-title">Section 3: Connection Patterns</h3>
+    <div class="verse">${scripture.connectionPattern}</div>
+    <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>
+    ${patternColumn(p)}
+
+    <div class="subsection-divider"></div>
+    <h4 class="subsection-title">Your Personalized Repair Plan</h4>
+    ${strategySelfCard(p.bondingKey)}
+
+    <div class="section-divider"></div>
+    <div class="result-block" style="border-left-color:transparent; background:#fff;">
+      <h3 class="thank-title">Thank You</h3>
+      <div class="verse">${scripture.thankYou}</div>
+      <p class="intro-text">We hope you enjoyed discovering your unique connection patterns. Use these insights as a friendly guide—not labels—to spark great conversations and small, consistent changes.</p>
+      <p class="intro-text">To be truly known is to unlock the deepest intimacy—embrace what’s true today and aim courageously for what’s possible tomorrow.</p>
+    </div>
+  `;
+
+  /* “Download PDF” → Print dialog */
+  const dl = document.createElement('div');
+  dl.style.textAlign = 'center';
+  dl.innerHTML = `<button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download PDF</button>`;
+  container.appendChild(dl);
+
+  document.getElementById('results').innerHTML = "";
+  document.getElementById('results').appendChild(container);
+
+  document.getElementById('downloadPdfBtn').onclick = ()=> window.print();
+
+  clearState(); // fresh next time
+}
+
+/* ===== Helpers ===== */
+function typesColumn(name, types){
+  return `
+    <div class="partner-card"><div class="partner-inner">
+      <div class="partner-header">${name || "Results"}</div>
+      ${types.map(k=>`
+        <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
+          <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
+        </div>
+      `).join("")}
+    </div></div>
+  `;
+}
+function compassionColumn(p){
+  const exp = (p.expressedTop2||[]).map(k=>{
+    const acc = temperamentAccentFromAffKey(k);
+    return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>Expressed:</strong> ${affEXP[k]}
+    </div>`;
+  }).join("");
+  const des = (p.desiredTop2||[]).map(k=>{
+    const acc = temperamentAccentFromAffKey(k);
+    return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>Most Loved:</strong> ${affDES[k]}
+    </div>`;
+  }).join("");
+  return `
+    <div class="partner-card"><div class="partner-inner">
+      <div class="partner-header">${p.name || "Results"}</div>
+      <div class="partner-subhead"><strong>${p.name || "You"} — You Express Love</strong></div>
+      ${exp || `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make two selections above to see details.</div>`}
+      <div class="partner-subhead"><strong>${p.name || "You"} — You Feel Most Loved</strong></div>
+      ${des || `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make two selections above to see details.</div>`}
+    </div></div>
+  `;
+}
+function buildTemperamentText(topKey, summary){
+  if(!topKey) return summary || "You flex based on the moment.";
+  const d = temperamentDetails[topKey] || {};
+  return `${summary || ""} <br><em>What it looks like:</em> ${d.looks || ""} <br><em>Watch-outs:</em> ${d.watch || ""} <br><em>Helpful tip:</em> ${d.tip || ""}`;
+}
+function temperamentBlock(name, title, text, topKey){
+  const acc = temperamentAccentFromKey(topKey);
+  return `
+    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>${name || "You"} — ${title}:</strong> <span>${text}</span>
+    </div>
+  `;
+}
+function rrAccent(label){
+  if(label==="Strong")   return { color:typeColors.Partnership, bg:typeOpac.Partnership };
+  if(label==="Moderate") return { color:typeColors.Commitment,  bg:typeOpac.Commitment  };
+  return { color:typeColors.Emotional, bg:typeOpac.Emotional };
+}
+function rrCard(p){
+  const acc = rrAccent(p.rrLabel);
+  return `
+    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>${p.name || "You"} — Respect &amp; Recognition:</strong> ${p.rrLabel} (${p.rrScore}/6)
+      <p style="margin:8px 0 0;">${rrStatement(p.rrScore)}</p>
+    </div>
+  `;
+}
+function rrStatement(score){
+  if(score>=5) return "You generally feel affirmed, appreciated, respected, and validated—and you likely offer the same in return.";
+  if(score>=3) return "You often feel appreciated and respected, though there may be moments when clearer affirmation would be meaningful.";
+  return "You may not consistently feel affirmed or validated; be explicit about the kinds of appreciation that help you feel respected.";
+}
+function patternColumn(p){
+  const map = {
+    SteadyConnector:{ color: typeColors.Partnership,  bg: typeOpac.Partnership },
+    ReassuranceSeeker:{ color: typeColors.Emotional, bg: typeOpac.Emotional },
+    IndependentConnector:{ color: typeColors.Intellectual, bg: typeOpac.Intellectual },
+    GuardedConnector:{ color: typeColors.Conflict,   bg: typeOpac.Conflict }
+  };
+  const acc = map[p.bondingKey] || { color:"#4D9DE0", bg:"rgba(77,157,224,.08)" };
+  const d = patternDetail[p.bondingKey];
+  return `
+    <div class="partner-card"><div class="partner-inner">
+      <div class="partner-header">${p.name || "You"}</div>
+      <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+        <p><strong>Connection Type:</strong> ${d.connectionType}</p>
+        <p><strong>Strengths:</strong> You ${d.strengths}</p>
+        <p><strong>Challenges:</strong> You ${d.challenges}</p>
+        <p><strong>Tendencies in Conflict:</strong> ${d.tendencies}</p>
+        <p><strong>Coping Skills:</strong> ${d.coping}</p>
+      </div>
+    </div></div>
+  `;
+}
+function strategySelfCard(bondingKey){
+  const tipsBy = {
+    SteadyConnector: [
+      "Set a five-minute evening check-in: one feeling, one need, one next step.",
+      "When tempted to smooth over, ask yourself: “What do I really need to say?”",
+      "Close loops—agree on the next check-in time before ending tough talks."
+    ],
+    ReassuranceSeeker: [
+      "Ask for one clear reassurance, then take 5–10 calming breaths.",
+      "If you’re spiraling, request a 10-minute reset with a promised return time.",
+      "Use “I feel… I need…” instead of explanations or accusations."
+    ],
+    IndependentConnector: [
+      "Before taking space, reassure with one sentence, then set a clear return time.",
+      "Use a notepad to capture your main point so you don’t avoid the talk.",
+      "Come back with one concrete request and one compromise."
+    ],
+    GuardedConnector: [
+      "Do one daily micro-trust act (keep one small promise).",
+      "Name one safe topic and share a little more than you’re used to.",
+      "Use a short written note to begin hard conversations kindly."
+    ]
+  }[bondingKey] || [];
+  const acc = (bondingKey==="ReassuranceSeeker") ? { color: typeColors.Emotional, bg: typeOpac.Emotional }
+            : (bondingKey==="IndependentConnector") ? { color: typeColors.Intellectual, bg: typeOpac.Intellectual }
+            : (bondingKey==="GuardedConnector") ? { color: typeColors.Conflict, bg: typeOpac.Conflict }
+            : { color: typeColors.Partnership, bg: typeOpac.Partnership };
+  return `
+    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>Your Go-To Repair Moves</strong>
+      <ul class="results-list" style="margin-top:6px;">
+        ${tipsBy.map(t=>`<li>${t}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+function promptsBlock(items){
+  return `
+    <div class="prompt-block">
+      <strong>Reflection Prompts</strong>
+      <ul class="results-list" style="margin-top:6px;">
+        ${items.map(li=>`<li>${li}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
