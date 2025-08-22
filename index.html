@@ -9,12 +9,12 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES:
-     - Step 0 uses a 2-step picker (Top 4 → Next 4) with strong guards
-     - Intro offers Start Fresh / Resume Saved (prevents stale-step issues)
-     - Results never empty; safe fallbacks and a 12-type glossary
-     - Print dialog used for “Download PDF”
-     - Each step autosaves; state is normalized before every render
+     PATCH NOTES (v13):
+     - Results page rebuilt with DOM construction (no fragile template chains)
+     - Strong fallbacks so Core/Growth/Untapped always render
+     - Top-4 → Next-4 picker (Step 0) intact, autosave + Start Fresh/Resume
+     - “Download PDF” opens Print dialog
+     - Numbered sections for easy patching
      =========================================================== -->
 
 <!-- =======================
@@ -136,12 +136,10 @@
 /* =======================================
    Section 6: Build/Version Marker
    ======================================= */
-const BUILD = "individual-v12";
+const BUILD = "individual-v13";
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('buildBadgeIntro').textContent = BUILD;
   document.getElementById('buildBadgeResults').textContent = BUILD;
-
-  // show Resume button if saved state exists
   if (localStorage.getItem('mca_individual_state_v1')) {
     document.getElementById('resumeBtn').classList.remove('hidden');
   }
@@ -188,7 +186,7 @@ const TOTAL_STEPS = 13; // 0..12
 let step = 0;
 
 const DEFAULT_ANSWERS = {
-  rank: [...TYPES],          // used as fallback if top/next not present
+  rank: [...TYPES],
   expressedTop2: [],
   desiredTop2: [],
   social: {},
@@ -235,9 +233,7 @@ function loadState(){
 function clearState(){
   try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
 }
-function hasSavedState(){
-  return !!localStorage.getItem(STORAGE_KEY);
-}
+function hasSavedState(){ return !!localStorage.getItem(STORAGE_KEY); }
 
 /* =======================================
    Section 9: Copy for Results
@@ -374,7 +370,7 @@ function renderStep(){
   const box = document.getElementById('questionContainer');
   box.innerHTML = "";
 
-  // Step 0: NEW Top/Next picker (replaces 12-item ranking)
+  // Step 0: Top/Next picker
   if(step===0){ renderTopNextPicker(box); saveState(); return; }
 
   // Step 1–12:
@@ -457,13 +453,11 @@ function next(){ step++; renderStep(); }
 function renderTopNextPicker(root){
   ensureDefaults();
 
-  // Determine stage
   const stage = (answers.top4.length < 4) ? 'top4'
                : (answers.next4.length < 4) ? 'next4'
                : 'done';
 
   if(stage === 'done'){
-    // Build final rank = [Top4, Next4, Remaining]
     const picked = [...answers.top4, ...answers.next4];
     const remaining = TYPES.filter(k => !picked.includes(k));
     answers.rank = picked.length ? [...picked, ...remaining] : [...TYPES];
@@ -477,7 +471,6 @@ function renderTopNextPicker(root){
   const hint  = "Tap to select (tap again to unselect).";
   const pickedSet = new Set(isTop ? answers.top4 : answers.next4);
 
-  // Available pool = anything not picked in previous stage, plus current picks (so you can unselect)
   const alreadyPicked = new Set([...answers.top4, ...answers.next4]);
   const pool = TYPES.filter(k => !alreadyPicked.has(k) || pickedSet.has(k));
 
@@ -504,17 +497,12 @@ function renderTopNextPicker(root){
       else       answers.next4 = [...pickedSet];
 
       saveState();
-      // Auto-advance when full for this stage
-      if(pickedSet.size === 4) {
-        setTimeout(()=> renderTopNextPicker(root), 120);
-      } else {
-        renderTopNextPicker(root);
-      }
+      if(pickedSet.size === 4) setTimeout(()=> renderTopNextPicker(root), 120);
+      else renderTopNextPicker(root);
     };
     wrap.appendChild(pill);
   });
 
-  // If somehow pool is empty (weird saved state), recover gracefully
   if (pool.length === 0) {
     const note = document.createElement('p');
     note.className = 'muted';
@@ -590,23 +578,18 @@ function renderSingleList(root, title, options, onPick){
 function finalize(){
   ensureDefaults();
 
-  // --- Build Core/Growth/Untapped safely ---
+  // Build Core/Growth/Untapped safely
   let core   = Array.isArray(answers.top4)  && answers.top4.length  === 4 ? [...answers.top4]  : [];
   let growth = Array.isArray(answers.next4) && answers.next4.length === 4 ? [...answers.next4] : [];
-
   if (core.length !== 4 || growth.length !== 4) {
-    // Fallback to legacy rank, or all TYPES if needed
-    const r = Array.isArray(answers.rank) && answers.rank.length === TYPES.length
-      ? answers.rank.slice()
-      : TYPES.slice();
+    const r = Array.isArray(answers.rank) && answers.rank.length === TYPES.length ? answers.rank.slice() : TYPES.slice();
     core   = r.slice(0,4);
     growth = r.slice(4,8);
   }
-
   const picked = new Set([...core, ...growth]);
   const untapped = TYPES.filter(k => !picked.has(k));
 
-  // --- Summaries ---
+  // Summaries
   const socialCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.social).forEach(k=> socialCounts[k]++);
   const decisionCounts= {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
   const socialTop = Object.entries(socialCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
@@ -650,16 +633,38 @@ function finalize(){
 }
 
 function renderResults(p){
+  // Setup result container
   hideAllPages();
-  document.getElementById('resultPage').classList.remove('hidden');
+  const resultPage = document.getElementById('resultPage');
+  resultPage.classList.remove('hidden');
   document.getElementById('resultsHeader').textContent = "Your Marriage Connection Profile";
 
+  const mount = document.getElementById('results');
+  mount.innerHTML = "";
   const container = document.createElement('div');
   container.id = "soloReport";
+  mount.appendChild(container);
 
-  /* ---------- Section 1: Your Intimacy Preferences ---------- */
-  container.insertAdjacentHTML('beforeend', `
-    <div class="section-divider"></div>
+  // Helper to add a section divider
+  const addDivider = () => {
+    const d = document.createElement('div');
+    d.className = 'section-divider';
+    container.appendChild(d);
+  };
+  const addSubDivider = () => {
+    const d = document.createElement('div');
+    d.className = 'subsection-divider';
+    container.appendChild(d);
+  };
+  const addHTML = (html) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    while (tmp.firstChild) container.appendChild(tmp.firstChild);
+  };
+
+  /* ---------- Section 1 ---------- */
+  addDivider();
+  addHTML(`
     <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
     <div class="intro-text">
       This section is about understanding intimacy—the profound experience of being truly known, deeply connected, and fully cherished. It reveals your unique profile, showing how you naturally express love and how you feel most loved in return.
@@ -667,107 +672,125 @@ function renderResults(p){
     </div>
   `);
 
-  // Collapsible “All 12 Type Definitions”
+  // Collapsible glossary
   const defsWrap = document.createElement('div');
   defsWrap.style.textAlign = 'center';
-  defsWrap.innerHTML = `
-    <button id="toggleDefsBtn" class="btn" style="max-width:260px;">Show All 12 Type Definitions</button>
-    <div id="allDefs" class="hidden" style="margin-top:10px; text-align:left;">
-      ${TYPES.map(k => `
-        <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
-          <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
-        </div>
-      `).join('')}
-    </div>
-  `;
-  container.appendChild(defsWrap);
-  defsWrap.querySelector('#toggleDefsBtn').onclick = () => {
-    const panel = defsWrap.querySelector('#allDefs');
+  const btn = document.createElement('button');
+  btn.id = 'toggleDefsBtn';
+  btn.className = 'btn';
+  btn.style.maxWidth = '260px';
+  btn.textContent = 'Show All 12 Type Definitions';
+  const panel = document.createElement('div');
+  panel.id = 'allDefs';
+  panel.className = 'hidden';
+  panel.style.marginTop = '10px';
+  panel.style.textAlign = 'left';
+  TYPES.forEach(k=>{
+    const block = document.createElement('div');
+    block.className = 'result-block';
+    block.style.borderLeftColor = typeColors[k];
+    block.style.background = typeOpac[k];
+    block.innerHTML = `<strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}`;
+    panel.appendChild(block);
+  });
+  btn.onclick = () => {
     const isHidden = panel.classList.contains('hidden');
-    panel.classList.toggle('hidden', !isHidden);
-    defsWrap.querySelector('#toggleDefsBtn').textContent =
-      isHidden ? 'Hide All 12 Type Definitions' : 'Show All 12 Type Definitions';
+    panel.classList.toggle('hidden', !isHidden ? true : false);
+    btn.textContent = isHidden ? 'Hide All 12 Type Definitions' : 'Show All 12 Type Definitions';
   };
+  defsWrap.appendChild(btn); defsWrap.appendChild(panel); container.appendChild(defsWrap);
 
-  // Core / Growth / Untapped blocks
-  container.insertAdjacentHTML('beforeend', `
-    <div class="subsection-divider"></div>
+  // Core
+  addSubDivider();
+  addHTML(`
     <h4 class="subsection-title">Your Core Connection Strengths</h4>
     <div class="verse">“Above all, love each other deeply, because love covers over a multitude of sins.” — 1 Peter 4:8</div>
     <p class="intro-text">These are your most fulfilling and effortless pathways to deeper closeness.</p>
-    ${typesColumn(p.name, p.coreTypes)}
-    ${promptsBlock([
-      "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
-      "<em>Be Creative:</em> Pick one practical way to use a strength intentionally this week.",
-      "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
-    ])}
-    <div class="subsection-divider"></div>
+  `);
+  addHTML(typesColumn(p.name, p.coreTypes));
+  addHTML(promptsBlock([
+    "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
+    "<em>Be Creative:</em> Pick one practical way to use a strength intentionally this week.",
+    "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
+  ]));
+
+  // Growth
+  addSubDivider();
+  addHTML(`
     <h4 class="subsection-title">Your Areas for Growth</h4>
     <div class="verse">“Let us consider how we may spur one another on toward love and good deeds.” — Hebrews 10:24</div>
     <p class="intro-text">These are wonderful opportunities for intentional focus. With a bit of practice and presence, you can deepen connection here.</p>
-    ${typesColumn(p.name, p.growthTypes)}
-    ${promptsBlock([
-      "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
-      "<em>Support plan:</em> What would help you show up here more consistently?"
-    ])}
-    <div class="subsection-divider"></div>
+  `);
+  addHTML(typesColumn(p.name, p.growthTypes));
+  addHTML(promptsBlock([
+    "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
+    "<em>Support plan:</em> What would help you show up here more consistently?"
+  ]));
+
+  // Untapped
+  addSubDivider();
+  addHTML(`
     <h4 class="subsection-title">Your Untapped Opportunities</h4>
     <div class="verse">“See, I am doing a new thing! … Do you not perceive it?” — Isaiah 43:19</div>
     <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>
-    ${typesColumn(p.name, p.untappedTypes)}
-    ${promptsBlock([
-      "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
-      "<em>Try it:</em> Design a tiny experiment you can do this week.",
-      "<em>Reflect:</em> What did you enjoy or learn?"
-    ])}
   `);
+  addHTML(typesColumn(p.name, p.untappedTypes));
+  addHTML(promptsBlock([
+    "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
+    "<em>Try it:</em> Design a tiny experiment you can do this week.",
+    "<em>Reflect:</em> What did you enjoy or learn?"
+  ]));
 
-  /* ---------- Section 2: Relational Dynamics ---------- */
-  container.insertAdjacentHTML('beforeend', `
-    <div class="section-divider"></div>
+  /* ---------- Section 2 ---------- */
+  addDivider();
+  addHTML(`
     <h3 class="section-title">Section 2: Relational Dynamics</h3>
     <div class="intro-text">
       These everyday rhythms shape your connection—how you care, engage socially, share influence, and honor one another.
     </div>
-    <div class="subsection-divider"></div>
-    <h4 class="subsection-title">Compassion & Care</h4>
-    <div class="verse">${scripture.compassionCare}</div>
-    <p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>
-  `);
-  container.insertAdjacentHTML('beforeend', compassionColumn(p));
-
-  container.insertAdjacentHTML('beforeend', `
-    <div class="subsection-divider"></div>
-    <h4 class="subsection-title">Social Preferences</h4>
-    <div class="verse">${scripture.socialEngagement}</div>
-    ${temperamentBlock(p.name, "Your Social Energy", buildTemperamentText(p.socialTop, p.socialSummary), p.socialTop)}
-    <div class="subsection-divider"></div>
-    <h4 class="subsection-title">Power & Control</h4>
-    <div class="verse">${scripture.decisionLeadership}</div>
-    ${temperamentBlock(p.name, "Your Leadership Style", buildTemperamentText(p.decisionTop, p.decisionSummary), p.decisionTop)}
-    <div class="subsection-divider"></div>
-    <h4 class="subsection-title">Respect & Recognition</h4>
-    <div class="verse">${scripture.respectRecognition}</div>
-    ${rrCard(p)}
   `);
 
-  /* ---------- Section 3: Connection Patterns ---------- */
-  container.insertAdjacentHTML('beforeend', `
-    <div class="section-divider"></div>
+  // Compassion & Care
+  addSubDivider();
+  addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
+  addHTML(`<div class="verse">${scripture.compassionCare}</div>`);
+  addHTML(`<p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>`);
+  addHTML(compassionColumn(p));
+
+  // Social
+  addSubDivider();
+  addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
+  addHTML(`<div class="verse">${scripture.socialEngagement}</div>`);
+  addHTML(temperamentBlock(p.name, "Your Social Energy", buildTemperamentText(p.socialTop, p.socialSummary), p.socialTop));
+
+  // Power & Control
+  addSubDivider();
+  addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
+  addHTML(`<div class="verse">${scripture.decisionLeadership}</div>`);
+  addHTML(temperamentBlock(p.name, "Your Leadership Style", buildTemperamentText(p.decisionTop, p.decisionSummary), p.decisionTop));
+
+  // Respect & Recognition
+  addSubDivider();
+  addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
+  addHTML(`<div class="verse">${scripture.respectRecognition}</div>`);
+  addHTML(rrCard(p));
+
+  /* ---------- Section 3 ---------- */
+  addDivider();
+  addHTML(`
     <h3 class="section-title">Section 3: Connection Patterns</h3>
     <div class="verse">${scripture.connectionPattern}</div>
     <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>
   `);
-  container.insertAdjacentHTML('beforeend', patternColumn(p));
-  container.insertAdjacentHTML('beforeend', `
-    <div class="subsection-divider"></div>
-    <h4 class="subsection-title">Your Personalized Repair Plan</h4>
-  `);
-  container.insertAdjacentHTML('beforeend', strategySelfCard(p.bondingKey));
+  addHTML(patternColumn(p));
 
-  // Thank you + Print-as-PDF
-  container.insertAdjacentHTML('beforeend', `
-    <div class="section-divider"></div>
+  addSubDivider();
+  addHTML(`<h4 class="subsection-title">Your Personalized Repair Plan</h4>`);
+  addHTML(strategySelfCard(p.bondingKey));
+
+  // Thank you + Print
+  addDivider();
+  addHTML(`
     <div class="result-block" style="border-left-color:transparent; background:#fff;">
       <h3 class="thank-title">Thank You</h3>
       <div class="verse">${scripture.thankYou}</div>
@@ -779,10 +802,6 @@ function renderResults(p){
     </div>
   `);
 
-  document.getElementById('results').innerHTML = "";
-  document.getElementById('results').appendChild(container);
-
-  // Print dialog (Save as PDF)
   document.getElementById('downloadPdfBtn').onclick = ()=> window.print();
 
   // Clear saved state so next session starts fresh
@@ -833,6 +852,20 @@ function buildTemperamentText(topKey, summary){
   if(!topKey) return summary || "You flex based on the moment.";
   const d = temperamentDetails[topKey] || {};
   return `${summary || ""} <br><em>What it looks like:</em> ${d.looks || ""} <br><em>Watch-outs:</em> ${d.watch || ""} <br><em>Helpful tip:</em> ${d.tip || ""}`;
+}
+function temperamentAccentFromKey(k){
+  const map = {
+    E: { color: typeColors.Emotional,    bg: typeOpac.Emotional    },
+    S: { color: typeColors.Commitment,   bg: typeOpac.Commitment   },
+    R: { color: typeColors.Intellectual, bg: typeOpac.Intellectual },
+    A: { color: typeColors.Affable,      bg: typeOpac.Affable      },
+    U: { color: typeColors.Partnership,  bg: typeOpac.Partnership  }
+  };
+  return map[k] || { color:"#4D9DE0", bg:"rgba(77,157,224,.08)" };
+}
+function temperamentAccentFromAffKey(k){
+  const t = { Playful:"E", Initiative:"S", DeepTalk:"R", Warmth:"A", Support:"U" }[k];
+  return temperamentAccentFromKey(t);
 }
 function temperamentBlock(name, title, text, topKey){
   const acc = temperamentAccentFromKey(topKey);
