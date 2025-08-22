@@ -547,6 +547,26 @@ function renderSingleList(root, title, options, onPick){
    ======================================= */
 function finalize(){
   ensureDefaults();
+
+  // --- Build Core/Growth/Untapped safely ---
+  let core = Array.isArray(answers.top4) && answers.top4.length === 4 ? [...answers.top4] : [];
+  let growth = Array.isArray(answers.next4) && answers.next4.length === 4 ? [...answers.next4] : [];
+
+  // If Top/Next not complete, fall back to legacy rank order
+  if (core.length !== 4 || growth.length !== 4) {
+    const r = Array.isArray(answers.rank) && answers.rank.length === TYPES.length
+      ? answers.rank.slice()
+      : TYPES.slice();
+
+    core   = r.slice(0,4);
+    growth = r.slice(4,8);
+  }
+
+  // Untapped = remaining not in core/growth
+  const picked = new Set([...core, ...growth]);
+  const untapped = TYPES.filter(k => !picked.has(k));
+
+  // --- Compute summaries (unchanged) ---
   const socialCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.social).forEach(k=> socialCounts[k]++);
   const decisionCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
   const socialTop = Object.entries(socialCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
@@ -571,17 +591,19 @@ function finalize(){
   const rrScore = (answers.rr.rr1 ?? 0) + (answers.rr.rr2 ?? 0);
   const rrLabel = rrScore>=5 ? "Strong" : rrScore>=3 ? "Moderate" : "Needs Attention";
 
+  // Bonding pattern
   const bondCounts = {SteadyConnector:0, ReassuranceSeeker:0, IndependentConnector:0, GuardedConnector:0};
   Object.values(answers.bond).forEach(k=> bondCounts[k]++);
   const bondingKey = Object.entries(bondCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || "SteadyConnector";
 
+  // Final profile for rendering
   const profile = {
-    name: yourName,
-    coreTypes: answers.top4,             // Core = Top-4
-    growthTypes: answers.next4,          // Growth = Next-4
-    untappedTypes: TYPES.filter(k=> !answers.top4.includes(k) && !answers.next4.includes(k)),
-    expressedTop2: [...answers.expressedTop2],
-    desiredTop2: [...answers.desiredTop2],
+    name: yourName || "You",
+    coreTypes: core,
+    growthTypes: growth,
+    untappedTypes: untapped,
+    expressedTop2: [...(answers.expressedTop2||[])],
+    desiredTop2: [...(answers.desiredTop2||[])],
     socialTop, decisionTop, socialSummary, decisionSummary,
     rrScore, rrLabel, bondingKey
   };
@@ -597,6 +619,30 @@ function renderResults(p){
   const container = document.createElement('div'); container.id = "soloReport";
 
   /* Section 1 */
+       // Collapsible "All 12 Types with Explanations"
+  const defsWrap = document.createElement('div');
+  defsWrap.style.textAlign = 'center';
+  defsWrap.innerHTML = `
+    <button id="toggleDefsBtn" class="btn" style="max-width:260px;">Show All 12 Type Definitions</button>
+    <div id="allDefs" class="hidden" style="margin-top:10px; text-align:left;">
+      ${TYPES.map(k => `
+        <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
+          <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
+        </div>
+      `).join('')}
+    </div>
+  `;
+  container.appendChild(defsWrap);
+
+  // Toggle behavior
+  defsWrap.querySelector('#toggleDefsBtn').onclick = () => {
+    const panel = defsWrap.querySelector('#allDefs');
+    const isHidden = panel.classList.contains('hidden');
+    panel.classList.toggle('hidden', !isHidden ? true : false);
+    defsWrap.querySelector('#toggleDefsBtn').textContent =
+      isHidden ? 'Hide All 12 Type Definitions' : 'Show All 12 Type Definitions';
+  };
+
   container.innerHTML += `
     <div class="section-divider"></div>
     <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
