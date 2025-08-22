@@ -10,11 +10,11 @@
 
 <!-- ===========================================================
      PATCH NOTES (read me):
-     - Step 0 ranking replaced by a 2-step picker (Top 4 → Next 4)
-       Find it in:  Section 12: Step UIs — Top/Next Picker (NEW)
-     - Step renderer calls renderTopNextPicker() (Section 11)
-     - State normalizer ensureDefaults() protects against old saves
-       Find it in:  Section 8: Local Storage & State
+     - Step 0 uses a 2-step picker (Top 4 → Next 4) with strong guards
+     - Results page never empty (fallback build of buckets)
+     - Collapsible “All 12 Type Definitions” glossary added
+     - Avoid mixing innerHTML += and appendChild (prevents node loss)
+     - Each step autosaves; on load we normalize any old/corrupt state
      =========================================================== -->
 
 <!-- =======================
@@ -133,7 +133,7 @@
 /* =======================================
    Section 6: Build/Version Marker
    ======================================= */
-const BUILD = "individual-v9";
+const BUILD = "individual-v11";
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('buildBadgeIntro').textContent = BUILD;
   document.getElementById('buildBadgeResults').textContent = BUILD;
@@ -180,15 +180,15 @@ const TOTAL_STEPS = 13; // 0..12 (0 = Top/Next picker)
 let step = 0;
 
 const DEFAULT_ANSWERS = {
-  rank: [...TYPES],          // legacy, rebuilt from top4/next4 on step 0
+  rank: [...TYPES],          // legacy, rebuilt from top4/next4 at step 0 or used as fallback
   expressedTop2: [],
   desiredTop2: [],
   social: {},
   decision: {},
   rr: { rr1:null, rr2:null },
   bond: {},
-  top4: [],                  // NEW
-  next4: []                  // NEW
+  top4: [],
+  next4: []
 };
 let answers = JSON.parse(JSON.stringify(DEFAULT_ANSWERS));
 
@@ -311,8 +311,8 @@ document.getElementById('startBtn').onclick = () => {
     if (typed) yourName = typed;
     if (!yourName) yourName = "You";
 
-    const restored = loadState(); // may hydrate step & answers
-    ensureDefaults();             // patch any old/corrupt saves
+    const restored = loadState(); // hydrate prior session if present
+    ensureDefaults();
     if (!Number.isInteger(step) || step < 0 || step >= TOTAL_STEPS) step = 0;
 
     // Show quiz
@@ -340,8 +340,12 @@ function hideAllPages(){
    ======================================= */
 function renderStep(){
   ensureDefaults();
-  document.getElementById('progress').textContent = `Step ${step+1} of ${TOTAL_STEPS}`;
-  document.getElementById('progressBar').style.width = `${((step+1)/TOTAL_STEPS)*100}%`;
+
+  // Progress UI
+  const progEl = document.getElementById('progress');
+  const barEl  = document.getElementById('progressBar');
+  if (progEl) progEl.textContent = `Step ${step+1} of ${TOTAL_STEPS}`;
+  if (barEl)  barEl.style.width   = `${((step+1)/TOTAL_STEPS)*100}%`;
 
   const box = document.getElementById('questionContainer');
   box.innerHTML = "";
@@ -349,7 +353,7 @@ function renderStep(){
   // Step 0: NEW Top/Next picker (replaces 12-item ranking)
   if(step===0){ renderTopNextPicker(box); saveState(); return; }
 
-  // Step 1–12: unchanged logic
+  // Step 1–12:
   if(step===1){ renderPick2(box, "How you give love — choose your Top 2", "expressedTop2"); saveState(); return; }
   if(step===2){ renderPick2(box, "How you feel most loved — choose your Top 2", "desiredTop2"); saveState(); return; }
 
@@ -430,14 +434,15 @@ function renderTopNextPicker(root){
   ensureDefaults();
 
   // Determine stage
-  const stage = (answers.top4.length < 4) ? 'top4' :
-                (answers.next4.length < 4) ? 'next4' : 'done';
+  const stage = (answers.top4.length < 4) ? 'top4'
+               : (answers.next4.length < 4) ? 'next4'
+               : 'done';
 
   if(stage === 'done'){
     // Build final rank = [Top4, Next4, Remaining]
     const picked = [...answers.top4, ...answers.next4];
     const remaining = TYPES.filter(k => !picked.includes(k));
-    answers.rank = [...answers.top4, ...answers.next4, ...remaining];
+    answers.rank = picked.length ? [...picked, ...remaining] : [...TYPES];
     saveState();
     next();
     return;
@@ -448,7 +453,7 @@ function renderTopNextPicker(root){
   const hint  = "Tap to select (tap again to unselect).";
   const pickedSet = new Set(isTop ? answers.top4 : answers.next4);
 
-  // pool = available types (not picked in previous stage) plus items already selected in current stage (so you can unselect)
+  // Allow toggling current picks, hide others already chosen in prior stage
   const alreadyPicked = new Set([...answers.top4, ...answers.next4]);
   const pool = TYPES.filter(k => !alreadyPicked.has(k) || pickedSet.has(k));
 
@@ -475,11 +480,24 @@ function renderTopNextPicker(root){
       else       answers.next4 = [...pickedSet];
 
       saveState();
-      if(pickedSet.size === 4) setTimeout(()=> renderTopNextPicker(root), 150);
-      else renderTopNextPicker(root);
+      // Auto-advance when full for this stage
+      if(pickedSet.size === 4) {
+        setTimeout(()=> renderTopNextPicker(root), 120);
+      } else {
+        renderTopNextPicker(root);
+      }
     };
     wrap.appendChild(pill);
   });
+
+  // UX nudge if they back into an empty stage
+  if (pool.length === 0) {
+    const note = document.createElement('p');
+    note.className = 'muted';
+    note.textContent = 'All picked — advancing…';
+    root.appendChild(note);
+    setTimeout(()=> { answers.rank = [...TYPES]; saveState(); next(); }, 200);
+  }
 }
 
 /* Pick-2 (expressed/desired affection) */
@@ -549,26 +567,24 @@ function finalize(){
   ensureDefaults();
 
   // --- Build Core/Growth/Untapped safely ---
-  let core = Array.isArray(answers.top4) && answers.top4.length === 4 ? [...answers.top4] : [];
+  let core   = Array.isArray(answers.top4)  && answers.top4.length  === 4 ? [...answers.top4]  : [];
   let growth = Array.isArray(answers.next4) && answers.next4.length === 4 ? [...answers.next4] : [];
 
-  // If Top/Next not complete, fall back to legacy rank order
   if (core.length !== 4 || growth.length !== 4) {
+    // Fallback to legacy rank, or all TYPES if needed
     const r = Array.isArray(answers.rank) && answers.rank.length === TYPES.length
       ? answers.rank.slice()
       : TYPES.slice();
-
     core   = r.slice(0,4);
     growth = r.slice(4,8);
   }
 
-  // Untapped = remaining not in core/growth
   const picked = new Set([...core, ...growth]);
   const untapped = TYPES.filter(k => !picked.has(k));
 
-  // --- Compute summaries (unchanged) ---
+  // --- Summaries ---
   const socialCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.social).forEach(k=> socialCounts[k]++);
-  const decisionCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
+  const decisionCounts= {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
   const socialTop = Object.entries(socialCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
   const decisionTop = Object.entries(decisionCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
 
@@ -591,19 +607,17 @@ function finalize(){
   const rrScore = (answers.rr.rr1 ?? 0) + (answers.rr.rr2 ?? 0);
   const rrLabel = rrScore>=5 ? "Strong" : rrScore>=3 ? "Moderate" : "Needs Attention";
 
-  // Bonding pattern
   const bondCounts = {SteadyConnector:0, ReassuranceSeeker:0, IndependentConnector:0, GuardedConnector:0};
   Object.values(answers.bond).forEach(k=> bondCounts[k]++);
   const bondingKey = Object.entries(bondCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || "SteadyConnector";
 
-  // Final profile for rendering
   const profile = {
     name: yourName || "You",
     coreTypes: core,
     growthTypes: growth,
     untappedTypes: untapped,
     expressedTop2: [...(answers.expressedTop2||[])],
-    desiredTop2: [...(answers.desiredTop2||[])],
+    desiredTop2:   [...(answers.desiredTop2||[])],
     socialTop, decisionTop, socialSummary, decisionSummary,
     rrScore, rrLabel, bondingKey
   };
@@ -616,123 +630,119 @@ function renderResults(p){
   document.getElementById('resultPage').classList.remove('hidden');
   document.getElementById('resultsHeader').textContent = "Your Marriage Connection Profile";
 
-  const container = document.createElement('div'); container.id = "soloReport";
+  const container = document.createElement('div');
+  container.id = "soloReport";
 
-  /* Section 1 */
-container.innerHTML += `
-  <div class="section-divider"></div>
-  <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
-  <div class="intro-text">
-    This section is about understanding intimacy—the profound experience of being truly known, deeply connected, and fully cherished. It reveals your unique profile, showing how you naturally express love and how you feel most loved in return.
-    <p>Our model organizes intimacy into 12 types across human experience, combining the essential aspects of <em>“being together”</em> (like emotional bonding and spiritual connection) and <em>“doing together”</em> (like shared effort and practical unity). Think of these as a helpful map for your next steps.</p>
-  </div>
-`;
+  /* ---------- Section 1: Your Intimacy Preferences ---------- */
+  container.insertAdjacentHTML('beforeend', `
+    <div class="section-divider"></div>
+    <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
+    <div class="intro-text">
+      This section is about understanding intimacy—the profound experience of being truly known, deeply connected, and fully cherished. It reveals your unique profile, showing how you naturally express love and how you feel most loved in return.
+      <p>Our model organizes intimacy into 12 types across human experience, combining the essential aspects of <em>“being together”</em> (like emotional bonding and spiritual connection) and <em>“doing together”</em> (like shared effort and practical unity). Think of these as a helpful map for your next steps.</p>
+    </div>
+  `);
 
-/* --- Collapsible “All 12 Types with Explanations” (goes right AFTER the intro) --- */
-const defsWrap = document.createElement('div');
-defsWrap.style.textAlign = 'center';
-defsWrap.innerHTML = `
-  <button id="toggleDefsBtn" class="btn" style="max-width:260px;">Show All 12 Type Definitions</button>
-  <div id="allDefs" class="hidden" style="margin-top:10px; text-align:left;">
-    ${TYPES.map(k => `
-      <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
-        <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
-      </div>
-    `).join('')}
-  </div>
-`;
-container.appendChild(defsWrap);
+  // Collapsible “All 12 Type Definitions”
+  const defsWrap = document.createElement('div');
+  defsWrap.style.textAlign = 'center';
+  defsWrap.innerHTML = `
+    <button id="toggleDefsBtn" class="btn" style="max-width:260px;">Show All 12 Type Definitions</button>
+    <div id="allDefs" class="hidden" style="margin-top:10px; text-align:left;">
+      ${TYPES.map(k => `
+        <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
+          <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
+        </div>
+      `).join('')}
+    </div>
+  `;
+  container.appendChild(defsWrap);
+  defsWrap.querySelector('#toggleDefsBtn').onclick = () => {
+    const panel = defsWrap.querySelector('#allDefs');
+    const isHidden = panel.classList.contains('hidden');
+    panel.classList.toggle('hidden', !isHidden);
+    defsWrap.querySelector('#toggleDefsBtn').textContent =
+      isHidden ? 'Hide All 12 Type Definitions' : 'Show All 12 Type Definitions';
+  };
 
-// Toggle behavior
-defsWrap.querySelector('#toggleDefsBtn').onclick = () => {
-  const panel = defsWrap.querySelector('#allDefs');
-  const isHidden = panel.classList.contains('hidden');
-  panel.classList.toggle('hidden', !isHidden);  // show if hidden, hide if visible
-  defsWrap.querySelector('#toggleDefsBtn').textContent =
-    isHidden ? 'Hide All 12 Type Definitions' : 'Show All 12 Type Definitions';
-};
+  // Core / Growth / Untapped blocks
+  container.insertAdjacentHTML('beforeend', `
+    <div class="subsection-divider"></div>
+    <h4 class="subsection-title">Your Core Connection Strengths</h4>
+    <div class="verse">“Above all, love each other deeply, because love covers over a multitude of sins.” — 1 Peter 4:8</div>
+    <p class="intro-text">These are your most fulfilling and effortless pathways to deeper closeness.</p>
+    ${typesColumn(p.name, p.coreTypes)}
+    ${promptsBlock([
+      "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
+      "<em>Be Creative:</em> Pick one practical way to use a strength intentionally this week.",
+      "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
+    ])}
+    <div class="subsection-divider"></div>
+    <h4 class="subsection-title">Your Areas for Growth</h4>
+    <div class="verse">“Let us consider how we may spur one another on toward love and good deeds.” — Hebrews 10:24</div>
+    <p class="intro-text">These are wonderful opportunities for intentional focus. With a bit of practice and presence, you can deepen connection here.</p>
+    ${typesColumn(p.name, p.growthTypes)}
+    ${promptsBlock([
+      "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
+      "<em>Support plan:</em> What would help you show up here more consistently?"
+    ])}
+    <div class="subsection-divider"></div>
+    <h4 class="subsection-title">Your Untapped Opportunities</h4>
+    <div class="verse">“See, I am doing a new thing! … Do you not perceive it?” — Isaiah 43:19</div>
+    <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>
+    ${typesColumn(p.name, p.untappedTypes)}
+    ${promptsBlock([
+      "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
+      "<em>Try it:</em> Design a tiny experiment you can do this week.",
+      "<em>Reflect:</em> What did you enjoy or learn?"
+    ])}
+  `);
 
-/* --- Now continue with Core/Growth/Untapped, unchanged --- */
-container.innerHTML += `
-  <div class="subsection-divider"></div>
-  <h4 class="subsection-title">Your Core Connection Strengths</h4>
-  <div class="verse">“Above all, love each other deeply, because love covers over a multitude of sins.” — 1 Peter 4:8</div>
-  <p class="intro-text">These are your most fulfilling and effortless pathways to deeper closeness.</p>
-  ${typesColumn(p.name, p.coreTypes)}
-
-  ${promptsBlock([
-    "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
-    "<em>Be Creative:</em> Pick one practical way to use a strength intentionally this week.",
-    "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
-  ])}
-
-  <div class="subsection-divider"></div>
-  <h4 class="subsection-title">Your Areas for Growth</h4>
-  <div class="verse">“Let us consider how we may spur one another on toward love and good deeds.” — Hebrews 10:24</div>
-  <p class="intro-text">These are wonderful opportunities for intentional focus. With a bit of practice and presence, you can deepen connection here.</p>
-  ${typesColumn(p.name, p.growthTypes)}
-
-  ${promptsBlock([
-    "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
-    "<em>Support plan:</em> What would help you show up here more consistently?"
-  ])}
-
-  <div class="subsection-divider"></div>
-  <h4 class="subsection-title">Your Untapped Opportunities</h4>
-  <div class="verse">“See, I am doing a new thing! … Do you not perceive it?” — Isaiah 43:19</div>
-  <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>
-  ${typesColumn(p.name, p.untappedTypes)}
-
-  ${promptsBlock([
-    "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
-    "<em>Try it:</em> Design a tiny experiment you can do this week.",
-    "<em>Reflect:</em> What did you enjoy or learn?"
-  ])}
-`;
-
-
-  /* Section 2 */
-  container.innerHTML += `
+  /* ---------- Section 2: Relational Dynamics ---------- */
+  container.insertAdjacentHTML('beforeend', `
     <div class="section-divider"></div>
     <h3 class="section-title">Section 2: Relational Dynamics</h3>
     <div class="intro-text">
       These everyday rhythms shape your connection—how you care, engage socially, share influence, and honor one another.
     </div>
-
     <div class="subsection-divider"></div>
     <h4 class="subsection-title">Compassion & Care</h4>
     <div class="verse">${scripture.compassionCare}</div>
     <p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>
-    ${compassionColumn(p)}
+  `);
+  container.insertAdjacentHTML('beforeend', compassionColumn(p));
 
+  container.insertAdjacentHTML('beforeend', `
     <div class="subsection-divider"></div>
     <h4 class="subsection-title">Social Preferences</h4>
     <div class="verse">${scripture.socialEngagement}</div>
     ${temperamentBlock(p.name, "Your Social Energy", buildTemperamentText(p.socialTop, p.socialSummary), p.socialTop)}
-
     <div class="subsection-divider"></div>
     <h4 class="subsection-title">Power & Control</h4>
     <div class="verse">${scripture.decisionLeadership}</div>
     ${temperamentBlock(p.name, "Your Leadership Style", buildTemperamentText(p.decisionTop, p.decisionSummary), p.decisionTop)}
-
     <div class="subsection-divider"></div>
     <h4 class="subsection-title">Respect & Recognition</h4>
     <div class="verse">${scripture.respectRecognition}</div>
     ${rrCard(p)}
-  `;
+  `);
 
-  /* Section 3 */
-  container.innerHTML += `
+  /* ---------- Section 3: Connection Patterns ---------- */
+  container.insertAdjacentHTML('beforeend', `
     <div class="section-divider"></div>
     <h3 class="section-title">Section 3: Connection Patterns</h3>
     <div class="verse">${scripture.connectionPattern}</div>
     <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>
-    ${patternColumn(p)}
-
+  `);
+  container.insertAdjacentHTML('beforeend', patternColumn(p));
+  container.insertAdjacentHTML('beforeend', `
     <div class="subsection-divider"></div>
     <h4 class="subsection-title">Your Personalized Repair Plan</h4>
-    ${strategySelfCard(p.bondingKey)}
+  `);
+  container.insertAdjacentHTML('beforeend', strategySelfCard(p.bondingKey));
 
+  // Thank you + Print-as-PDF
+  container.insertAdjacentHTML('beforeend', `
     <div class="section-divider"></div>
     <div class="result-block" style="border-left-color:transparent; background:#fff;">
       <h3 class="thank-title">Thank You</h3>
@@ -740,17 +750,15 @@ container.innerHTML += `
       <p class="intro-text">We hope you enjoyed discovering your unique connection patterns. Use these insights as a friendly guide—not labels—to spark great conversations and small, consistent changes.</p>
       <p class="intro-text">To be truly known is to unlock the deepest intimacy—embrace what’s true today and aim courageously for what’s possible tomorrow.</p>
     </div>
-  `;
-
-  // Add “Download PDF” → Print dialog
-  const dl = document.createElement('div');
-  dl.style.textAlign = 'center';
-  dl.innerHTML = `<button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download PDF</button>`;
-  container.appendChild(dl);
+    <div style="text-align:center;">
+      <button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download PDF</button>
+    </div>
+  `);
 
   document.getElementById('results').innerHTML = "";
   document.getElementById('results').appendChild(container);
 
+  // Print dialog (Save as PDF)
   document.getElementById('downloadPdfBtn').onclick = ()=> window.print();
 
   // Clear saved state so next session starts fresh
@@ -761,10 +769,11 @@ container.innerHTML += `
    Section 14: Result Helpers
    ======================================= */
 function typesColumn(name, types){
+  const safe = Array.isArray(types) && types.length ? types : TYPES.slice(0,4);
   return `
     <div class="partner-card"><div class="partner-inner">
       <div class="partner-header">${name || "Results"}</div>
-      ${types.map(k=>`
+      ${safe.map(k=>`
         <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
           <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
         </div>
@@ -785,13 +794,15 @@ function compassionColumn(p){
       <strong>Most Loved:</strong> ${affDES[k]}
     </div>`;
   }).join("");
+  // fallback text if empty
+  const fallback = `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make two selections earlier to see personalized details.</div>`;
   return `
     <div class="partner-card"><div class="partner-inner">
       <div class="partner-header">${p.name || "Results"}</div>
       <div class="partner-subhead"><strong>${p.name || "You"} — You Express Love</strong></div>
-      ${exp || `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make two selections above to see details.</div>`}
+      ${exp || fallback}
       <div class="partner-subhead"><strong>${p.name || "You"} — You Feel Most Loved</strong></div>
-      ${des || `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make two selections above to see details.</div>`}
+      ${des || fallback}
     </div></div>
   `;
 }
@@ -804,7 +815,7 @@ function temperamentBlock(name, title, text, topKey){
   const acc = temperamentAccentFromKey(topKey);
   return `
     <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-      <strong>${name || "You"} — ${title}:</strong> <span>${text}</span>
+      <strong>${name || "You"} — ${title}:</strong> <span>${text || "You flex based on the moment."}</span>
     </div>
   `;
 }
@@ -814,11 +825,12 @@ function rrAccent(label){
   return { color:typeColors.Emotional, bg:typeOpac.Emotional };
 }
 function rrCard(p){
-  const acc = rrAccent(p.rrLabel);
+  const acc = rrAccent(p.rrLabel || "Moderate");
+  const score = Number.isFinite(p.rrScore) ? p.rrScore : 0;
   return `
     <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-      <strong>${p.name || "You"} — Respect &amp; Recognition:</strong> ${p.rrLabel} (${p.rrScore}/6)
-      <p style="margin:8px 0 0;">${rrStatement(p.rrScore)}</p>
+      <strong>${p.name || "You"} — Respect &amp; Recognition:</strong> ${p.rrLabel || "Moderate"} (${score}/6)
+      <p style="margin:8px 0 0;">${rrStatement(score)}</p>
     </div>
   `;
 }
@@ -828,14 +840,14 @@ function rrStatement(score){
   return "You may not consistently feel affirmed or validated; be explicit about the kinds of appreciation that help you feel respected.";
 }
 function patternColumn(p){
-  const map = {
+  const key = p.bondingKey || "SteadyConnector";
+  const acc = {
     SteadyConnector:{ color: typeColors.Partnership,  bg: typeOpac.Partnership },
     ReassuranceSeeker:{ color: typeColors.Emotional, bg: typeOpac.Emotional },
     IndependentConnector:{ color: typeColors.Intellectual, bg: typeOpac.Intellectual },
     GuardedConnector:{ color: typeColors.Conflict,   bg: typeOpac.Conflict }
-  };
-  const acc = map[p.bondingKey] || { color:"#4D9DE0", bg:"rgba(77,157,224,.08)" };
-  const d = patternDetail[p.bondingKey];
+  }[key];
+  const d = patternDetail[key];
   return `
     <div class="partner-card"><div class="partner-inner">
       <div class="partner-header">${p.name || "You"}</div>
@@ -871,7 +883,7 @@ function strategySelfCard(bondingKey){
       "Name one safe topic and share a little more than you’re used to.",
       "Use a short written note to begin hard conversations kindly."
     ]
-  }[bondingKey] || [];
+  }[bondingKey || "SteadyConnector"];
   const acc = (bondingKey==="ReassuranceSeeker") ? { color: typeColors.Emotional, bg: typeOpac.Emotional }
             : (bondingKey==="IndependentConnector") ? { color: typeColors.Intellectual, bg: typeOpac.Intellectual }
             : (bondingKey==="GuardedConnector") ? { color: typeColors.Conflict, bg: typeOpac.Conflict }
