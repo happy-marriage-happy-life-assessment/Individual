@@ -305,22 +305,39 @@ function clearState(){
 }
 
 /* ===== Boot (simplified: always start on click, restore if present) ===== */
+// Robust launcher: always shows quiz, defaults name, fixes odd step states
 document.getElementById('startBtn').onclick = () => {
-  const typed = document.getElementById('yourName').value.trim();
-  if (typed) yourName = typed;
+  try {
+    const inputEl = document.getElementById('yourName');
+    const typed = (inputEl && inputEl.value) ? inputEl.value.trim() : "";
+    // Default name so we don't block launching
+    if (typed) yourName = typed;
+    if (!yourName) yourName = "You";
 
-  // Try restore; if restored but name missing, keep typed; if no name, block.
-  const restored = loadState();
-  if (!yourName) {
-    alert("Please enter your name to begin.");
-    return;
+    // Try restore (if any); if step invalid, reset to 0
+    const restored = loadState();
+    if (!Number.isInteger(step) || step < 0 || step >= TOTAL_STEPS) step = 0;
+
+    // Show quiz page unconditionally
+    hideAllPages();
+    const qp = document.getElementById('quizPage');
+    if (qp) qp.classList.remove('hidden');
+    const titleEl = document.getElementById('quizTitle');
+    if (titleEl) titleEl.textContent = `Assessment — ${yourName}`;
+
+    // If no prior state, start from step 0
+    if (!restored) {
+      step = 0;
+      saveState();
+    }
+
+    renderStep();
+  } catch (e) {
+    console.error("Launch error:", e);
+    alert("Oops — something prevented the quiz from starting. Try reloading this page.");
   }
-  hideAllPages();
-  document.getElementById('quizPage').classList.remove('hidden');
-  document.getElementById('quizTitle').textContent = `Assessment — ${yourName}`;
-  if (!restored) { step = 0; saveState(); }
-  renderStep();
 };
+
 
 /* ===== Step Renderer (auto-advance) ===== */
 function renderStep(){
