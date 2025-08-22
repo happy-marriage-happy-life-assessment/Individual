@@ -619,73 +619,78 @@ function renderResults(p){
   const container = document.createElement('div'); container.id = "soloReport";
 
   /* Section 1 */
-       // Collapsible "All 12 Types with Explanations"
-  const defsWrap = document.createElement('div');
-  defsWrap.style.textAlign = 'center';
-  defsWrap.innerHTML = `
-    <button id="toggleDefsBtn" class="btn" style="max-width:260px;">Show All 12 Type Definitions</button>
-    <div id="allDefs" class="hidden" style="margin-top:10px; text-align:left;">
-      ${TYPES.map(k => `
-        <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
-          <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
-        </div>
-      `).join('')}
-    </div>
-  `;
-  container.appendChild(defsWrap);
+/* Section 1 */
+container.innerHTML += `
+  <div class="section-divider"></div>
+  <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
+  <div class="intro-text">
+    This section is about understanding intimacy—the profound experience of being truly known, deeply connected, and fully cherished. It reveals your unique profile, showing how you naturally express love and how you feel most loved in return.
+    <p>Our model organizes intimacy into 12 types across human experience, combining the essential aspects of <em>“being together”</em> (like emotional bonding and spiritual connection) and <em>“doing together”</em> (like shared effort and practical unity). Think of these as a helpful map for your next steps.</p>
+  </div>
+`;
 
-  // Toggle behavior
-  defsWrap.querySelector('#toggleDefsBtn').onclick = () => {
-    const panel = defsWrap.querySelector('#allDefs');
-    const isHidden = panel.classList.contains('hidden');
-    panel.classList.toggle('hidden', !isHidden ? true : false);
-    defsWrap.querySelector('#toggleDefsBtn').textContent =
-      isHidden ? 'Hide All 12 Type Definitions' : 'Show All 12 Type Definitions';
-  };
+/* --- Collapsible “All 12 Types with Explanations” (goes right AFTER the intro) --- */
+const defsWrap = document.createElement('div');
+defsWrap.style.textAlign = 'center';
+defsWrap.innerHTML = `
+  <button id="toggleDefsBtn" class="btn" style="max-width:260px;">Show All 12 Type Definitions</button>
+  <div id="allDefs" class="hidden" style="margin-top:10px; text-align:left;">
+    ${TYPES.map(k => `
+      <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
+        <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
+      </div>
+    `).join('')}
+  </div>
+`;
+container.appendChild(defsWrap);
 
-  container.innerHTML += `
-    <div class="section-divider"></div>
-    <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
-    <div class="intro-text">
-      This section is about understanding intimacy—the profound experience of being truly known, deeply connected, and fully cherished. It reveals your unique profile, showing how you naturally express love and how you feel most loved in return.
-      <p>Our model organizes intimacy into 12 types across human experience, combining the essential aspects of <em>“being together”</em> (like emotional bonding and spiritual connection) and <em>“doing together”</em> (like shared effort and practical unity). Think of these as a helpful map for your next steps.</p>
-    </div>
+// Toggle behavior
+defsWrap.querySelector('#toggleDefsBtn').onclick = () => {
+  const panel = defsWrap.querySelector('#allDefs');
+  const isHidden = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !isHidden);  // show if hidden, hide if visible
+  defsWrap.querySelector('#toggleDefsBtn').textContent =
+    isHidden ? 'Hide All 12 Type Definitions' : 'Show All 12 Type Definitions';
+};
 
-    <div class="subsection-divider"></div>
-    <h4 class="subsection-title">Your Core Connection Strengths</h4>
-    <div class="verse">“Above all, love each other deeply, because love covers over a multitude of sins.” — 1 Peter 4:8</div>
-    <p class="intro-text">These are your most fulfilling and effortless pathways to deeper closeness.</p>
-    ${typesColumn(p.name, p.coreTypes)}
+/* --- Now continue with Core/Growth/Untapped, unchanged --- */
+container.innerHTML += `
+  <div class="subsection-divider"></div>
+  <h4 class="subsection-title">Your Core Connection Strengths</h4>
+  <div class="verse">“Above all, love each other deeply, because love covers over a multitude of sins.” — 1 Peter 4:8</div>
+  <p class="intro-text">These are your most fulfilling and effortless pathways to deeper closeness.</p>
+  ${typesColumn(p.name, p.coreTypes)}
 
-    ${promptsBlock([
-      "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
-      "<em>Be Creative:</em> Pick one practical way to use a strength intentionally this week.",
-      "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
-    ])}
+  ${promptsBlock([
+    "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
+    "<em>Be Creative:</em> Pick one practical way to use a strength intentionally this week.",
+    "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
+  ])}
 
-    <div class="subsection-divider"></div>
-    <h4 class="subsection-title">Your Areas for Growth</h4>
-    <div class="verse">“Let us consider how we may spur one another on toward love and good deeds.” — Hebrews 10:24</div>
-    <p class="intro-text">These are wonderful opportunities for intentional focus. With a bit of practice and presence, you can deepen connection here.</p>
-    ${typesColumn(p.name, p.growthTypes)}
+  <div class="subsection-divider"></div>
+  <h4 class="subsection-title">Your Areas for Growth</h4>
+  <div class="verse">“Let us consider how we may spur one another on toward love and good deeds.” — Hebrews 10:24</div>
+  <p class="intro-text">These are wonderful opportunities for intentional focus. With a bit of practice and presence, you can deepen connection here.</p>
+  ${typesColumn(p.name, p.growthTypes)}
 
-    ${promptsBlock([
-      "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
-      "<em>Support plan:</em> What would help you show up here more consistently?"
-    ])}
+  ${promptsBlock([
+    "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
+    "<em>Support plan:</em> What would help you show up here more consistently?"
+  ])}
 
-    <div class="subsection-divider"></div>
-    <h4 class="subsection-title">Your Untapped Opportunities</h4>
-    <div class="verse">“See, I am doing a new thing! … Do you not perceive it?” — Isaiah 43:19</div>
-    <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>
-    ${typesColumn(p.name, p.untappedTypes)}
+  <div class="subsection-divider"></div>
+  <h4 class="subsection-title">Your Untapped Opportunities</h4>
+  <div class="verse">“See, I am doing a new thing! … Do you not perceive it?” — Isaiah 43:19</div>
+  <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>
+  ${typesColumn(p.name, p.untappedTypes)}
 
-    ${promptsBlock([
-      "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
-      "<em>Try it:</em> Design a tiny experiment you can do this week.",
-      "<em>Reflect:</em> What did you enjoy or learn?"
-    ])}
-  `;
+  ${promptsBlock([
+    "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
+    "<em>Try it:</em> Design a tiny experiment you can do this week.",
+    "<em>Reflect:</em> What did you enjoy or learn?"
+  ])}
+`;
+
 
   /* Section 2 */
   container.innerHTML += `
