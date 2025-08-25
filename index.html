@@ -862,30 +862,103 @@ function typesColumn(name, types){
     </div></div>
   `;
 }
+     // --- APS crosswalk + scoring for Steps 1–2 (Expressed/Wanted Affection) ---
+const TEMPERAMENT_LABELS = { E: "Sanguine", S: "Choleric", R: "Melancholy", A: "Phlegmatic", U: "Supine" };
+const AFF_TO_TEMP = { Playful: "E", Initiative: "S", DeepTalk: "R", Warmth: "A", Support: "U" };
+
+// Score ordered picks (#1 weight=2, #2 weight=1) → {E,S,R,A,U} on 0..3
+function scoreAffectionTemperament(picks){
+  const w = [2,1];
+  const out = {E:0,S:0,R:0,A:0,U:0};
+  (picks||[]).slice(0,2).forEach((k,i)=>{
+    const t = AFF_TO_TEMP[k];
+    if(t) out[t] += w[i];
+  });
+  return out;
+}
+
+// Order the 5 codes by score desc; returns array [{k, v, label, pct}]
+function orderTemperament(scores){
+  const max = 3; // 1st=2 + 2nd=1
+  return Object.entries(scores)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v])=>({ k, v, label: TEMPERAMENT_LABELS[k], pct: Math.round((v/max)*100) }));
+}
+
+// Pretty card for Expressed/Wanted APS mirror
+function affTemperamentSummaryCard(name, mode, scores){
+  const ordered = orderTemperament(scores);
+  const top = ordered[0] || {k:"E", v:0};          // safe fallback
+  const second = ordered[1] || {k:"S", v:0};
+  const acc = temperamentAccentFromKey(top.k);     // uses your existing accent map
+  return `
+    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>${name || "You"} — Affection Temperament (${mode}):</strong>
+      <div style="margin-top:6px;">Primary: ${TEMPERAMENT_LABELS[top.k]} (${top.v}/3)
+        &nbsp;•&nbsp; Secondary: ${TEMPERAMENT_LABELS[second.k]} (${second.v}/3)
+      </div>
+      <div style="margin-top:8px;">
+        ${ordered.map(o=>{
+          const tone = temperamentAccentFromKey(o.k);
+          return `
+            <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
+              <span style="width:110px; display:inline-block;">${o.label}</span>
+              <span style="flex:1; height:8px; border-radius:999px; background:${tone.color}; opacity:.35;">
+                <span style="display:block; height:8px; width:${o.pct}%; border-radius:999px; background:${tone.color}; opacity:.6;"></span>
+              </span>
+              <span style="font-size:.85rem; width:28px; text-align:right;">${o.v}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function compassionColumn(p){
-  const exp = (p.expressedTop2||[]).map(k=>{
+  const expBlocks = (p.expressedTop2||[]).map(k=>{
     const acc = temperamentAccentFromAffKey(k);
     return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
       <strong>Expressed:</strong> ${affEXP[k]}
     </div>`;
   }).join("");
-  const des = (p.desiredTop2||[]).map(k=>{
+
+  const desBlocks = (p.desiredTop2||[]).map(k=>{
     const acc = temperamentAccentFromAffKey(k);
     return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
       <strong>Most Loved:</strong> ${affDES[k]}
     </div>`;
   }).join("");
-  const fallback = `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make two selections earlier to see personalized details.</div>`;
+
+  const fallback = `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">
+    Make two selections earlier to see personalized details.</div>`;
+
+  // NEW: compute APS-like scores from the ordered picks
+  const expScores = scoreAffectionTemperament(p.expressedTop2 || []);
+  const desScores = scoreAffectionTemperament(p.desiredTop2 || []);
+
+  // NEW: add APS mirror cards when we’ve got picks
+  const apsExpressed = (p.expressedTop2 && p.expressedTop2.length)
+    ? affTemperamentSummaryCard(p.name, "Expressed", expScores) : "";
+  const apsWanted    = (p.desiredTop2   && p.desiredTop2.length)
+    ? affTemperamentSummaryCard(p.name, "Wanted", desScores)    : "";
+
   return `
     <div class="partner-card"><div class="partner-inner">
       <div class="partner-header">${p.name || "Results"}</div>
+
       <div class="partner-subhead"><strong>${p.name || "You"} — You Express Love</strong></div>
-      ${exp || fallback}
+      ${expBlocks || fallback}
+
       <div class="partner-subhead"><strong>${p.name || "You"} — You Feel Most Loved</strong></div>
-      ${des || fallback}
+      ${desBlocks || fallback}
+
+      ${apsExpressed}
+      ${apsWanted}
     </div></div>
   `;
 }
+
 function buildTemperamentText(topKey, summary){
   if(!topKey) return summary || "You flex based on the moment.";
   const d = temperamentDetails[topKey] || {};
