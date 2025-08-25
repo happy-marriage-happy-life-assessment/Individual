@@ -9,13 +9,14 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13b):
-     - Intro copy updated per client text
-     - “Intimacy” -> “connection” on question screens only (Top/Next pick)
-     - Top/Next instructions rewritten per client text
-     - Steps 1–2 (Expressed/Desired) stacked vertically
-     - Steps 3–12 answer buttons restyled to match Steps 1–2
-     - Added Back button (Back to Intro on Step 0)
+     PATCH NOTES (v13c):
+     - Intro page copy updated exactly per critique #1
+     - Step 0 (Top 4): heading -> “Choose 4 Connection Types”,
+       guidance moved beneath Selected counter (#2)
+     - Step 0 (Next 4): heading -> “You're halfway there!” with new guidance (#3)
+     - Results header -> “Your Relational Connection Profile” (#4)
+     - Removed “Show All 12 Type Definitions” toggle (#4)
+     - Kept previous fixes: stacked options, unified button styles, Back button
      =========================================================== -->
 
 <!-- =======================
@@ -134,15 +135,14 @@
   <div class="intro-text">
     <p style="text-align:center;"><em>Ready for a few “aha!” moments?</em></p>
 
-    <!-- UPDATED INTRO COPY -->
+    <!-- UPDATED INTRO COPY (exact) -->
     <p>Ready to dig into what makes your relationship strong? This quiz is all about exploring how you and your partner connect and what builds intimacy.</p>
     <p>After you answer a few quick questions, you'll get a personalized profile with simple, actionable ideas to help you build more intimacy and navigate your daily life together.</p>
-    <!-- /UPDATED INTRO COPY -->
-
-    <p style="margin-bottom:0.2em;"><strong>How it works:</strong></p>
+    <p style="margin-bottom:0.2em;"><strong>How it works</strong></p>
     <div class="lh-13" style="margin-top:0;">
-      <p style="margin:0;">Enter your name and tap Start. Answer each prompt honestly—there are no “right” answers.</p>
+      <p style="margin:0;">Just enter your name to get started. Don't overthink it—your honest answers are the only ones that matter.</p>
     </div>
+    <!-- /UPDATED INTRO COPY -->
   </div>
   <div class="row mt-24pt" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
     <input id="yourName" class="input" placeholder="Your name" aria-label="Your name" style="border:1px solid #4D9DE0; border-radius:8px; padding:10px 12px; min-width:260px;">
@@ -175,7 +175,7 @@
      ======================= -->
 <div id="resultPage" class="card hidden">
   <img src="https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png" alt="Logo" style="display:block; margin:0 auto 12px; max-width:200px;" onerror="this.src='https://via.placeholder.com/200x80?text=Logo'">
-  <h2 id="resultsHeader">Your Marriage Connection Profile</h2>
+  <h2 id="resultsHeader">Your Relational Connection Profile</h2>
   <div id="resultsIntro" class="intro-text">
     <p>Welcome to the Marriage Connection Assessment, a guided experience designed to help you build a covenant, joy-filled marriage as God designed.</p>
     <p>This is your personalized guide to understanding connection in a new way. Think of this not as a set of labels, but as a living map to the unique landscape of your relationship—it helps you name what’s true today and aim for what’s possible tomorrow.</p>
@@ -188,7 +188,7 @@
 /* =======================================
    Section 6: Build/Version Marker
    ======================================= */
-const BUILD = "individual-v13b";
+const BUILD = "individual-v13c";
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('buildBadgeIntro').textContent = BUILD;
   document.getElementById('buildBadgeResults').textContent = BUILD;
@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 
 /* =========================================================
-   Section 12: Step UIs — Top/Next Picker (with “connection” text), Pick-2, Single
+   Section 12: Step UIs — Top/Next Picker (updated headings), Pick-2, Single
    ========================================================= */
 function renderTopNextPicker(root){
   ensureDefaults();
@@ -547,41 +547,43 @@ function renderTopNextPicker(root){
   }
 
   const isTop   = (stage === 'top4');
-
-  // UPDATED copy: "connection" replacing "intimacy", per request
-  const title = isTop
-    ? "Think about a perfect day with your partner. What kinds of connection feel most meaningful to you?"
-    : "You're halfway there! From the remaining options, choose the 4 connection types that come next in importance to you.";
-
-  const hintTop = `Choose the 4 connection types that matter most to you. Tap a card to select it.`;
-  const hintExtra = `Just enter your name to get started. Don't overthink it—your honest answers are the only ones that matter.`;
-
   const pickedSet = new Set(isTop ? answers.top4 : answers.next4);
 
   // Available items: anything not picked in previous stage, plus any already chosen in this stage (so you can unselect)
   const alreadyPicked = new Set([...answers.top4, ...answers.next4]);
   const pool = TYPES.filter(k => !alreadyPicked.has(k) || pickedSet.has(k));
 
+  // UPDATED header + guidance per critique #2 and #3
+  const heading = isTop ? "Choose 4 Connection Types" : "You're halfway there!";
+  const guidanceTop = `
+    <div class="intro-text" style="text-align:center;">
+      <p>Think about a perfect day with your partner. What kinds of connection feel most meaningful to you?</p>
+      <p>Choose the 4 connection types that matter most to you. Tap a card to select it.</p>
+    </div>`;
+  const guidanceNext = `
+    <div class="intro-text" style="text-align:center;">
+      <p>From the remaining options, choose the 4 connection types that come next in importance to you.</p>
+    </div>`;
+
   // Render header
   root.innerHTML = `
-    <h3 style="text-align:center;">${title}</h3>
+    <h3 style="text-align:center;">${heading}</h3>
     <p class="rank-help" style="text-align:center; margin-top:6px; color:#4a607a;">
       <em>Selected: ${pickedSet.size} / 4</em>
     </p>
-    ${isTop ? `<p style="text-align:center; margin-top:4px;">${hintTop}<br><span style="font-size:.95rem; color:#4a607a;">${hintExtra}</span></p>` : ""}
+    ${isTop ? guidanceTop : guidanceNext}
     <div class="mini-grid" id="miniGrid"></div>
   `;
 
   const grid = root.querySelector('#miniGrid');
 
-  // Build a definition card for each available type
+  // Build a definition card for each available type (replace 'intimacy' -> 'connection' on QUESTION screens)
   pool.forEach(key=>{
     const card = document.createElement('div');
     card.className = 'mini-card' + (pickedSet.has(key) ? ' selected' : '');
     card.style.borderLeft = `6px solid ${typeColors[key]}`;
     card.style.paddingLeft = '10px';
 
-    // Show "connection" labels/desc on QUESTION screens only
     const label = INTIMACY[key].label.replace(/Intimacy/gi, 'Connection');
     const desc  = INTIMACY[key].desc.replace(/intimacy/gi, 'connection');
 
@@ -749,7 +751,7 @@ function renderResults(p){
   hideAllPages();
   const resultPage = document.getElementById('resultPage');
   resultPage.classList.remove('hidden');
-  document.getElementById('resultsHeader').textContent = "Your Marriage Connection Profile";
+  document.getElementById('resultsHeader').textContent = "Your Relational Connection Profile";
 
   const mount = document.getElementById('results');
   mount.innerHTML = "";
@@ -784,33 +786,7 @@ function renderResults(p){
     </div>
   `);
 
-  // Collapsible glossary
-  const defsWrap = document.createElement('div');
-  defsWrap.style.textAlign = 'center';
-  const btn = document.createElement('button');
-  btn.id = 'toggleDefsBtn';
-  btn.className = 'btn';
-  btn.style.maxWidth = '260px';
-  btn.textContent = 'Show All 12 Type Definitions';
-  const panel = document.createElement('div');
-  panel.id = 'allDefs';
-  panel.className = 'hidden';
-  panel.style.marginTop = '10px';
-  panel.style.textAlign = 'left';
-  TYPES.forEach(k=>{
-    const block = document.createElement('div');
-    block.className = 'result-block';
-    block.style.borderLeftColor = typeColors[k];
-    block.style.background = typeOpac[k];
-    block.innerHTML = `<strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}`;
-    panel.appendChild(block);
-  });
-  btn.onclick = () => {
-    const isHidden = panel.classList.contains('hidden');
-    panel.classList.toggle('hidden', !isHidden ? true : false);
-    btn.textContent = isHidden ? 'Hide All 12 Type Definitions' : 'Show All 12 Type Definitions';
-  };
-  defsWrap.appendChild(btn); defsWrap.appendChild(panel); container.appendChild(defsWrap);
+  <!-- Removed the “Show All 12 Type Definitions” button per critique #4 -->
 
   // Core
   addSubDivider();
