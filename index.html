@@ -9,12 +9,13 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13):
-     - Results page rebuilt with DOM construction (no fragile template chains)
-     - Strong fallbacks so Core/Growth/Untapped always render
-     - Top-4 → Next-4 picker (Step 0) intact, autosave + Start Fresh/Resume
-     - “Download PDF” opens Print dialog
-     - Numbered sections for easy patching
+     PATCH NOTES (v13b):
+     - Intro copy updated per client text
+     - “Intimacy” -> “connection” on question screens only (Top/Next pick)
+     - Top/Next instructions rewritten per client text
+     - Steps 1–2 (Expressed/Desired) stacked vertically
+     - Steps 3–12 answer buttons restyled to match Steps 1–2
+     - Added Back button (Back to Intro on Step 0)
      =========================================================== -->
 
 <!-- =======================
@@ -26,26 +27,26 @@
      Section 2: Styles
      ======================= -->
 <style>
-     /* --- Picker cards with inline definitions --- */
-.mini-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
-.mini-card {
-  border:1px solid #4D9DE0; border-radius:8px; background:#fff;
-  padding:10px 12px; max-width:360px; flex:1 1 280px; cursor:pointer;
-  transition: box-shadow .15s, border-color .15s, background .15s;
-}
-.mini-card.selected {
-  background: rgba(77,157,224,0.08);
-  border-color:#3A7FBF;
-  box-shadow: 0 0 0 2px rgba(58,127,191,0.20) inset;
-}
-.mini-title { font-weight:700; margin:0 0 6px 0; }
-.mini-desc  { font-size:.95rem; color:#4a607a; line-height:1.3; margin:0; }
+  /* --- Picker cards with inline definitions --- */
+  .mini-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .mini-card {
+    border:1px solid #4D9DE0; border-radius:8px; background:#fff;
+    padding:10px 12px; max-width:360px; flex:1 1 280px; cursor:pointer;
+    transition: box-shadow .15s, border-color .15s, background .15s;
+  }
+  .mini-card.selected {
+    background: rgba(77,157,224,0.08);
+    border-color:#3A7FBF;
+    box-shadow: 0 0 0 2px rgba(58,127,191,0.20) inset;
+  }
+  .mini-title { font-weight:700; margin:0 0 6px 0; }
+  .mini-desc  { font-size:.95rem; color:#4a607a; line-height:1.3; margin:0; }
 
   body { font-family: Arial, sans-serif; background:#FFF9F2; color:#1A3C5E; max-width: 980px; margin:auto; padding:20px; box-sizing:border-box; }
   h1,h2,h3,h4{ text-align:center; line-height:1.25; }
   .card { background:#fff; border:2px solid #4D9DE0; border-radius:12px; padding:24px; box-shadow:0 8px 25px rgba(0,0,0,.08); margin: 20px auto; }
-  .btn, .answer-btn { background:#4D9DE0; color:#fff; font-weight:700; border:none; border-radius:8px; padding:12px 16px; cursor:pointer; margin:10px auto; display:block; width:100%; max-width:520px; }
-  .btn:hover, .answer-btn:hover { background:#3A7FBF; }
+  .btn { background:#4D9DE0; color:#fff; font-weight:700; border:none; border-radius:8px; padding:12px 16px; cursor:pointer; margin:10px auto; display:block; width:100%; max-width:520px; }
+  .btn:hover { background:#3A7FBF; }
   .hidden{ display:none; }
   .progress-bar-container{ width:100%; max-width:520px; height:10px; background:#E0E0E0; border-radius:5px; margin:8px auto 4px; }
   .progress-bar{ height:100%; background:#FF4D4D; border-radius:5px; transition:width .25s; }
@@ -57,9 +58,9 @@
   .lh-13 { line-height: 1.3; }
   .mt-24pt { margin-top: 24pt !important; }
 
-  /* Top/Next picker pills */
-  .pill { display:inline-block; padding:8px 12px; border-radius:999px; border:1px solid #d0d7de; margin:6px; cursor:pointer; }
-  .pill.selected{ background:#3A7FBF; border-color:#3A7FBF; color:#fff; }
+  /* Top/Next picker pills (used only inside Steps UI — stacked via inline styles) */
+  .pill { display:inline-block; padding:12px 14px; border-radius:8px; border:1.5px solid #4D9DE0; margin:6px auto; cursor:pointer; width:100%; max-width:520px; text-align:left; background:#fff; color:#1A3C5E; }
+  .pill.selected{ background:rgba(77,157,224,0.08); border-color:#3A7FBF; }
 
   /* Results cards */
   .result-block { margin-bottom:16px; page-break-inside:avoid; padding:16px; border-left:8px solid #4D9DE0; border-radius:8px; background:#fff; line-height:1.3; }
@@ -93,6 +94,33 @@
     .card { border:none; box-shadow:none; }
     body { background:#fff; }
   }
+
+  /* --- Answer buttons: restyled to match Step 2–3 stacked look --- */
+  .answer-btn{
+    background:#fff !important;
+    color:#1A3C5E !important;
+    font-weight:600;
+    border:1.5px solid #4D9DE0 !important;
+    border-radius:8px;
+    padding:12px 14px;
+    cursor:pointer;
+    margin:8px auto;
+    display:block;
+    width:100%;
+    max-width:520px;
+    text-align:left;
+  }
+  .answer-btn:hover{ background:rgba(77,157,224,0.08) !important; }
+
+  /* Secondary (outline) button for Back */
+  .btn-secondary{
+    background:#fff !important;
+    color:#1A3C5E !important;
+    border:2px solid #4D9DE0 !important;
+  }
+  .btn-secondary:hover{
+    background:rgba(77,157,224,0.08) !important;
+  }
 </style>
 </head>
 <body>
@@ -105,8 +133,12 @@
   <h1>Your Guide to a Deeper Connection</h1>
   <div class="intro-text">
     <p style="text-align:center;"><em>Ready for a few “aha!” moments?</em></p>
-    <p>This is a moment to reflect on what builds intimacy and how you navigate daily life.</p>
-    <p>When you’re done, you’ll see a personalized profile with practical ideas you can put to work right away.</p>
+
+    <!-- UPDATED INTRO COPY -->
+    <p>Ready to dig into what makes your relationship strong? This quiz is all about exploring how you and your partner connect and what builds intimacy.</p>
+    <p>After you answer a few quick questions, you'll get a personalized profile with simple, actionable ideas to help you build more intimacy and navigate your daily life together.</p>
+    <!-- /UPDATED INTRO COPY -->
+
     <p style="margin-bottom:0.2em;"><strong>How it works:</strong></p>
     <div class="lh-13" style="margin-top:0;">
       <p style="margin:0;">Enter your name and tap Start. Answer each prompt honestly—there are no “right” answers.</p>
@@ -129,7 +161,12 @@
   <h2 id="quizTitle">Assessment</h2>
   <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
   <div id="progress" style="text-align:center; margin-bottom:8px;"></div>
+
   <div id="questionContainer" class="question-box"></div>
+
+  <!-- Back button (shows inside quiz only) -->
+  <button id="backBtn" class="btn btn-secondary hidden" style="max-width:240px;">Back</button>
+
   <p class="muted"><a href="https://happymarriagehappylife.com" target="_blank" rel="noopener">HappyMarriageHappyLife.com</a></p>
 </div>
 
@@ -151,7 +188,7 @@
 /* =======================================
    Section 6: Build/Version Marker
    ======================================= */
-const BUILD = "individual-v13";
+const BUILD = "individual-v13b";
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('buildBadgeIntro').textContent = BUILD;
   document.getElementById('buildBadgeResults').textContent = BUILD;
@@ -371,7 +408,7 @@ function hideAllPages(){
 }
 
 /* =======================================
-   Section 11: Step Renderer (auto-advance)
+   Section 11: Step Renderer (auto-advance + Back)
    ======================================= */
 function renderStep(){
   ensureDefaults();
@@ -381,6 +418,13 @@ function renderStep(){
   const barEl  = document.getElementById('progressBar');
   if (progEl) progEl.textContent = `Step ${step+1} of ${TOTAL_STEPS}`;
   if (barEl)  barEl.style.width   = `${((step+1)/TOTAL_STEPS)*100}%`;
+
+  // Back button visibility/label
+  const backBtn = document.getElementById('backBtn');
+  if (backBtn) {
+    backBtn.classList.remove('hidden');
+    backBtn.textContent = (step === 0) ? 'Back to Intro' : 'Back';
+  }
 
   const box = document.getElementById('questionContainer');
   box.innerHTML = "";
@@ -435,35 +479,54 @@ function renderStep(){
   );
 
   if(step===9) return renderSingleList(box, "During conflict, I naturally…", [
-    ["SteadyConnector","Use humor to lower tension."],
-    ["ReassuranceSeeker","Push for quick resolution."],
-    ["IndependentConnector","Withdraw to think it through."],
-    ["IndependentConnector","Stay calm to avoid escalation."],
-    ["GuardedConnector","Concede just to end it."]
+    ["SteadyConnector","Look for a steady, low-tension path forward."],
+    ["ReassuranceSeeker","Seek quick clarity and closeness right away."],
+    ["IndependentConnector","Take a brief step back to collect my thoughts."],
+    ["GuardedConnector","Share less until I feel fully safe to open up."]
   ], val => { answers.bond["bond1"]=val; saveState(); next(); });
 
   if(step===10) return renderSingleList(box, "When I feel unappreciated, I tend to…", [
-    ["SteadyConnector","Laugh it off and move on."],
-    ["ReassuranceSeeker","Remind my spouse of my effort."],
-    ["IndependentConnector","Feel overlooked and pull back."],
-    ["IndependentConnector","Let it go to keep peace."],
-    ["GuardedConnector","Feel hurt and shut down."]
+    ["SteadyConnector","Keep things even and move forward steadily."],
+    ["ReassuranceSeeker","Ask for clear acknowledgment or reassurance."],
+    ["IndependentConnector","Pull back to reset and think it through."],
+    ["GuardedConnector","Go quiet and wait before sharing more."]
   ], val => { answers.bond["bond2"]=val; saveState(); next(); });
 
   if(step===11) return renderSingleList(box, "After a disagreement, I prefer to…", [
-    ["ReassuranceSeeker","Repair quickly together."],
-    ["IndependentConnector","Pause, then reconnect with a plan."]
+    ["SteadyConnector","Reconnect calmly with a simple next step together."],
+    ["ReassuranceSeeker","Repair together soon and name what’s okay between us."],
+    ["IndependentConnector","Pause briefly, then return at a set time to resolve."],
+    ["GuardedConnector","Start small—share a little, then build from there."]
   ], val => { answers.bond["bond3"]=val; saveState(); next(); });
 
-  if(step===12) return renderSingleList(box, "When overwhelmed, I prefer to…", [
-    ["ReassuranceSeeker","Seek closeness and reassurance now."],
-    ["IndependentConnector","Have space first, then return to talk."]
+  if(step===12) return renderSingleList(box, "When I’m overwhelmed, I prefer to…", [
+    ["SteadyConnector","Keep routines steady and talk when emotions settle."],
+    ["ReassuranceSeeker","Get reassurance and closeness before moving on."],
+    ["IndependentConnector","Take protected space, then reconnect as planned."],
+    ["GuardedConnector","Ease in gradually and share once trust feels solid."]
   ], val => { answers.bond["bond4"]=val; saveState(); finalize(); });
 }
 function next(){ step++; renderStep(); }
 
+// Back button behavior
+document.addEventListener('DOMContentLoaded', ()=>{
+  const backBtn = document.getElementById('backBtn');
+  if(backBtn){
+    backBtn.onclick = ()=>{
+      if(step === 0){
+        hideAllPages();
+        document.getElementById('introPage').classList.remove('hidden');
+      } else {
+        step = Math.max(0, step-1);
+        saveState();
+        renderStep();
+      }
+    };
+  }
+});
+
 /* =========================================================
-   Section 12: Step UIs — Top/Next Picker (NEW), Pick-2, Single
+   Section 12: Step UIs — Top/Next Picker (with “connection” text), Pick-2, Single
    ========================================================= */
 function renderTopNextPicker(root){
   ensureDefaults();
@@ -484,8 +547,15 @@ function renderTopNextPicker(root){
   }
 
   const isTop   = (stage === 'top4');
-  const title   = isTop ? "Pick Your Top 4 Intimacy Types" : "Great! Now pick your Next 4";
-  const hint    = "Tap a card to select (tap again to unselect).";
+
+  // UPDATED copy: "connection" replacing "intimacy", per request
+  const title = isTop
+    ? "Think about a perfect day with your partner. What kinds of connection feel most meaningful to you?"
+    : "You're halfway there! From the remaining options, choose the 4 connection types that come next in importance to you.";
+
+  const hintTop = `Choose the 4 connection types that matter most to you. Tap a card to select it.`;
+  const hintExtra = `Just enter your name to get started. Don't overthink it—your honest answers are the only ones that matter.`;
+
   const pickedSet = new Set(isTop ? answers.top4 : answers.next4);
 
   // Available items: anything not picked in previous stage, plus any already chosen in this stage (so you can unselect)
@@ -495,10 +565,10 @@ function renderTopNextPicker(root){
   // Render header
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
-    <p class="rank-help">${hint}</p>
-    <p style="text-align:center; margin-top:-6px; color:#4a607a;">
+    <p class="rank-help" style="text-align:center; margin-top:6px; color:#4a607a;">
       <em>Selected: ${pickedSet.size} / 4</em>
     </p>
+    ${isTop ? `<p style="text-align:center; margin-top:4px;">${hintTop}<br><span style="font-size:.95rem; color:#4a607a;">${hintExtra}</span></p>` : ""}
     <div class="mini-grid" id="miniGrid"></div>
   `;
 
@@ -511,9 +581,13 @@ function renderTopNextPicker(root){
     card.style.borderLeft = `6px solid ${typeColors[key]}`;
     card.style.paddingLeft = '10px';
 
+    // Show "connection" labels/desc on QUESTION screens only
+    const label = INTIMACY[key].label.replace(/Intimacy/gi, 'Connection');
+    const desc  = INTIMACY[key].desc.replace(/intimacy/gi, 'connection');
+
     card.innerHTML = `
-      <div class="mini-title">${INTIMACY[key].label}</div>
-      <p class="mini-desc">${INTIMACY[key].desc}</p>
+      <div class="mini-title">${label}</div>
+      <p class="mini-desc">${desc}</p>
     `;
 
     card.onclick = ()=>{
@@ -550,7 +624,7 @@ function renderTopNextPicker(root){
   }
 }
 
-/* Pick-2 (expressed/desired affection) */
+/* Pick-2 (expressed/desired affection) — STACKED layout */
 const affectionOptions = [
   {key:"Playful", text:"Playful moments and upbeat encouragement"},
   {key:"Initiative", text:"Taking initiative—removing stressors"},
@@ -563,8 +637,8 @@ function renderPick2(root, title, field){
   const selected = answers[field] || [];
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
-    <p class="rank-help">Tap to select two. Your first tap is #1, second is #2. Tap again to unselect.</p>
-    <div id="pick2Wrap" style="text-align:center;"></div>
+    <p class="rank-help" style="text-align:center;">Tap to select two. Your first tap is #1, second is #2. Tap again to unselect.</p>
+    <div id="pick2Wrap" style="display:flex; flex-direction:column; gap:8px; align-items:center;"></div>
     <p style="text-align:center; margin-top:8px;">Selected: <strong>${selected.length ? selected.map((k,i)=>`${i+1}. ${labelFor(k)}`).join("  ") : "—"}</strong></p>
   `;
   const wrap = root.querySelector('#pick2Wrap');
@@ -591,7 +665,7 @@ function labelFor(k){
   return { Playful:"Playful moments", Initiative:"Taking initiative", DeepTalk:"Deep conversation", Warmth:"Warm presence & touch", Support:"Practical support" }[k] || k;
 }
 
-/* Single-choice (auto-advance) */
+/* Single-choice (auto-advance) — answer buttons now look like stacked pills */
 function renderSingleList(root, title, options, onPick){
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
@@ -862,103 +936,30 @@ function typesColumn(name, types){
     </div></div>
   `;
 }
-     // --- APS crosswalk + scoring for Steps 1–2 (Expressed/Wanted Affection) ---
-const TEMPERAMENT_LABELS = { E: "Sanguine", S: "Choleric", R: "Melancholy", A: "Phlegmatic", U: "Supine" };
-const AFF_TO_TEMP = { Playful: "E", Initiative: "S", DeepTalk: "R", Warmth: "A", Support: "U" };
-
-// Score ordered picks (#1 weight=2, #2 weight=1) → {E,S,R,A,U} on 0..3
-function scoreAffectionTemperament(picks){
-  const w = [2,1];
-  const out = {E:0,S:0,R:0,A:0,U:0};
-  (picks||[]).slice(0,2).forEach((k,i)=>{
-    const t = AFF_TO_TEMP[k];
-    if(t) out[t] += w[i];
-  });
-  return out;
-}
-
-// Order the 5 codes by score desc; returns array [{k, v, label, pct}]
-function orderTemperament(scores){
-  const max = 3; // 1st=2 + 2nd=1
-  return Object.entries(scores)
-    .sort((a,b)=>b[1]-a[1])
-    .map(([k,v])=>({ k, v, label: TEMPERAMENT_LABELS[k], pct: Math.round((v/max)*100) }));
-}
-
-// Pretty card for Expressed/Wanted APS mirror
-function affTemperamentSummaryCard(name, mode, scores){
-  const ordered = orderTemperament(scores);
-  const top = ordered[0] || {k:"E", v:0};          // safe fallback
-  const second = ordered[1] || {k:"S", v:0};
-  const acc = temperamentAccentFromKey(top.k);     // uses your existing accent map
-  return `
-    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-      <strong>${name || "You"} — Affection Temperament (${mode}):</strong>
-      <div style="margin-top:6px;">Primary: ${TEMPERAMENT_LABELS[top.k]} (${top.v}/3)
-        &nbsp;•&nbsp; Secondary: ${TEMPERAMENT_LABELS[second.k]} (${second.v}/3)
-      </div>
-      <div style="margin-top:8px;">
-        ${ordered.map(o=>{
-          const tone = temperamentAccentFromKey(o.k);
-          return `
-            <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
-              <span style="width:110px; display:inline-block;">${o.label}</span>
-              <span style="flex:1; height:8px; border-radius:999px; background:${tone.color}; opacity:.35;">
-                <span style="display:block; height:8px; width:${o.pct}%; border-radius:999px; background:${tone.color}; opacity:.6;"></span>
-              </span>
-              <span style="font-size:.85rem; width:28px; text-align:right;">${o.v}</span>
-            </div>
-          `;
-        }).join("")}
-      </div>
-    </div>
-  `;
-}
-
 function compassionColumn(p){
-  const expBlocks = (p.expressedTop2||[]).map(k=>{
+  const exp = (p.expressedTop2||[]).map(k=>{
     const acc = temperamentAccentFromAffKey(k);
     return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
       <strong>Expressed:</strong> ${affEXP[k]}
     </div>`;
   }).join("");
-
-  const desBlocks = (p.desiredTop2||[]).map(k=>{
+  const des = (p.desiredTop2||[]).map(k=>{
     const acc = temperamentAccentFromAffKey(k);
     return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
       <strong>Most Loved:</strong> ${affDES[k]}
     </div>`;
   }).join("");
-
-  const fallback = `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">
-    Make two selections earlier to see personalized details.</div>`;
-
-  // NEW: compute APS-like scores from the ordered picks
-  const expScores = scoreAffectionTemperament(p.expressedTop2 || []);
-  const desScores = scoreAffectionTemperament(p.desiredTop2 || []);
-
-  // NEW: add APS mirror cards when we’ve got picks
-  const apsExpressed = (p.expressedTop2 && p.expressedTop2.length)
-    ? affTemperamentSummaryCard(p.name, "Expressed", expScores) : "";
-  const apsWanted    = (p.desiredTop2   && p.desiredTop2.length)
-    ? affTemperamentSummaryCard(p.name, "Wanted", desScores)    : "";
-
+  const fallback = `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make two selections earlier to see personalized details.</div>`;
   return `
     <div class="partner-card"><div class="partner-inner">
       <div class="partner-header">${p.name || "Results"}</div>
-
       <div class="partner-subhead"><strong>${p.name || "You"} — You Express Love</strong></div>
-      ${expBlocks || fallback}
-
+      ${exp || fallback}
       <div class="partner-subhead"><strong>${p.name || "You"} — You Feel Most Loved</strong></div>
-      ${desBlocks || fallback}
-
-      ${apsExpressed}
-      ${apsWanted}
+      ${des || fallback}
     </div></div>
   `;
 }
-
 function buildTemperamentText(topKey, summary){
   if(!topKey) return summary || "You flex based on the moment.";
   const d = temperamentDetails[topKey] || {};
