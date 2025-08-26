@@ -9,21 +9,17 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13d):
-     - Removed Back / “Back to Intro” button
-     - Unified all answer styles to match Steps 2–3 pills
-     - Center-aligned all answers (text + layout)
-     - Kept prior copy and headings from v13c
+     PATCH NOTES (v13e):
+     - Intro page: center-aligned all content
+     - Intro “aha!” line larger + italic; removed “Ready to dig…” line
+     - Intro description combined into one paragraph (per text)
+     - Intro footer: replaced Build line with © notice + CIFM™ note
+       and hover tooltip with full legal notice
+     - Answers (Steps 1–12): bold font, same size across, centered text
      =========================================================== -->
 
-<!-- =======================
-     Section 1: Fonts
-     ======================= -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
 
-<!-- =======================
-     Section 2: Styles
-     ======================= -->
 <style>
   /* --- Picker cards with inline definitions (Step 0) --- */
   .mini-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
@@ -52,33 +48,32 @@
   .muted a{ color:#9aa3ab; text-decoration:none; }
   .muted a:hover{ text-decoration:underline; }
 
+  /* Intro-only layout tweaks */
+  #introPage .intro-text { text-align:center; }
+  #introPage .aha { font-style:italic; font-size:1.35rem; margin: 0 0 8px 0; }
+
   /* Utility */
   .lh-13 { line-height: 1.3; }
   .mt-24pt { margin-top: 24pt !important; }
 
-  /* --- Unified answer style (matches Steps 2–3 pills) --- */
-  /* Pills for multi-select (Steps 1–2) */
+  /* --- Unified answer style (matches Steps 2–3 pills), bold + centered --- */
   .pill {
     display:inline-block; padding:12px 14px; border-radius:8px;
     border:1.5px solid #4D9DE0; margin:6px auto; cursor:pointer;
     width:100%; max-width:520px; background:#fff; color:#1A3C5E;
-    font-weight:600; text-align:center;
+    font-weight:700; font-size:1rem; text-align:center;
   }
   .pill.selected{ background:rgba(77,157,224,0.08); border-color:#3A7FBF; }
 
-  /* Buttons for single-select (Steps 3–12) — now visually identical to .pill */
   .answer-btn{
     background:#fff !important; color:#1A3C5E !important;
-    font-weight:600; border:1.5px solid #4D9DE0 !important;
+    font-weight:700; font-size:1rem;
+    border:1.5px solid #4D9DE0 !important;
     border-radius:8px; padding:12px 14px; cursor:pointer;
     margin:8px auto; display:block; width:100%; max-width:520px; text-align:center;
   }
   .answer-btn:hover{ background:rgba(77,157,224,0.08) !important; }
-
-  /* Center the vertical list container for single-select steps */
-  .vertical-list{
-    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-  }
+  .vertical-list{ display:flex; flex-direction:column; align-items:center; justify-content:flex-start; }
 
   /* Results cards */
   .result-block { margin-bottom:16px; page-break-inside:avoid; padding:16px; border-left:8px solid #4D9DE0; border-radius:8px; background:#fff; line-height:1.3; }
@@ -119,23 +114,31 @@
   <img src="https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png" alt="Logo" style="display:block; margin:0 auto 12px; max-width:200px;" onerror="this.src='https://via.placeholder.com/200x80?text=Logo'">
   <h1>Your Guide to a Deeper Connection</h1>
   <div class="intro-text">
-    <p style="text-align:center;"><em>Ready for a few “aha!” moments?</em></p>
+    <!-- Larger, italic aha line -->
+    <p class="aha"><em>Ready for a few “aha!” moments?</em></p>
 
-    <p>Ready to dig into what makes your relationship strong? This quiz is all about exploring how you and your partner connect and what builds intimacy.</p>
-    <p>After you answer a few quick questions, you'll get a personalized profile with simple, actionable ideas to help you build more intimacy and navigate your daily life together.</p>
+    <!-- Combined description paragraph (centered) -->
+    <p>This quiz is all about exploring how you and your partner connect and what builds intimacy. After you answer a few quick questions, you'll get a personalized profile with simple, actionable ideas to help you build more intimacy and navigate your daily life together.</p>
+
     <p style="margin-bottom:0.2em;"><strong>How it works</strong></p>
     <div class="lh-13" style="margin-top:0;">
       <p style="margin:0;">Just enter your name to get started. Don't overthink it—your honest answers are the only ones that matter.</p>
     </div>
   </div>
+
   <div class="row mt-24pt" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-    <input id="yourName" class="input" placeholder="Your name" aria-label="Your name" style="border:1px solid #4D9DE0; border-radius:8px; padding:10px 12px; min-width:260px;">
+    <input id="yourName" class="input" placeholder="Your name" aria-label="Your name" style="border:1px solid #4D9DE0; border-radius:8px; padding:10px 12px; min-width:260px; text-align:center;">
   </div>
   <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px;">
     <button id="startFreshBtn" class="btn" style="max-width:240px;">Start Assessment</button>
     <button id="resumeBtn" class="btn hidden" style="max-width:240px; background:#6A4C93;">Resume Saved Progress</button>
   </div>
-  <p class="muted">Build: <span id="buildBadgeIntro"></span></p>
+
+  <!-- Replaced Build line with copyright + CIFM notice + hover tooltip -->
+  <p class="muted"
+     title="The Covenant Intimacy Fulfillment Model™ (CIFM) is the original intellectual property of Dr. Scott Inman, PhD. It was developed through the research of Happy Marriage, Happy Life™ and the Comprehensive Covenant Marriage Model™ (CCMM). All rights reserved. Unauthorized reproduction or distribution is prohibited.">
+    © 2025 Dr. Scott Inman, PhD. All rights reserved.<br/>CIFM™ is proprietary to Dr. Inman.
+  </p>
 </div>
 
 <!-- =======================
@@ -169,9 +172,9 @@
 /* =======================================
    Section 6: Build/Version Marker
    ======================================= */
-const BUILD = "individual-v13d";
+const BUILD = "individual-v13e";
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('buildBadgeIntro').textContent = BUILD;
+  // Intro no longer shows Build; results page still does.
   document.getElementById('buildBadgeResults').textContent = BUILD;
   if (localStorage.getItem('mca_individual_state_v1')) {
     document.getElementById('resumeBtn').classList.remove('hidden');
@@ -269,80 +272,6 @@ function clearState(){
 function hasSavedState(){ return !!localStorage.getItem(STORAGE_KEY); }
 
 /* =======================================
-   Section 9: Copy for Results
-   ======================================= */
-const scripture = {
-  compassionCare: "“Be completely humble and gentle; be patient, bearing with one another in love.” — Ephesians 4:2",
-  socialEngagement: "“Therefore encourage one another and build each other up.” — 1 Thessalonians 5:11",
-  decisionLeadership: "“If any of you lacks wisdom, you should ask God … and it will be given to you.” — James 1:5",
-  respectRecognition: "“Honor one another above yourselves.” — Romans 12:10",
-  connectionPattern: "“Make every effort to keep the unity of the Spirit through the bond of peace.” — Ephesians 4:3",
-  conflictStrategies: "“Everyone should be quick to listen, slow to speak and slow to become angry.” — James 1:19",
-  thankYou: "“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12"
-};
-const affEXP = {
-  Playful: "You naturally lift the mood with humor, lightness, and spontaneous moments that say, “I’m with you.” You turn ordinary spaces into warm, safe places.",
-  Initiative: "You show love by stepping in and taking pressure off—solving problems, removing obstacles, and protecting what matters.",
-  DeepTalk: "You invite depth—lingering in meaningful conversation, asking curious questions, and making others feel profoundly understood.",
-  Warmth: "You offer steady presence and gentle affection. Your calming tone, touch, and attention help your spouse exhale and feel safe.",
-  Support: "You love through action: pitching in, following through, and sharing the load. Your reliability says, “You’re not alone—I'm with you.”"
-};
-const affDES = {
-  Playful: "You feel loved when things are kept light, playful, and hope-filled—like a breath of fresh air when life feels heavy.",
-  Initiative: "You feel most cared for when your spouse takes initiative—removing stress, solving a problem, or leading with strength and protection.",
-  DeepTalk: "You feel cherished when your spouse slows down, listens deeply, and engages your thoughts and heart with focused, meaningful time.",
-  Warmth: "You feel secure with gentle presence, unhurried attention, and comforting touch that says, “I’m here, and you matter.”",
-  Support: "You feel honored when your spouse helps practically—sharing responsibilities and showing up consistently in the daily things."
-};
-const temperamentDetails = {
-  E: { looks:"You energize the room and move things forward with enthusiasm.",
-       watch:"Fast pace can out-run deeper needs or quieter voices.",
-       tip:"Schedule both lively connection and quiet check-ins to stay balanced." },
-  S: { looks:"You provide direction, set goals, and protect progress.",
-       watch:"Decisiveness can feel controlling if not co-authored.",
-       tip:"Invite input early and name where you’re flexible." },
-  R: { looks:"You think deeply, ask great questions, and value thoughtfulness.",
-       watch:"Over-analysis can delay decisions or feel distant.",
-       tip:"Time-box decisions and surface feelings—not just facts." },
-  A: { looks:"You bring calm, keep the peace, and reduce friction.",
-       watch:"Avoiding tension can postpone needed clarity.",
-       tip:"Name one concrete next step even when keeping it gentle." },
-  U: { looks:"You serve steadily, include others, and build trust.",
-       watch:"Understating your needs can lead to quiet resentment.",
-       tip:"Voice one specific need and one boundary you appreciate." }
-};
-const patternDetail = {
-  SteadyConnector: {
-    connectionType: "Harmony-focused and steady—your presence calms the room and keeps connection safe.",
-    strengths: "create a peaceful space where hard conversations feel possible. You’re consistent, fair, and great at lowering tension.",
-    challenges: "can move past issues too quickly or downplay your own needs to keep the peace, which can leave things unresolved.",
-    tendencies: "In conflict, you often smooth things over fast and avoid going deep, hoping the calm will hold.",
-    coping: "Try a 5–10 minute daily check-in. Name one feeling and one specific need before you move to solutions."
-  },
-  ReassuranceSeeker: {
-    connectionType: "Attachment-aware and passionate—you lead with heart and crave clarity when things feel off.",
-    strengths: "fight for closeness and speak up when something feels wrong. You’re empathetic and quick to repair.",
-    challenges: "needing reassurance now can feel intense and escalate emotions if it doesn’t arrive quickly.",
-    tendencies: "In conflict, you pursue answers and closeness immediately, which can feel like pressure to a withdrawing partner.",
-    coping: "Ask for one clear reassurance, breathe together, then agree to a short reset with a promised return time."
-  },
-  IndependentConnector: {
-    connectionType: "Thoughtful and composed—you value clarity and reflection to keep connection honest and stable.",
-    strengths: "think before you speak, de-escalate well, and protect against saying things you don’t mean.",
-    challenges: "taking space without clarity can feel like distance or shutdown to your spouse.",
-    tendencies: "In conflict, you step back to think. Without a return time, that pause can be heard as disconnection.",
-    coping: "Request space with a specific return time (e.g., 30 minutes). Offer one sentence of reassurance first."
-  },
-  GuardedConnector: {
-    connectionType: "Careful and loyal—you open slowly and build trust through consistency.",
-    strengths: "are dependable and don’t overreact. When you commit, you show up.",
-    challenges: "caution can look like walls. It’s easy to assume negative intent and protect rather than share.",
-    tendencies: "In conflict, you may go quiet, assume the worst, or agree just to end it—then carry the weight alone.",
-    coping: "Use micro-trust steps: keep one small promise daily, write a short note before hard talks, and name one safe topic to open."
-  }
-};
-
-/* =======================================
    Section 10: Launch / Start Handler
    ======================================= */
 document.getElementById('startFreshBtn').onclick = () => {
@@ -380,8 +309,6 @@ function showQuiz(){
   document.getElementById('quizTitle').textContent = `Assessment — ${yourName}`;
   renderStep();
 }
-
-/* Utility to toggle pages */
 function hideAllPages(){
   document.getElementById('introPage').classList.add('hidden');
   document.getElementById('quizPage').classList.add('hidden');
@@ -394,7 +321,6 @@ function hideAllPages(){
 function renderStep(){
   ensureDefaults();
 
-  // Progress UI
   const progEl = document.getElementById('progress');
   const barEl  = document.getElementById('progressBar');
   if (progEl) progEl.textContent = `Step ${step+1} of ${TOTAL_STEPS}`;
@@ -488,12 +414,10 @@ function next(){ step++; renderStep(); }
 function renderTopNextPicker(root){
   ensureDefaults();
 
-  // Which sub-stage are we on?
   const stage = (answers.top4.length < 4) ? 'top4'
                : (answers.next4.length < 4) ? 'next4'
                : 'done';
 
-  // If both Top and Next are done, build rank and move on
   if(stage === 'done'){
     const picked = [...answers.top4, ...answers.next4];
     const remaining = TYPES.filter(k => !picked.includes(k));
@@ -505,12 +429,9 @@ function renderTopNextPicker(root){
 
   const isTop   = (stage === 'top4');
   const pickedSet = new Set(isTop ? answers.top4 : answers.next4);
-
-  // Available items: anything not picked in previous stage, plus any already chosen in this stage (so you can unselect)
   const alreadyPicked = new Set([...answers.top4, ...answers.next4]);
   const pool = TYPES.filter(k => !alreadyPicked.has(k) || pickedSet.has(k));
 
-  // Header + guidance
   const heading = isTop ? "Choose 4 Connection Types" : "You're halfway there!";
   const guidanceTop = `
     <div class="intro-text" style="text-align:center;">
@@ -522,7 +443,6 @@ function renderTopNextPicker(root){
       <p>From the remaining options, choose the 4 connection types that come next in importance to you.</p>
     </div>`;
 
-  // Render header
   root.innerHTML = `
     <h3 style="text-align:center;">${heading}</h3>
     <p class="rank-help" style="text-align:center; margin-top:6px; color:#4a607a;">
@@ -533,8 +453,6 @@ function renderTopNextPicker(root){
   `;
 
   const grid = root.querySelector('#miniGrid');
-
-  // Build a definition card for each available type (swap "intimacy" -> "connection" in labels/descriptions)
   pool.forEach(key=>{
     const card = document.createElement('div');
     card.className = 'mini-card' + (pickedSet.has(key) ? ' selected' : '');
@@ -550,30 +468,19 @@ function renderTopNextPicker(root){
     `;
 
     card.onclick = ()=>{
-      if(pickedSet.has(key)) {
-        pickedSet.delete(key);
-      } else if(pickedSet.size < 4) {
-        pickedSet.add(key);
-      }
+      if(pickedSet.has(key)) pickedSet.delete(key);
+      else if(pickedSet.size < 4) pickedSet.add(key);
 
-      // Commit to state
       if(isTop)  answers.top4  = [...pickedSet];
       else       answers.next4 = [...pickedSet];
 
       saveState();
-
-      // Auto-advance when 4 are selected for this stage
-      if(pickedSet.size === 4) {
-        setTimeout(()=> renderTopNextPicker(root), 120);
-      } else {
-        renderTopNextPicker(root); // re-render to update count & selection
-      }
+      if(pickedSet.size === 4) setTimeout(()=> renderTopNextPicker(root), 120);
+      else renderTopNextPicker(root);
     };
-
     grid.appendChild(card);
   });
 
-  // Safety net: if pool is somehow empty, recover gracefully
   if (pool.length === 0) {
     const note = document.createElement('p');
     note.className = 'muted';
@@ -649,7 +556,6 @@ function renderSingleList(root, title, options, onPick){
 function finalize(){
   ensureDefaults();
 
-  // Build Core/Growth/Untapped safely
   let core   = Array.isArray(answers.top4)  && answers.top4.length  === 4 ? [...answers.top4]  : [];
   let growth = Array.isArray(answers.next4) && answers.next4.length === 4 ? [...answers.next4] : [];
   if (core.length !== 4 || growth.length !== 4) {
@@ -660,7 +566,6 @@ function finalize(){
   const picked = new Set([...core, ...growth]);
   const untapped = TYPES.filter(k => !picked.has(k));
 
-  // Summaries
   const socialCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.social).forEach(k=> socialCounts[k]++);
   const decisionCounts= {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
   const socialTop = Object.entries(socialCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
@@ -704,7 +609,6 @@ function finalize(){
 }
 
 function renderResults(p){
-  // Setup result container
   hideAllPages();
   const resultPage = document.getElementById('resultPage');
   resultPage.classList.remove('hidden');
@@ -716,7 +620,6 @@ function renderResults(p){
   container.id = "soloReport";
   mount.appendChild(container);
 
-  // Helper to add a section divider
   const addDivider = () => {
     const d = document.createElement('div');
     d.className = 'section-divider';
@@ -742,8 +645,6 @@ function renderResults(p){
       <p>Our model organizes intimacy into 12 types across human experience, combining the essential aspects of <em>“being together”</em> (like emotional bonding and spiritual connection) and <em>“doing together”</em> (like shared effort and practical unity). Think of these as a helpful map for your next steps.</p>
     </div>
   `);
-
-  <!-- (Definitions toggle removed in v13c as requested) -->
 
   // Core
   addSubDivider();
@@ -795,26 +696,22 @@ function renderResults(p){
     </div>
   `);
 
-  // Compassion & Care
   addSubDivider();
   addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
   addHTML(`<div class="verse">${scripture.compassionCare}</div>`);
   addHTML(`<p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>`);
   addHTML(compassionColumn(p));
 
-  // Social
   addSubDivider();
   addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
   addHTML(`<div class="verse">${scripture.socialEngagement}</div>`);
   addHTML(temperamentBlock(p.name, "Your Social Energy", buildTemperamentText(p.socialTop, p.socialSummary), p.socialTop));
 
-  // Power & Control
   addSubDivider();
   addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
   addHTML(`<div class="verse">${scripture.decisionLeadership}</div>`);
   addHTML(temperamentBlock(p.name, "Your Leadership Style", buildTemperamentText(p.decisionTop, p.decisionSummary), p.decisionTop));
 
-  // Respect & Recognition
   addSubDivider();
   addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
   addHTML(`<div class="verse">${scripture.respectRecognition}</div>`);
@@ -833,7 +730,6 @@ function renderResults(p){
   addHTML(`<h4 class="subsection-title">Your Personalized Repair Plan</h4>`);
   addHTML(strategySelfCard(p.bondingKey));
 
-  // Thank you + Print
   addDivider();
   addHTML(`
     <div class="result-block" style="border-left-color:transparent; background:#fff;">
@@ -848,8 +744,6 @@ function renderResults(p){
   `);
 
   document.getElementById('downloadPdfBtn').onclick = ()=> window.print();
-
-  // Clear saved state so next session starts fresh
   clearState();
 }
 
