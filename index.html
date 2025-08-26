@@ -9,14 +9,11 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13c):
-     - Intro page copy updated exactly per critique #1
-     - Step 0 (Top 4): heading -> “Choose 4 Connection Types”,
-       guidance moved beneath Selected counter (#2)
-     - Step 0 (Next 4): heading -> “You're halfway there!” with new guidance (#3)
-     - Results header -> “Your Relational Connection Profile” (#4)
-     - Removed “Show All 12 Type Definitions” toggle (#4)
-     - Kept previous fixes: stacked options, unified button styles, Back button
+     PATCH NOTES (v13d):
+     - Removed Back / “Back to Intro” button
+     - Unified all answer styles to match Steps 2–3 pills
+     - Center-aligned all answers (text + layout)
+     - Kept prior copy and headings from v13c
      =========================================================== -->
 
 <!-- =======================
@@ -28,7 +25,7 @@
      Section 2: Styles
      ======================= -->
 <style>
-  /* --- Picker cards with inline definitions --- */
+  /* --- Picker cards with inline definitions (Step 0) --- */
   .mini-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
   .mini-card {
     border:1px solid #4D9DE0; border-radius:8px; background:#fff;
@@ -59,9 +56,29 @@
   .lh-13 { line-height: 1.3; }
   .mt-24pt { margin-top: 24pt !important; }
 
-  /* Top/Next picker pills (used only inside Steps UI — stacked via inline styles) */
-  .pill { display:inline-block; padding:12px 14px; border-radius:8px; border:1.5px solid #4D9DE0; margin:6px auto; cursor:pointer; width:100%; max-width:520px; text-align:left; background:#fff; color:#1A3C5E; }
+  /* --- Unified answer style (matches Steps 2–3 pills) --- */
+  /* Pills for multi-select (Steps 1–2) */
+  .pill {
+    display:inline-block; padding:12px 14px; border-radius:8px;
+    border:1.5px solid #4D9DE0; margin:6px auto; cursor:pointer;
+    width:100%; max-width:520px; background:#fff; color:#1A3C5E;
+    font-weight:600; text-align:center;
+  }
   .pill.selected{ background:rgba(77,157,224,0.08); border-color:#3A7FBF; }
+
+  /* Buttons for single-select (Steps 3–12) — now visually identical to .pill */
+  .answer-btn{
+    background:#fff !important; color:#1A3C5E !important;
+    font-weight:600; border:1.5px solid #4D9DE0 !important;
+    border-radius:8px; padding:12px 14px; cursor:pointer;
+    margin:8px auto; display:block; width:100%; max-width:520px; text-align:center;
+  }
+  .answer-btn:hover{ background:rgba(77,157,224,0.08) !important; }
+
+  /* Center the vertical list container for single-select steps */
+  .vertical-list{
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  }
 
   /* Results cards */
   .result-block { margin-bottom:16px; page-break-inside:avoid; padding:16px; border-left:8px solid #4D9DE0; border-radius:8px; background:#fff; line-height:1.3; }
@@ -78,49 +95,18 @@
 
   /* Thank You */
   .thank-title{
-    margin-top:0;
-    margin-bottom:12pt;
+    margin-top:0; margin-bottom:12pt;
     font-family:'Savoye LET','Zapfino','Great Vibes',cursive;
-    color:#4D9DE0;
-    font-size:4.4rem;
-    line-height:1.1;
-    text-align:center;
+    color:#4D9DE0; font-size:4.4rem; line-height:1.1; text-align:center;
   }
   @media (max-width:700px){ .thank-title{ font-size:3.2rem; } }
   @media (max-width:420px){ .thank-title{ font-size:2.6rem; } }
 
-  /* Print (for “Download PDF” = Print dialog) */
+  /* Print */
   @media print {
     .btn { display:none !important; }
     .card { border:none; box-shadow:none; }
     body { background:#fff; }
-  }
-
-  /* --- Answer buttons: restyled to match Step 2–3 stacked look --- */
-  .answer-btn{
-    background:#fff !important;
-    color:#1A3C5E !important;
-    font-weight:600;
-    border:1.5px solid #4D9DE0 !important;
-    border-radius:8px;
-    padding:12px 14px;
-    cursor:pointer;
-    margin:8px auto;
-    display:block;
-    width:100%;
-    max-width:520px;
-    text-align:left;
-  }
-  .answer-btn:hover{ background:rgba(77,157,224,0.08) !important; }
-
-  /* Secondary (outline) button for Back */
-  .btn-secondary{
-    background:#fff !important;
-    color:#1A3C5E !important;
-    border:2px solid #4D9DE0 !important;
-  }
-  .btn-secondary:hover{
-    background:rgba(77,157,224,0.08) !important;
   }
 </style>
 </head>
@@ -135,14 +121,12 @@
   <div class="intro-text">
     <p style="text-align:center;"><em>Ready for a few “aha!” moments?</em></p>
 
-    <!-- UPDATED INTRO COPY (exact) -->
     <p>Ready to dig into what makes your relationship strong? This quiz is all about exploring how you and your partner connect and what builds intimacy.</p>
     <p>After you answer a few quick questions, you'll get a personalized profile with simple, actionable ideas to help you build more intimacy and navigate your daily life together.</p>
     <p style="margin-bottom:0.2em;"><strong>How it works</strong></p>
     <div class="lh-13" style="margin-top:0;">
       <p style="margin:0;">Just enter your name to get started. Don't overthink it—your honest answers are the only ones that matter.</p>
     </div>
-    <!-- /UPDATED INTRO COPY -->
   </div>
   <div class="row mt-24pt" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
     <input id="yourName" class="input" placeholder="Your name" aria-label="Your name" style="border:1px solid #4D9DE0; border-radius:8px; padding:10px 12px; min-width:260px;">
@@ -163,9 +147,6 @@
   <div id="progress" style="text-align:center; margin-bottom:8px;"></div>
 
   <div id="questionContainer" class="question-box"></div>
-
-  <!-- Back button (shows inside quiz only) -->
-  <button id="backBtn" class="btn btn-secondary hidden" style="max-width:240px;">Back</button>
 
   <p class="muted"><a href="https://happymarriagehappylife.com" target="_blank" rel="noopener">HappyMarriageHappyLife.com</a></p>
 </div>
@@ -188,7 +169,7 @@
 /* =======================================
    Section 6: Build/Version Marker
    ======================================= */
-const BUILD = "individual-v13c";
+const BUILD = "individual-v13d";
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('buildBadgeIntro').textContent = BUILD;
   document.getElementById('buildBadgeResults').textContent = BUILD;
@@ -408,7 +389,7 @@ function hideAllPages(){
 }
 
 /* =======================================
-   Section 11: Step Renderer (auto-advance + Back)
+   Section 11: Step Renderer (auto-advance)
    ======================================= */
 function renderStep(){
   ensureDefaults();
@@ -418,13 +399,6 @@ function renderStep(){
   const barEl  = document.getElementById('progressBar');
   if (progEl) progEl.textContent = `Step ${step+1} of ${TOTAL_STEPS}`;
   if (barEl)  barEl.style.width   = `${((step+1)/TOTAL_STEPS)*100}%`;
-
-  // Back button visibility/label
-  const backBtn = document.getElementById('backBtn');
-  if (backBtn) {
-    backBtn.classList.remove('hidden');
-    backBtn.textContent = (step === 0) ? 'Back to Intro' : 'Back';
-  }
 
   const box = document.getElementById('questionContainer');
   box.innerHTML = "";
@@ -508,23 +482,6 @@ function renderStep(){
 }
 function next(){ step++; renderStep(); }
 
-// Back button behavior
-document.addEventListener('DOMContentLoaded', ()=>{
-  const backBtn = document.getElementById('backBtn');
-  if(backBtn){
-    backBtn.onclick = ()=>{
-      if(step === 0){
-        hideAllPages();
-        document.getElementById('introPage').classList.remove('hidden');
-      } else {
-        step = Math.max(0, step-1);
-        saveState();
-        renderStep();
-      }
-    };
-  }
-});
-
 /* =========================================================
    Section 12: Step UIs — Top/Next Picker (updated headings), Pick-2, Single
    ========================================================= */
@@ -553,7 +510,7 @@ function renderTopNextPicker(root){
   const alreadyPicked = new Set([...answers.top4, ...answers.next4]);
   const pool = TYPES.filter(k => !alreadyPicked.has(k) || pickedSet.has(k));
 
-  // UPDATED header + guidance per critique #2 and #3
+  // Header + guidance
   const heading = isTop ? "Choose 4 Connection Types" : "You're halfway there!";
   const guidanceTop = `
     <div class="intro-text" style="text-align:center;">
@@ -577,7 +534,7 @@ function renderTopNextPicker(root){
 
   const grid = root.querySelector('#miniGrid');
 
-  // Build a definition card for each available type (replace 'intimacy' -> 'connection' on QUESTION screens)
+  // Build a definition card for each available type (swap "intimacy" -> "connection" in labels/descriptions)
   pool.forEach(key=>{
     const card = document.createElement('div');
     card.className = 'mini-card' + (pickedSet.has(key) ? ' selected' : '');
@@ -626,7 +583,7 @@ function renderTopNextPicker(root){
   }
 }
 
-/* Pick-2 (expressed/desired affection) — STACKED layout */
+/* Pick-2 (expressed/desired affection) — STACKED & CENTERED layout */
 const affectionOptions = [
   {key:"Playful", text:"Playful moments and upbeat encouragement"},
   {key:"Initiative", text:"Taking initiative—removing stressors"},
@@ -640,7 +597,7 @@ function renderPick2(root, title, field){
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
     <p class="rank-help" style="text-align:center;">Tap to select two. Your first tap is #1, second is #2. Tap again to unselect.</p>
-    <div id="pick2Wrap" style="display:flex; flex-direction:column; gap:8px; align-items:center;"></div>
+    <div id="pick2Wrap" style="display:flex; flex-direction:column; gap:8px; align-items:center; justify-content:flex-start;"></div>
     <p style="text-align:center; margin-top:8px;">Selected: <strong>${selected.length ? selected.map((k,i)=>`${i+1}. ${labelFor(k)}`).join("  ") : "—"}</strong></p>
   `;
   const wrap = root.querySelector('#pick2Wrap');
@@ -667,7 +624,7 @@ function labelFor(k){
   return { Playful:"Playful moments", Initiative:"Taking initiative", DeepTalk:"Deep conversation", Warmth:"Warm presence & touch", Support:"Practical support" }[k] || k;
 }
 
-/* Single-choice (auto-advance) — answer buttons now look like stacked pills */
+/* Single-choice (auto-advance) — buttons now match .pill and are centered */
 function renderSingleList(root, title, options, onPick){
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
@@ -786,7 +743,7 @@ function renderResults(p){
     </div>
   `);
 
-  <!-- Removed the “Show All 12 Type Definitions” button per critique #4 -->
+  <!-- (Definitions toggle removed in v13c as requested) -->
 
   // Core
   addSubDivider();
