@@ -9,30 +9,23 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13e):
-     - Intro page: center-aligned all content
-     - Intro “aha!” line larger + italic; removed “Ready to dig…” line
-     - Intro description combined into one paragraph (per text)
-     - Intro footer: replaced Build line with © notice + CIFM™ note
-       and hover tooltip with full legal notice
-     - Answers (Steps 1–12): bold font, same size across, centered text
+     PATCH NOTES (v13f):
+     - Fix: Results page now renders past "Compassion & Care"
+       even if any one section errors (defensive try/catch).
+     - No visual changes except resilient rendering.
      =========================================================== -->
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
 
 <style>
-  /* --- Picker cards with inline definitions (Step 0) --- */
+  /* --- Picker cards (Step 0) --- */
   .mini-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
   .mini-card {
     border:1px solid #4D9DE0; border-radius:8px; background:#fff;
     padding:10px 12px; max-width:360px; flex:1 1 280px; cursor:pointer;
     transition: box-shadow .15s, border-color .15s, background .15s;
   }
-  .mini-card.selected {
-    background: rgba(77,157,224,0.08);
-    border-color:#3A7FBF;
-    box-shadow: 0 0 0 2px rgba(58,127,191,0.20) inset;
-  }
+  .mini-card.selected { background: rgba(77,157,224,0.08); border-color:#3A7FBF; box-shadow: 0 0 0 2px rgba(58,127,191,0.20) inset; }
   .mini-title { font-weight:700; margin:0 0 6px 0; }
   .mini-desc  { font-size:.95rem; color:#4a607a; line-height:1.3; margin:0; }
 
@@ -48,7 +41,7 @@
   .muted a{ color:#9aa3ab; text-decoration:none; }
   .muted a:hover{ text-decoration:underline; }
 
-  /* Intro-only layout tweaks */
+  /* Intro-only tweaks */
   #introPage .intro-text { text-align:center; }
   #introPage .aha { font-style:italic; font-size:1.35rem; margin: 0 0 8px 0; }
 
@@ -56,7 +49,7 @@
   .lh-13 { line-height: 1.3; }
   .mt-24pt { margin-top: 24pt !important; }
 
-  /* --- Unified answer style (matches Steps 2–3 pills), bold + centered --- */
+  /* --- Unified answer style (bold, centered) --- */
   .pill {
     display:inline-block; padding:12px 14px; border-radius:8px;
     border:1.5px solid #4D9DE0; margin:6px auto; cursor:pointer;
@@ -108,18 +101,14 @@
 <body>
 
 <!-- =======================
-     Section 3: Intro Page
+     Intro Page
      ======================= -->
 <div id="introPage" class="card">
   <img src="https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png" alt="Logo" style="display:block; margin:0 auto 12px; max-width:200px;" onerror="this.src='https://via.placeholder.com/200x80?text=Logo'">
   <h1>Your Guide to a Deeper Connection</h1>
   <div class="intro-text">
-    <!-- Larger, italic aha line -->
     <p class="aha"><em>Ready for a few “aha!” moments?</em></p>
-
-    <!-- Combined description paragraph (centered) -->
     <p>This quiz is all about exploring how you and your partner connect and what builds intimacy. After you answer a few quick questions, you'll get a personalized profile with simple, actionable ideas to help you build more intimacy and navigate your daily life together.</p>
-
     <p style="margin-bottom:0.2em;"><strong>How it works</strong></p>
     <div class="lh-13" style="margin-top:0;">
       <p style="margin:0;">Just enter your name to get started. Don't overthink it—your honest answers are the only ones that matter.</p>
@@ -134,7 +123,6 @@
     <button id="resumeBtn" class="btn hidden" style="max-width:240px; background:#6A4C93;">Resume Saved Progress</button>
   </div>
 
-  <!-- Replaced Build line with copyright + CIFM notice + hover tooltip -->
   <p class="muted"
      title="The Covenant Intimacy Fulfillment Model™ (CIFM) is the original intellectual property of Dr. Scott Inman, PhD. It was developed through the research of Happy Marriage, Happy Life™ and the Comprehensive Covenant Marriage Model™ (CCMM). All rights reserved. Unauthorized reproduction or distribution is prohibited.">
     © 2025 Dr. Scott Inman, PhD. All rights reserved.<br/>CIFM™ is proprietary to Dr. Inman.
@@ -142,20 +130,18 @@
 </div>
 
 <!-- =======================
-     Section 4: Quiz Page
+     Quiz Page
      ======================= -->
 <div id="quizPage" class="card hidden">
   <h2 id="quizTitle">Assessment</h2>
   <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
   <div id="progress" style="text-align:center; margin-bottom:8px;"></div>
-
   <div id="questionContainer" class="question-box"></div>
-
   <p class="muted"><a href="https://happymarriagehappylife.com" target="_blank" rel="noopener">HappyMarriageHappyLife.com</a></p>
 </div>
 
 <!-- =======================
-     Section 5: Results Page
+     Results Page
      ======================= -->
 <div id="resultPage" class="card hidden">
   <img src="https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png" alt="Logo" style="display:block; margin:0 auto 12px; max-width:200px;" onerror="this.src='https://via.placeholder.com/200x80?text=Logo'">
@@ -170,19 +156,19 @@
 
 <script>
 /* =======================================
-   Section 6: Build/Version Marker
+   Build/Version Marker
    ======================================= */
-const BUILD = "individual-v13e";
+const BUILD = "individual-v13f";
 document.addEventListener('DOMContentLoaded', () => {
-  // Intro no longer shows Build; results page still does.
-  document.getElementById('buildBadgeResults').textContent = BUILD;
+  const r = document.getElementById('buildBadgeResults');
+  if (r) r.textContent = BUILD;
   if (localStorage.getItem('mca_individual_state_v1')) {
     document.getElementById('resumeBtn').classList.remove('hidden');
   }
 });
 
 /* =======================================
-   Section 7: Core Data & Palettes
+   Core Data & Palettes
    ======================================= */
 const INTIMACY = {
   Spiritual:{label:"Spiritual Intimacy", desc:"Spiritual intimacy is the shared sense of purpose and connection to God’s design that anchors a relationship. It’s the core that shapes how love is experienced and expressed, guiding your journey together."},
@@ -214,7 +200,7 @@ const typeOpac = {
 };
 
 /* =======================================
-   Section 8: Local Storage & State
+   Local Storage & State
    ======================================= */
 const STORAGE_KEY = "mca_individual_state_v1";
 let yourName = "";
@@ -269,10 +255,9 @@ function loadState(){
 function clearState(){
   try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
 }
-function hasSavedState(){ return !!localStorage.getItem(STORAGE_KEY); }
 
 /* =======================================
-   Section 10: Launch / Start Handler
+   Launch / Start Handler
    ======================================= */
 document.getElementById('startFreshBtn').onclick = () => {
   try {
@@ -316,7 +301,7 @@ function hideAllPages(){
 }
 
 /* =======================================
-   Section 11: Step Renderer (auto-advance)
+   Step Renderer (auto-advance)
    ======================================= */
 function renderStep(){
   ensureDefaults();
@@ -408,9 +393,9 @@ function renderStep(){
 }
 function next(){ step++; renderStep(); }
 
-/* =========================================================
-   Section 12: Step UIs — Top/Next Picker (updated headings), Pick-2, Single
-   ========================================================= */
+/* =======================================
+   Step UIs — Top/Next Picker, Pick-2, Single
+   ======================================= */
 function renderTopNextPicker(root){
   ensureDefaults();
 
@@ -490,7 +475,7 @@ function renderTopNextPicker(root){
   }
 }
 
-/* Pick-2 (expressed/desired affection) — STACKED & CENTERED layout */
+/* Pick-2 (expressed/desired affection) */
 const affectionOptions = [
   {key:"Playful", text:"Playful moments and upbeat encouragement"},
   {key:"Initiative", text:"Taking initiative—removing stressors"},
@@ -531,7 +516,7 @@ function labelFor(k){
   return { Playful:"Playful moments", Initiative:"Taking initiative", DeepTalk:"Deep conversation", Warmth:"Warm presence & touch", Support:"Practical support" }[k] || k;
 }
 
-/* Single-choice (auto-advance) — buttons now match .pill and are centered */
+/* Single-choice (auto-advance) */
 function renderSingleList(root, title, options, onPick){
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
@@ -551,7 +536,7 @@ function renderSingleList(root, title, options, onPick){
 }
 
 /* =======================================
-   Section 13: Finalize & Render Results
+   Finalize & Render Results (resilient)
    ======================================= */
 function finalize(){
   ensureDefaults();
@@ -566,9 +551,9 @@ function finalize(){
   const picked = new Set([...core, ...growth]);
   const untapped = TYPES.filter(k => !picked.has(k));
 
-  const socialCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.social).forEach(k=> socialCounts[k]++);
-  const decisionCounts= {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
-  const socialTop = Object.entries(socialCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+  const socialCounts   = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.social).forEach(k=> socialCounts[k]++);
+  const decisionCounts = {E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
+  const socialTop   = Object.entries(socialCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
   const decisionTop = Object.entries(decisionCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
 
   const socialSummary = socialTop ? ({
@@ -620,135 +605,145 @@ function renderResults(p){
   container.id = "soloReport";
   mount.appendChild(container);
 
-  const addDivider = () => {
-    const d = document.createElement('div');
-    d.className = 'section-divider';
-    container.appendChild(d);
-  };
-  const addSubDivider = () => {
-    const d = document.createElement('div');
-    d.className = 'subsection-divider';
-    container.appendChild(d);
-  };
-  const addHTML = (html) => {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    while (tmp.firstChild) container.appendChild(tmp.firstChild);
-  };
+  // helpers
+  const addDivider = () => { const d = document.createElement('div'); d.className = 'section-divider'; container.appendChild(d); };
+  const addSubDivider = () => { const d = document.createElement('div'); d.className = 'subsection-divider'; container.appendChild(d); };
+  const addHTML = (html) => { const tmp = document.createElement('div'); tmp.innerHTML = html; while (tmp.firstChild) container.appendChild(tmp.firstChild); };
+  const safe = (label, fn) => { try { fn(); } catch (e) { console.error("Results render error @", label, e); addHTML(`<p class="muted">(Note) A section failed to load. Continuing…</p>`); } };
 
   /* ---------- Section 1 ---------- */
-  addDivider();
-  addHTML(`
-    <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
-    <div class="intro-text">
-      This section is about understanding intimacy—the profound experience of being truly known, deeply connected, and fully cherished. It reveals your unique profile, showing how you naturally express love and how you feel most loved in return.
-      <p>Our model organizes intimacy into 12 types across human experience, combining the essential aspects of <em>“being together”</em> (like emotional bonding and spiritual connection) and <em>“doing together”</em> (like shared effort and practical unity). Think of these as a helpful map for your next steps.</p>
-    </div>
-  `);
+  safe("section-1-head", () => {
+    addDivider();
+    addHTML(`
+      <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
+      <div class="intro-text">
+        This section is about understanding intimacy—the profound experience of being truly known, deeply connected, and fully cherished. It reveals your unique profile, showing how you naturally express love and how you feel most loved in return.
+        <p>Our model organizes intimacy into 12 types across human experience, combining the essential aspects of <em>“being together”</em> (like emotional bonding and spiritual connection) and <em>“doing together”</em> (like shared effort and practical unity). Think of these as a helpful map for your next steps.</p>
+      </div>
+    `);
+  });
 
-  // Core
-  addSubDivider();
-  addHTML(`
-    <h4 class="subsection-title">Your Core Connection Strengths</h4>
-    <div class="verse">“Above all, love each other deeply, because love covers over a multitude of sins.” — 1 Peter 4:8</div>
-    <p class="intro-text">These are your most fulfilling and effortless pathways to deeper closeness.</p>
-  `);
-  addHTML(typesColumn(p.name, p.coreTypes));
-  addHTML(promptsBlock([
-    "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
-    "<em>Be Creative:</em> Pick one practical way to use a strength intentionally this week.",
-    "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
-  ]));
+  safe("section-1-core", () => {
+    addSubDivider();
+    addHTML(`
+      <h4 class="subsection-title">Your Core Connection Strengths</h4>
+      <div class="verse">“Above all, love each other deeply, because love covers over a multitude of sins.” — 1 Peter 4:8</div>
+      <p class="intro-text">These are your most fulfilling and effortless pathways to deeper closeness.</p>
+    `);
+    addHTML(typesColumn(p.name, p.coreTypes));
+    addHTML(promptsBlock([
+      "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
+      "<em>Be Creative:</em> Pick one practical way to use a strength intentionally this week.",
+      "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
+    ]));
+  });
 
-  // Growth
-  addSubDivider();
-  addHTML(`
-    <h4 class="subsection-title">Your Areas for Growth</h4>
-    <div class="verse">“Let us consider how we may spur one another on toward love and good deeds.” — Hebrews 10:24</div>
-    <p class="intro-text">These are wonderful opportunities for intentional focus. With a bit of practice and presence, you can deepen connection here.</p>
-  `);
-  addHTML(typesColumn(p.name, p.growthTypes));
-  addHTML(promptsBlock([
-    "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
-    "<em>Support plan:</em> What would help you show up here more consistently?"
-  ]));
+  safe("section-1-growth-untapped", () => {
+    addSubDivider();
+    addHTML(`
+      <h4 class="subsection-title">Your Areas for Growth</h4>
+      <div class="verse">“Let us consider how we may spur one another on toward love and good deeds.” — Hebrews 10:24</div>
+      <p class="intro-text">These are wonderful opportunities for intentional focus. With a bit of practice and presence, you can deepen connection here.</p>
+    `);
+    addHTML(typesColumn(p.name, p.growthTypes));
+    addHTML(promptsBlock([
+      "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
+      "<em>Support plan:</em> What would help you show up here more consistently?"
+    ]));
 
-  // Untapped
-  addSubDivider();
-  addHTML(`
-    <h4 class="subsection-title">Your Untapped Opportunities</h4>
-    <div class="verse">“See, I am doing a new thing! … Do you not perceive it?” — Isaiah 43:19</div>
-    <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>
-  `);
-  addHTML(typesColumn(p.name, p.untappedTypes));
-  addHTML(promptsBlock([
-    "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
-    "<em>Try it:</em> Design a tiny experiment you can do this week.",
-    "<em>Reflect:</em> What did you enjoy or learn?"
-  ]));
+    addSubDivider();
+    addHTML(`
+      <h4 class="subsection-title">Your Untapped Opportunities</h4>
+      <div class="verse">“See, I am doing a new thing! … Do you not perceive it?” — Isaiah 43:19</div>
+      <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>
+    `);
+    addHTML(typesColumn(p.name, p.untappedTypes));
+    addHTML(promptsBlock([
+      "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
+      "<em>Try it:</em> Design a tiny experiment you can do this week.",
+      "<em>Reflect:</em> What did you enjoy or learn?"
+    ]));
+  });
 
   /* ---------- Section 2 ---------- */
-  addDivider();
-  addHTML(`
-    <h3 class="section-title">Section 2: Relational Dynamics</h3>
-    <div class="intro-text">
-      These everyday rhythms shape your connection—how you care, engage socially, share influence, and honor one another.
-    </div>
-  `);
+  safe("section-2-head", () => {
+    addDivider();
+    addHTML(`
+      <h3 class="section-title">Section 2: Relational Dynamics</h3>
+      <div class="intro-text">
+        These everyday rhythms shape your connection—how you care, engage socially, share influence, and honor one another.
+      </div>
+    `);
+  });
 
-  addSubDivider();
-  addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
-  addHTML(`<div class="verse">${scripture.compassionCare}</div>`);
-  addHTML(`<p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>`);
-  addHTML(compassionColumn(p));
+  safe("section-2-compassion", () => {
+    addSubDivider();
+    addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
+    addHTML(`<div class="verse">“Be completely humble and gentle; be patient, bearing with one another in love.” — Ephesians 4:2</div>`);
+    addHTML(`<p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>`);
+    addHTML(compassionColumn(p));
+  });
 
-  addSubDivider();
-  addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
-  addHTML(`<div class="verse">${scripture.socialEngagement}</div>`);
-  addHTML(temperamentBlock(p.name, "Your Social Energy", buildTemperamentText(p.socialTop, p.socialSummary), p.socialTop));
+  // The part that previously stopped — now wrapped safely
+  safe("section-2-social", () => {
+    addSubDivider();
+    addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
+    addHTML(`<div class="verse">“Therefore encourage one another and build each other up.” — 1 Thessalonians 5:11</div>`);
+    addHTML(temperamentBlock(p.name, "Your Social Energy", buildTemperamentText(p.socialTop, p.socialSummary), p.socialTop));
+  });
 
-  addSubDivider();
-  addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
-  addHTML(`<div class="verse">${scripture.decisionLeadership}</div>`);
-  addHTML(temperamentBlock(p.name, "Your Leadership Style", buildTemperamentText(p.decisionTop, p.decisionSummary), p.decisionTop));
+  safe("section-2-power", () => {
+    addSubDivider();
+    addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
+    addHTML(`<div class="verse">“If any of you lacks wisdom, you should ask God … and it will be given to you.” — James 1:5</div>`);
+    addHTML(temperamentBlock(p.name, "Your Leadership Style", buildTemperamentText(p.decisionTop, p.decisionSummary), p.decisionTop));
+  });
 
-  addSubDivider();
-  addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
-  addHTML(`<div class="verse">${scripture.respectRecognition}</div>`);
-  addHTML(rrCard(p));
+  safe("section-2-rr", () => {
+    addSubDivider();
+    addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
+    addHTML(`<div class="verse">“Honor one another above yourselves.” — Romans 12:10</div>`);
+    addHTML(rrCard(p));
+  });
 
   /* ---------- Section 3 ---------- */
-  addDivider();
-  addHTML(`
-    <h3 class="section-title">Section 3: Connection Patterns</h3>
-    <div class="verse">${scripture.connectionPattern}</div>
-    <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>
-  `);
-  addHTML(patternColumn(p));
+  safe("section-3-patterns", () => {
+    addDivider();
+    addHTML(`
+      <h3 class="section-title">Section 3: Connection Patterns</h3>
+      <div class="verse">“Make every effort to keep the unity of the Spirit through the bond of peace.” — Ephesians 4:3</div>
+      <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>
+    `);
+    addHTML(patternColumn(p));
 
-  addSubDivider();
-  addHTML(`<h4 class="subsection-title">Your Personalized Repair Plan</h4>`);
-  addHTML(strategySelfCard(p.bondingKey));
+    addSubDivider();
+    addHTML(`<h4 class="subsection-title">Your Personalized Repair Plan</h4>`);
+    addHTML(strategySelfCard(p.bondingKey));
+  });
 
-  addDivider();
-  addHTML(`
-    <div class="result-block" style="border-left-color:transparent; background:#fff;">
-      <h3 class="thank-title">Thank You</h3>
-      <div class="verse">${scripture.thankYou}</div>
-      <p class="intro-text">We hope you enjoyed discovering your unique connection patterns. Use these insights as a friendly guide—not labels—to spark great conversations and small, consistent changes.</p>
-      <p class="intro-text">To be truly known is to unlock the deepest intimacy—embrace what’s true today and aim courageously for what’s possible tomorrow.</p>
-    </div>
-    <div style="text-align:center;">
-      <button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download PDF</button>
-    </div>
-  `);
+  // Thank you + Print
+  safe("section-thanks", () => {
+    addDivider();
+    addHTML(`
+      <div class="result-block" style="border-left-color:transparent; background:#fff;">
+        <h3 class="thank-title">Thank You</h3>
+        <div class="verse">“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12</div>
+        <p class="intro-text">We hope you enjoyed discovering your unique connection patterns. Use these insights as a friendly guide—not labels—to spark great conversations and small, consistent changes.</p>
+        <p class="intro-text">To be truly known is to unlock the deepest intimacy—embrace what’s true today and aim courageously for what’s possible tomorrow.</p>
+      </div>
+      <div style="text-align:center;">
+        <button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download PDF</button>
+      </div>
+    `);
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+    if (pdfBtn) pdfBtn.onclick = ()=> window.print();
+  });
 
-  document.getElementById('downloadPdfBtn').onclick = ()=> window.print();
-  clearState();
+  clearState(); // next session starts fresh
 }
 
 /* =======================================
-   Section 14: Result Helpers
+   Result Helpers
    ======================================= */
 function typesColumn(name, types){
   const safe = Array.isArray(types) && types.length ? types : TYPES.slice(0,4);
@@ -787,6 +782,37 @@ function compassionColumn(p){
     </div></div>
   `;
 }
+const affEXP = {
+  Playful: "You naturally lift the mood with humor, lightness, and spontaneous moments that say, “I’m with you.” You turn ordinary spaces into warm, safe places.",
+  Initiative: "You show love by stepping in and taking pressure off—solving problems, removing obstacles, and protecting what matters.",
+  DeepTalk: "You invite depth—lingering in meaningful conversation, asking curious questions, and making others feel profoundly understood.",
+  Warmth: "You offer steady presence and gentle affection. Your calming tone, touch, and attention help your spouse exhale and feel safe.",
+  Support: "You love through action: pitching in, following through, and sharing the load. Your reliability says, “You’re not alone—I'm with you.”"
+};
+const affDES = {
+  Playful: "You feel loved when things are kept light, playful, and hope-filled—like a breath of fresh air when life feels heavy.",
+  Initiative: "You feel most cared for when your spouse takes initiative—removing stress, solving a problem, or leading with strength and protection.",
+  DeepTalk: "You feel cherished when your spouse slows down, listens deeply, and engages your thoughts and heart with focused, meaningful time.",
+  Warmth: "You feel secure with gentle presence, unhurried attention, and comforting touch that says, “I’m here, and you matter.”",
+  Support: "You feel honored when your spouse helps practically—sharing responsibilities and showing up consistently in the daily things."
+};
+const temperamentDetails = {
+  E: { looks:"You energize the room and move things forward with enthusiasm.",
+       watch:"Fast pace can out-run deeper needs or quieter voices.",
+       tip:"Schedule both lively connection and quiet check-ins to stay balanced." },
+  S: { looks:"You provide direction, set goals, and protect progress.",
+       watch:"Decisiveness can feel controlling if not co-authored.",
+       tip:"Invite input early and name where you’re flexible." },
+  R: { looks:"You think deeply, ask great questions, and value thoughtfulness.",
+       watch:"Over-analysis can delay decisions or feel distant.",
+       tip:"Time-box decisions and surface feelings—not just facts." },
+  A: { looks:"You bring calm, keep the peace, and reduce friction.",
+       watch:"Avoiding tension can postpone needed clarity.",
+       tip:"Name one concrete next step even when keeping it gentle." },
+  U: { looks:"You serve steadily, include others, and build trust.",
+       watch:"Understating your needs can lead to quiet resentment.",
+       tip:"Voice one specific need and one boundary you appreciate." }
+};
 function buildTemperamentText(topKey, summary){
   if(!topKey) return summary || "You flex based on the moment.";
   const d = temperamentDetails[topKey] || {};
@@ -816,7 +842,7 @@ function temperamentBlock(name, title, text, topKey){
 }
 function rrAccent(label){
   if(label==="Strong")   return { color:typeColors.Partnership, bg:typeOpac.Partnership };
-  if(label==="Moderate") return { color:typeColors.Commitment,  bg:typeOpac.Commitment  };
+  if(label==="Moderate") return { color:typeColors.Commitment,  bg:typeOpac.CommitMENT  };
   return { color:typeColors.Emotional, bg:typeOpac.Emotional };
 }
 function rrCard(p){
@@ -838,11 +864,40 @@ function patternColumn(p){
   const key = p.bondingKey || "SteadyConnector";
   const acc = {
     SteadyConnector:{ color: typeColors.Partnership,  bg: typeOpac.Partnership },
-    ReassuranceSeeker:{ color: typeColors.Emotional, bg: typeOpac.Emotional },
+    ReassuranceSeeker:{ color: typeColors.Emotional,  bg: typeOpac.Emotional  },
     IndependentConnector:{ color: typeColors.Intellectual, bg: typeOpac.Intellectual },
-    GuardedConnector:{ color: typeColors.Conflict,   bg: typeOpac.Conflict }
+    GuardedConnector:{ color: typeColors.Conflict,    bg: typeOpac.Conflict   }
   }[key];
-  const d = patternDetail[key];
+  const d = {
+    SteadyConnector: {
+      connectionType: "Harmony-focused and steady—your presence calms the room and keeps connection safe.",
+      strengths: "create a peaceful space where hard conversations feel possible. You’re consistent, fair, and great at lowering tension.",
+      challenges: "can move past issues too quickly or downplay your own needs to keep the peace, which can leave things unresolved.",
+      tendencies: "In conflict, you often smooth things over fast and avoid going deep, hoping the calm will hold.",
+      coping: "Try a 5–10 minute daily check-in. Name one feeling and one specific need before you move to solutions."
+    },
+    ReassuranceSeeker: {
+      connectionType: "Attachment-aware and passionate—you lead with heart and crave clarity when things feel off.",
+      strengths: "fight for closeness and speak up when something feels wrong. You’re empathetic and quick to repair.",
+      challenges: "needing reassurance now can feel intense and escalate emotions if it doesn’t arrive quickly.",
+      tendencies: "In conflict, you pursue answers and closeness immediately, which can feel like pressure to a withdrawing partner.",
+      coping: "Ask for one clear reassurance, breathe together, then agree to a short reset with a promised return time."
+    },
+    IndependentConnector: {
+      connectionType: "Thoughtful and composed—you value clarity and reflection to keep connection honest and stable.",
+      strengths: "think before you speak, de-escalate well, and protect against saying things you don’t mean.",
+      challenges: "taking space without clarity can feel like distance or shutdown to your spouse.",
+      tendencies: "In conflict, you step back to think. Without a return time, that pause can be heard as disconnection.",
+      coping: "Request space with a specific return time (e.g., 30 minutes). Offer one sentence of reassurance first."
+    },
+    GuardedConnector: {
+      connectionType: "Careful and loyal—you open slowly and build trust through consistency.",
+      strengths: "are dependable and don’t overreact. When you commit, you show up.",
+      challenges: "caution can look like walls. It’s easy to assume negative intent and protect rather than share.",
+      tendencies: "In conflict, you may go quiet, assume the worst, or agree just to end it—then carry the weight alone.",
+      coping: "Use micro-trust steps: keep one small promise daily, write a short note before hard talks, and name one safe topic to open."
+    }
+  }[key];
   return `
     <div class="partner-card"><div class="partner-inner">
       <div class="partner-header">${p.name || "You"}</div>
