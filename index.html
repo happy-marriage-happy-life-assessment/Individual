@@ -9,16 +9,17 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13i):
-     - Added Discussion Prompts blocks inside Section 2 subsections:
-       Compassion & Care, Social Preferences, Power & Control
-     - Inserted italic “framing questions” under each subsection title,
-       BEFORE the scripture:
-         * Compassion & Care: “Do you care about me?”
-         * Social Preferences: “How do you recharge?”
-         * Power & Control: “Who gets to decide?”
-         * Respect & Recognition: “Do you value me?”
-     - Everything else from v13h preserved
+     PATCH NOTES (v13j):
+     - Section 2 intro text replaced with the new, longer guidance
+     - Subsection “framing questions” kept & styled same size as titles:
+       * Compassion & Care: “Do you care about me?”
+       * Social Preferences: “How do you recharge?”
+       * Power & Control: “Who gets to decide?”
+       * Respect & Recognition: “Do you value me?”
+     - Replaced subsection descriptions with your new copy
+     - Added 1.3 line spacing + vertical margins before/after
+       the “What it looks like / Watch-outs / Helpful tip” blocks
+     - Everything else from v13i preserved
      =========================================================== -->
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -75,6 +76,18 @@
   .partner-header{ font-weight:700; text-align:center; margin-bottom:6px; }
   .results-list{ list-style-position:outside; margin-left:20px; text-align:left; }
   .results-list li{ margin-bottom:6px; }
+
+  /* Framing question under subsection titles */
+  .framing-q{
+    text-align:center; font-style:italic; color:#4D9DE0; font-size:14pt; /* same as subsection-title size */
+    margin: 2px 0 6px 0;
+  }
+
+  /* Spacing for Affection detail blocks */
+  .aff-detail{
+    line-height:1.3;
+    margin: 8px 0;
+  }
 
   .thank-title{
     margin-top:0; margin-bottom:12pt; font-family:'Savoye LET','Zapfino','Great Vibes',cursive;
@@ -136,7 +149,7 @@
 
 <script>
 /* Build marker */
-const BUILD = "individual-v13i";
+const BUILD = "individual-v13j";
 document.addEventListener('DOMContentLoaded', () => {
   const r = document.getElementById('buildBadgeResults'); if (r) r.textContent = BUILD;
   if (localStorage.getItem('mca_individual_state_v1')) document.getElementById('resumeBtn').classList.remove('hidden');
@@ -524,17 +537,18 @@ function renderResults(p){
   /* Section 2 */
   safe("s2-head", ()=>{ addDivider(); addHTML(`
     <h3 class="section-title">Section 2: Relational Dynamics</h3>
-    <div class="intro-text">These everyday rhythms shape your connection—how you care, engage socially, share influence, and honor one another.</div>`); });
+    <div class="intro-text">
+      Your relationship isn't just a connection of two people; it's a unique dance of two beautiful, distinct individuals! This section is designed to help you understand the everyday rhythms that shape your connection. We'll explore how you naturally care for each other, how you engage socially, how you share influence and make decisions, and how you honor one another. Our hope is that these insights will not only bring clarity but also provide a powerful guide for your discussions, helping you protect your closeness and deepen your bond in every interaction.
+    </div>`); });
 
   /* Compassion & Care */
   safe("s2-compassion", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
-    addHTML(`<div style="text-align:center; font-style:italic; color:#4D9DE0;">Do you care about me?</div>`);
+    addHTML(`<div class="framing-q">Do you care about me?</div>`);
     addHTML(`<div class="verse">${scripture.compassionCare}</div>`);
-    addHTML(`<p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>`);
+    addHTML(`<p class="intro-text">This dynamic delves into the heart of your relationship: how love, empathy, and emotional needs are expressed and received. It reveals your unique capacity for tenderness, emotional availability, nurturing, and presence. At its core, this is where you answer the profound question, "Do you care about me?"—both in how you show up for your spouse and how you long to receive comfort and support in return. Understanding this area helps you both ensure your hearts feel truly seen and safe.</p>`);
     addHTML(compassionColumn(p));
-    /* NEW subsection prompts */
     addHTML(promptsBlock([
       "<em>Spot the signal:</em> What specific action helps you feel most cared for this week?",
       "<em>Make it tiny:</em> Choose a 2–minute daily habit (text, touch, note, help).",
@@ -546,10 +560,10 @@ function renderResults(p){
   safe("s2-social", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
-    addHTML(`<div style="text-align:center; font-style:italic; color:#4D9DE0;">How do you recharge?</div>`);
+    addHTML(`<div class="framing-q">How do you recharge?</div>`);
     addHTML(`<div class="verse">${scripture.socialEngagement}</div>`);
+    addHTML(`<p class="intro-text">This dynamic is all about how you both recharge and engage with the world around you. It explores whether you feel energized by being with others (extraversion), find deep renewal in solitude (introversion), or perhaps thrive with a mix of both (ambiversion). Understanding these unique preferences is key to helping you and your spouse beautifully balance your needs for connection and personal space, ensuring you both feel filled up and ready to encourage each other daily.</p>`);
     addHTML(temperamentBlock(p.name,"Your Social Energy",buildTemperamentText(p.socialTop,p.socialSummary),p.socialTop));
-    /* NEW subsection prompts */
     addHTML(promptsBlock([
       "<em>Recharge recipe:</em> What social setting fills your tank most reliably?",
       "<em>Plan 30 minutes:</em> Schedule one quick recharge moment this week.",
@@ -561,10 +575,10 @@ function renderResults(p){
   safe("s2-power", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
-    addHTML(`<div style="text-align:center; font-style:italic; color:#4D9DE0;">Who gets to decide?</div>`);
+    addHTML(`<div class="framing-q">Who gets to decide?</div>`);
     addHTML(`<div class="verse">${scripture.decisionLeadership}</div>`);
+    addHTML(`<p class="intro-text">This dynamic explores how you navigate decisions and leadership within your relationship, and how you approach influence and authority. It's all about how decisions are made, roles are shared, and influence is balanced. Understanding this helps you create a structure where shared responsibility and collaboration feel both respectful and safe. At its heart, this dynamic helps you to ensure the balance and mutual honor in your daily interactions.</p>`);
     addHTML(temperamentBlock(p.name,"Your Leadership Style",buildTemperamentText(p.decisionTop,p.decisionSummary),p.decisionTop));
-    /* NEW subsection prompts */
     addHTML(promptsBlock([
       "<em>Co-author it:</em> Pick one decision to make together this week; define roles.",
       "<em>Invite input:</em> What’s one area you can ask for your spouse’s perspective earlier?",
@@ -576,12 +590,13 @@ function renderResults(p){
   safe("s2-rr", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
-    addHTML(`<div style="text-align:center; font-style:italic; color:#4D9DE0;">Do you value me?</div>`);
+    addHTML(`<div class="framing-q">Do you value me?</div>`);
     addHTML(`<div class="verse">${scripture.respectRecognition}</div>`);
+    addHTML(`<p class="intro-text">This dynamic shines a light on how you both value, affirm, and truly see each other for who you are. It explores how you seek to be known, understood, and deeply appreciated, and in turn, how you honor your spouse's unique identity and contributions. At its heart, this dynamic helps you to ensure the dignity, affirmation, and genuine respect flourish in your relationship.</p>`);
     addHTML(rrCard(p));
   });
 
-  /* Section 2 (existing) prompts retained */
+  /* Section 2 overall prompts (kept) */
   safe("s2-prompts", ()=>{ addHTML(promptsBlock([
     "<em>Compassion & Care:</em> What is one small act this week that would help your spouse feel cared for?",
     "<em>Social:</em> Which setting recharges each of you? Plan one 30-minute moment there.",
@@ -602,7 +617,7 @@ function renderResults(p){
     addHTML(strategySelfCard(p.bondingKey));
   });
 
-  /* Section 3 prompts (retained) */
+  /* Section 3 prompts (kept) */
   safe("s3-prompts", ()=>{ addHTML(promptsBlock([
     "<em>Early warnings:</em> What cues tell you conflict is starting, and how will you pause earlier?",
     "<em>Return time:</em> What language feels safe for taking a brief pause and coming back?",
@@ -614,7 +629,7 @@ function renderResults(p){
   safe("thanks", ()=>{ addDivider(); addHTML(`
     <div class="result-block" style="border-left-color:transparent; background:#fff;">
       <h3 class="thank-title">Thank You</h3>
-      <div class="verse">${scripture.thankYou}</div>
+      <div class="verse">“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12</div>
       <p class="intro-text">We hope you enjoyed discovering your unique connection patterns. Use these insights as a friendly guide—not labels—to spark great conversations and small, consistent changes.</p>
       <p class="intro-text">To be truly known is to unlock the deepest intimacy—embrace what’s true today and aim courageously for what’s possible tomorrow.</p>
     </div>
@@ -623,7 +638,7 @@ function renderResults(p){
   clearState();
 }
 
-/* Scripture (unchanged) */
+/* Scripture */
 const scripture = {
   compassionCare: "“Be completely humble and gentle; be patient, bearing with one another in love.” — Ephesians 4:2",
   socialEngagement: "“Therefore encourage one another and build each other up.” — 1 Thessalonians 5:11",
@@ -651,7 +666,7 @@ function compassionColumn(p){
   const makeDetails = (affKey)=>{
     const code = affKeyToTemp(affKey);
     const d = temperamentDetails[code] || {};
-    return `<div style="margin-top:8px;">
+    return `<div class="aff-detail">
       <em>What it looks like:</em> ${d.looks || ""}<br>
       <em>Watch-outs:</em> ${d.watch || ""}<br>
       <em>Helpful tip:</em> ${d.tip || ""}
