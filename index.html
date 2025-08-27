@@ -9,17 +9,14 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13g):
-     - Replaced question text/flows per client:
-       * Step 1: Expressed Affection (single-choice)
-       * Step 2: Wanted Affection — Emotional Security (single-choice)
-       * Step 3: Wanted Affection — Daily Reassurance (single-choice)
-       * Steps 4–5: Inclusion (Expressed/Wanted)
-       * Steps 6–7: Control (Expressed/Wanted)
-     - Mapping: E/S/R/A/U -> Playful/Initiative/DeepTalk/Warmth/Support for Compassion & Care
-       (keeps existing results logic; desiredTop2 now filled by two wanted items)
-     - TOTAL_STEPS = 14; progress updated
-     - Fixed rrAccent typo (CommitMENT -> Commitment)
+     PATCH NOTES (v13h):
+     - Intro: "quiz" -> "questionnaire" (centered copy retained)
+     - Questions: removed spouse reminder line
+     - Answers: regular weight (not bold), same size, centered
+     - Compassion & Care: removed subheads; labels inside blocks show
+       "<Name> — You Express Love:" / "<Name> — You Feel Most Loved:"
+       + appended What it looks like / Watch-outs / Helpful tip
+     - Added discussion prompts for Section 2 and Section 3
      =========================================================== -->
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -48,14 +45,14 @@
   .muted a{ color:#9aa3ab; text-decoration:none; }
   .muted a:hover{ text-decoration:underline; }
 
-  /* Intro-only tweaks (kept from v13e) */
+  /* Intro-only tweaks */
   #introPage .intro-text { text-align:center; }
-  #introPage .aha { font-style:italic; font-size:1.35rem; margin: 0 0 8px 0; }
+  #introPage .aha { font-style:italic; font-size:1.35rem; margin:0 0 8px 0; }
 
-  /* Unified answer style (bold, centered) */
+  /* Unified answer style (regular weight, centered) */
   .pill, .answer-btn{
     background:#fff !important; color:#1A3C5E !important;
-    font-weight:700; font-size:1rem;
+    font-weight:400; font-size:1rem;
     border:1.5px solid #4D9DE0 !important;
     border-radius:8px; padding:12px 14px; cursor:pointer;
     margin:8px auto; display:block; width:100%; max-width:520px; text-align:center;
@@ -89,13 +86,13 @@
 </head>
 <body>
 
-<!-- Intro Page (kept from v13e) -->
+<!-- Intro Page -->
 <div id="introPage" class="card">
   <img src="https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png" alt="Logo" style="display:block; margin:0 auto 12px; max-width:200px;" onerror="this.src='https://via.placeholder.com/200x80?text=Logo'">
   <h1>Your Guide to a Deeper Connection</h1>
   <div class="intro-text">
     <p class="aha"><em>Ready for a few “aha!” moments?</em></p>
-    <p>This quiz is all about exploring how you and your partner connect and what builds intimacy. After you answer a few quick questions, you'll get a personalized profile with simple, actionable ideas to help you build more intimacy and navigate your daily life together.</p>
+    <p>This <strong>questionnaire</strong> is all about exploring how you and your partner connect and what builds intimacy. After you answer a few quick questions, you'll get a personalized profile with simple, actionable ideas to help you build more intimacy and navigate your daily life together.</p>
     <p style="margin-bottom:0.2em;"><strong>How it works</strong></p>
     <div class="lh-13" style="margin-top:0;">
       <p style="margin:0;">Just enter your name to get started. Don't overthink it—your honest answers are the only ones that matter.</p>
@@ -137,7 +134,7 @@
 
 <script>
 /* Build marker */
-const BUILD = "individual-v13g";
+const BUILD = "individual-v13h";
 document.addEventListener('DOMContentLoaded', () => {
   const r = document.getElementById('buildBadgeResults'); if (r) r.textContent = BUILD;
   if (localStorage.getItem('mca_individual_state_v1')) document.getElementById('resumeBtn').classList.remove('hidden');
@@ -180,8 +177,8 @@ let step = 0;
 
 const DEFAULT_ANSWERS = {
   rank: [...TYPES],
-  expressedTop2: [],   // will hold 1 mapped key from Step 1
-  desiredTop2: [],     // will hold up to 2 mapped keys from Steps 2 & 3
+  expressedTop2: [],
+  desiredTop2: [],
   social: {},
   decision: {},
   rr: { rr1:null, rr2:null },
@@ -249,8 +246,9 @@ function showQuiz(){
 }
 function hideAllPages(){ document.getElementById('introPage').classList.add('hidden'); document.getElementById('quizPage').classList.add('hidden'); document.getElementById('resultPage').classList.add('hidden'); }
 
-/* Helpers: temperament code -> affection key */
+/* Helpers */
 const codeToAffKey = (code)=>({ E:"Playful", S:"Initiative", R:"DeepTalk", A:"Warmth", U:"Support" }[code]);
+const affKeyToTemp = (k)=>({ Playful:"E", Initiative:"S", DeepTalk:"R", Warmth:"A", Support:"U" }[k] || null);
 const SANG="E", CHOL="S", MEL="R", PHLE="A", SUPI="U";
 
 /* Renderer */
@@ -267,7 +265,7 @@ function renderStep(){
   /* Step 0: Top/Next picker */
   if(step===0){ renderTopNextPicker(box); saveState(); return; }
 
-  /* ----- Step 1–3: Affection (Expressed, Wanted-Emotional, Wanted-Daily) ----- */
+  /* Affection (Expressed, Wanted-Emotional, Wanted-Daily) */
   if(step===1) return renderSingleList(box, "When it comes to showing affection in close relationships, I naturally…", [
     [SANG,"…initiate hugs, kisses, and warm words often; I easily express closeness."],
     [CHOL,"…show care through purposeful actions or brief gestures, less through emotional displays."],
@@ -302,7 +300,7 @@ function renderStep(){
       answers.desiredTop2 = arr; saveState(); next();
   });
 
-  /* ----- Steps 4–5: Inclusion (Social) ----- */
+  /* Inclusion (Social) */
   if(step===4) return renderSingleList(box, "In social settings, I usually…", [
     [SANG,"…start conversations and draw people in, enjoying being at the center."],
     [CHOL,"…organize or lead the group toward a goal."],
@@ -319,7 +317,7 @@ function renderStep(){
     [PHLE,"…the setting is relaxed and pressure-free."]
   ], val => { answers.social["social2"]=val; saveState(); next(); });
 
-  /* ----- Steps 6–7: Control (Decision-Making) ----- */
+  /* Control (Decision-Making) */
   if(step===6) return renderSingleList(box, "When decisions need to be made, I usually…", [
     [CHOL,"…step up confidently and set direction for others."],
     [SANG,"…help decide with energy and optimism, inviting collaboration."],
@@ -336,7 +334,7 @@ function renderStep(){
     [PHLE,"…gentle guidance that keeps harmony without conflict."]
   ], val => { answers.decision["decision2"]=val; saveState(); next(); });
 
-  /* ----- Steps 8–9: Respect & Recognition (unchanged) ----- */
+  /* Respect & Recognition */
   if(step===8) return renderSingleList(box, "I feel my opinions are respected in our relationship.", [
     [3,"Strongly Agree"],[2,"Agree"],[1,"Disagree"],[0,"Strongly Disagree"]
   ], val => { answers.rr.rr1 = Number(val); saveState(); next(); });
@@ -345,7 +343,7 @@ function renderStep(){
     [3,"Strongly Agree"],[2,"Agree"],[1,"Disagree"],[0,"Strongly Disagree"]
   ], val => { answers.rr.rr2 = Number(val); saveState(); next(); });
 
-  /* ----- Steps 10–13: Connection Patterns (unchanged, balanced) ----- */
+  /* Connection Patterns */
   if(step===10) return renderSingleList(box, "During conflict, I naturally…", [
     ["SteadyConnector","Look for a steady, low-tension path forward."],
     ["ReassuranceSeeker","Seek quick clarity and closeness right away."],
@@ -376,7 +374,7 @@ function renderStep(){
 }
 function next(){ step++; renderStep(); }
 
-/* Step 0: Top/Next picker (unchanged text from v13c/d) */
+/* Step 0: Top/Next picker */
 function renderTopNextPicker(root){
   ensureDefaults();
   const stage = (answers.top4.length < 4) ? 'top4' : (answers.next4.length < 4) ? 'next4' : 'done';
@@ -428,13 +426,10 @@ function renderTopNextPicker(root){
   }
 }
 
-/* Single-choice + Pick-2 (only single is used for new items) */
+/* Single-choice (no spouse reminder line) */
 function renderSingleList(root, title, options, onPick){
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
-    <p style="text-align:center; margin-top:-6px; color:#4a607a;">
-      <em>Please answer based on your relationship with your spouse.</em>
-    </p>
     <div class="vertical-list"></div>
   `;
   const v = root.querySelector('.vertical-list');
@@ -443,7 +438,7 @@ function renderSingleList(root, title, options, onPick){
   });
 }
 
-/* Finalize & Results (resilient from v13f) */
+/* Finalize & Results (resilient) */
 function finalize(){
   ensureDefaults();
   let core = Array.isArray(answers.top4)&&answers.top4.length===4 ? [...answers.top4]  : [];
@@ -488,6 +483,7 @@ function renderResults(p){
   const addHTML=(html)=>{ const tmp=document.createElement('div'); tmp.innerHTML=html; while(tmp.firstChild) container.appendChild(tmp.firstChild); };
   const safe=(label,fn)=>{ try{ fn(); }catch(e){ console.error("Results render error @",label,e); addHTML(`<p class="muted">(Note) A section failed to load. Continuing…</p>`);} };
 
+  /* Section 1 */
   safe("s1-head", ()=>{ addDivider(); addHTML(`
     <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
     <div class="intro-text">
@@ -520,6 +516,7 @@ function renderResults(p){
       "<em>Reflect:</em> What did you enjoy or learn?"
     ])); });
 
+  /* Section 2 */
   safe("s2-head", ()=>{ addDivider(); addHTML(`
     <h3 class="section-title">Section 2: Relational Dynamics</h3>
     <div class="intro-text">These everyday rhythms shape your connection—how you care, engage socially, share influence, and honor one another.</div>`); });
@@ -532,12 +529,30 @@ function renderResults(p){
 
   safe("s2-rr", ()=>{ addSubDivider(); addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`); addHTML(`<div class="verse">“Honor one another above yourselves.” — Romans 12:10</div>`); addHTML(rrCard(p)); });
 
+  /* NEW: Discussion prompts for Section 2 */
+  safe("s2-prompts", ()=>{ addHTML(promptsBlock([
+    "<em>Compassion & Care:</em> What is one small act this week that would help your spouse feel cared for?",
+    "<em>Social:</em> Which setting recharges each of you? Plan one 30-minute moment there.",
+    "<em>Power & Control:</em> Choose one decision to co-author this week. What’s the next clear step?",
+    "<em>Respect & Recognition:</em> Share one specific appreciation today and why it matters."
+  ])); });
+
+  /* Section 3 */
   safe("s3-patterns", ()=>{ addDivider(); addHTML(`
     <h3 class="section-title">Section 3: Connection Patterns</h3>
     <div class="verse">“Make every effort to keep the unity of the Spirit through the bond of peace.” — Ephesians 4:3</div>
     <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>`); addHTML(patternColumn(p));
     addSubDivider(); addHTML(`<h4 class="subsection-title">Your Personalized Repair Plan</h4>`); addHTML(strategySelfCard(p.bondingKey)); });
 
+  /* NEW: Discussion prompts for Section 3 */
+  safe("s3-prompts", ()=>{ addHTML(promptsBlock([
+    "<em>Early warnings:</em> What cues tell you conflict is starting, and how will you pause earlier?",
+    "<em>Return time:</em> What language feels safe for taking a brief pause and coming back?",
+    "<em>Repair ritual:</em> Pick one simple repair ritual to practice this week.",
+    "<em>Watch-out:</em> Name one personal watch-out and one way your spouse can cue you kindly."
+  ])); });
+
+  /* Thank-you + PDF */
   safe("thanks", ()=>{ addDivider(); addHTML(`
     <div class="result-block" style="border-left-color:transparent; background:#fff;">
       <h3 class="thank-title">Thank You</h3>
@@ -560,16 +575,41 @@ function typesColumn(name, types){
         </div>`).join("")}
     </div></div>`;
 }
+
+/* Append temperament details to Affection blocks and rename labels as requested */
 function compassionColumn(p){
-  const exp = (p.expressedTop2||[]).map(k=>{ const acc=temperamentAccentFromAffKey(k);
-    return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};"><strong>Expressed:</strong> ${affEXP[k]}</div>`; }).join("");
-  const des = (p.desiredTop2||[]).map(k=>{ const acc=temperamentAccentFromAffKey(k);
-    return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};"><strong>Most Loved:</strong> ${affDES[k]}</div>`; }).join("");
+  const nm = p.name || "You";
+  const makeDetails = (affKey)=>{
+    const code = affKeyToTemp(affKey);
+    const d = temperamentDetails[code] || {};
+    return `<div style="margin-top:8px;">
+      <em>What it looks like:</em> ${d.looks || ""}<br>
+      <em>Watch-outs:</em> ${d.watch || ""}<br>
+      <em>Helpful tip:</em> ${d.tip || ""}
+    </div>`;
+  };
+  const exp = (p.expressedTop2||[]).map(k=>{
+    const acc = temperamentAccentFromAffKey(k);
+    return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>${nm} — You Express Love:</strong> ${affEXP[k]}
+      ${makeDetails(k)}
+    </div>`;
+  }).join("");
+
+  const des = (p.desiredTop2||[]).map(k=>{
+    const acc = temperamentAccentFromAffKey(k);
+    return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>${nm} — You Feel Most Loved:</strong> ${affDES[k]}
+      ${makeDetails(k)}
+    </div>`;
+  }).join("");
+
   const fallback = `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make selections earlier to see personalized details.</div>`;
+
   return `<div class="partner-card"><div class="partner-inner">
-      <div class="partner-header">${p.name || "Results"}</div>
-      <div class="partner-subhead"><strong>${p.name || "You"} — You Express Love</strong></div>${exp || fallback}
-      <div class="partner-subhead"><strong>${p.name || "You"} — You Feel Most Loved</strong></div>${des || fallback}
+      <div class="partner-header">${nm}</div>
+      ${exp || fallback}
+      ${des || fallback}
     </div></div>`;
 }
 const affEXP = {
@@ -586,6 +626,8 @@ const affDES = {
   Warmth:"You feel secure with gentle presence, unhurried attention, and comforting touch that says, “I’m here, and you matter.”",
   Support:"You feel honored when your spouse helps practically—sharing responsibilities and showing up consistently in the daily things."
 };
+
+/* Temperament details reused */
 const temperamentDetails = {
   E:{ looks:"You energize the room and move things forward with enthusiasm.", watch:"Fast pace can out-run deeper needs or quieter voices.", tip:"Schedule both lively connection and quiet check-ins to stay balanced." },
   S:{ looks:"You provide direction, set goals, and protect progress.",       watch:"Decisiveness can feel controlling if not co-authored.", tip:"Invite input early and name where you’re flexible." },
@@ -606,6 +648,8 @@ function temperamentBlock(name, title, text, topKey){
   const acc = temperamentAccentFromKey(topKey);
   return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};"><strong>${name || "You"} — ${title}:</strong> <span>${text || "You flex based on the moment."}</span></div>`;
 }
+
+/* RR & Patterns */
 function rrAccent(label){
   if(label==="Strong")   return { color:typeColors.Partnership, bg:typeOpac.Partnership };
   if(label==="Moderate") return { color:typeColors.Commitment,  bg:typeOpac.Commitment  };
@@ -656,7 +700,7 @@ function strategySelfCard(bondingKey){
     <ul class="results-list" style="margin-top:6px;">${tipsBy.map(t=>`<li>${t}</li>`).join("")}</ul>
   </div>`;
 }
-function promptsBlock(items){ return `<div class="prompt-block"><strong>Reflection Prompts</strong><ul class="results-list" style="margin-top:6px;">${items.map(li=>`<li>${li}</li>`).join("")}</ul></div>`; }
+function promptsBlock(items){ return `<div class="prompt-block"><strong>Discussion Prompts</strong><ul class="results-list" style="margin-top:6px;">${items.map(li=>`<li>${li}</li>`).join("")}</ul></div>`; }
 </script>
 </body>
 </html>
