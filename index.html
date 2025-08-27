@@ -9,14 +9,16 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13h):
-     - Intro: "quiz" -> "questionnaire" (centered copy retained)
-     - Questions: removed spouse reminder line
-     - Answers: regular weight (not bold), same size, centered
-     - Compassion & Care: removed subheads; labels inside blocks show
-       "<Name> — You Express Love:" / "<Name> — You Feel Most Loved:"
-       + appended What it looks like / Watch-outs / Helpful tip
-     - Added discussion prompts for Section 2 and Section 3
+     PATCH NOTES (v13i):
+     - Added Discussion Prompts blocks inside Section 2 subsections:
+       Compassion & Care, Social Preferences, Power & Control
+     - Inserted italic “framing questions” under each subsection title,
+       BEFORE the scripture:
+         * Compassion & Care: “Do you care about me?”
+         * Social Preferences: “How do you recharge?”
+         * Power & Control: “Who gets to decide?”
+         * Respect & Recognition: “Do you value me?”
+     - Everything else from v13h preserved
      =========================================================== -->
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -134,7 +136,7 @@
 
 <script>
 /* Build marker */
-const BUILD = "individual-v13h";
+const BUILD = "individual-v13i";
 document.addEventListener('DOMContentLoaded', () => {
   const r = document.getElementById('buildBadgeResults'); if (r) r.textContent = BUILD;
   if (localStorage.getItem('mca_individual_state_v1')) document.getElementById('resumeBtn').classList.remove('hidden');
@@ -420,13 +422,15 @@ function renderTopNextPicker(root){
     };
     grid.appendChild(card);
   });
+
   if (pool.length === 0) {
-    const note = document.createElement('p'); note.className='muted'; note.textContent='All picked — advancing…';
-    root.appendChild(note); setTimeout(()=>{ answers.rank=[...TYPES]; saveState(); next(); },200);
+    const note = document.createElement('p'); note.className = 'muted'; note.textContent = 'All picked — advancing…';
+    root.appendChild(note);
+    setTimeout(()=> { answers.rank = [...TYPES]; saveState(); next(); }, 200);
   }
 }
 
-/* Single-choice (no spouse reminder line) */
+/* Single-choice (no spouse reminder) */
 function renderSingleList(root, title, options, onPick){
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
@@ -472,6 +476,7 @@ function finalize(){
   };
   renderResults(profile);
 }
+
 function renderResults(p){
   hideAllPages();
   const resultPage=document.getElementById('resultPage'); resultPage.classList.remove('hidden');
@@ -521,15 +526,62 @@ function renderResults(p){
     <h3 class="section-title">Section 2: Relational Dynamics</h3>
     <div class="intro-text">These everyday rhythms shape your connection—how you care, engage socially, share influence, and honor one another.</div>`); });
 
-  safe("s2-compassion", ()=>{ addSubDivider(); addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`); addHTML(`<div class="verse">“Be completely humble and gentle; be patient, bearing with one another in love.” — Ephesians 4:2</div>`); addHTML(`<p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>`); addHTML(compassionColumn(p)); });
+  /* Compassion & Care */
+  safe("s2-compassion", ()=>{ 
+    addSubDivider(); 
+    addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
+    addHTML(`<div style="text-align:center; font-style:italic; color:#4D9DE0;">Do you care about me?</div>`);
+    addHTML(`<div class="verse">${scripture.compassionCare}</div>`);
+    addHTML(`<p class="intro-text">How love, empathy, and emotional needs are expressed and received—your answer to <em>“Do you care about me?”</em></p>`);
+    addHTML(compassionColumn(p));
+    /* NEW subsection prompts */
+    addHTML(promptsBlock([
+      "<em>Spot the signal:</em> What specific action helps you feel most cared for this week?",
+      "<em>Make it tiny:</em> Choose a 2–minute daily habit (text, touch, note, help).",
+      "<em>Translate love:</em> How will you show care in your spouse’s preferred way?"
+    ]));
+  });
 
-  safe("s2-social", ()=>{ addSubDivider(); addHTML(`<h4 class="subsection-title">Social Preferences</h4>`); addHTML(`<div class="verse">“Therefore encourage one another and build each other up.” — 1 Thessalonians 5:11</div>`); addHTML(temperamentBlock(p.name,"Your Social Energy",buildTemperamentText(p.socialTop,p.socialSummary),p.socialTop)); });
+  /* Social Preferences */
+  safe("s2-social", ()=>{ 
+    addSubDivider(); 
+    addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
+    addHTML(`<div style="text-align:center; font-style:italic; color:#4D9DE0;">How do you recharge?</div>`);
+    addHTML(`<div class="verse">${scripture.socialEngagement}</div>`);
+    addHTML(temperamentBlock(p.name,"Your Social Energy",buildTemperamentText(p.socialTop,p.socialSummary),p.socialTop));
+    /* NEW subsection prompts */
+    addHTML(promptsBlock([
+      "<em>Recharge recipe:</em> What social setting fills your tank most reliably?",
+      "<em>Plan 30 minutes:</em> Schedule one quick recharge moment this week.",
+      "<em>Boundary:</em> Name one limit to prevent overwhelm or isolation."
+    ]));
+  });
 
-  safe("s2-power", ()=>{ addSubDivider(); addHTML(`<h4 class="subsection-title">Power & Control</h4>`); addHTML(`<div class="verse">“If any of you lacks wisdom, you should ask God … and it will be given to you.” — James 1:5</div>`); addHTML(temperamentBlock(p.name,"Your Leadership Style",buildTemperamentText(p.decisionTop,p.decisionSummary),p.decisionTop)); });
+  /* Power & Control */
+  safe("s2-power", ()=>{ 
+    addSubDivider(); 
+    addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
+    addHTML(`<div style="text-align:center; font-style:italic; color:#4D9DE0;">Who gets to decide?</div>`);
+    addHTML(`<div class="verse">${scripture.decisionLeadership}</div>`);
+    addHTML(temperamentBlock(p.name,"Your Leadership Style",buildTemperamentText(p.decisionTop,p.decisionSummary),p.decisionTop));
+    /* NEW subsection prompts */
+    addHTML(promptsBlock([
+      "<em>Co-author it:</em> Pick one decision to make together this week; define roles.",
+      "<em>Invite input:</em> What’s one area you can ask for your spouse’s perspective earlier?",
+      "<em>Flex or firm:</em> Name one value that’s firm and one area you’ll flex."
+    ]));
+  });
 
-  safe("s2-rr", ()=>{ addSubDivider(); addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`); addHTML(`<div class="verse">“Honor one another above yourselves.” — Romans 12:10</div>`); addHTML(rrCard(p)); });
+  /* Respect & Recognition */
+  safe("s2-rr", ()=>{ 
+    addSubDivider(); 
+    addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
+    addHTML(`<div style="text-align:center; font-style:italic; color:#4D9DE0;">Do you value me?</div>`);
+    addHTML(`<div class="verse">${scripture.respectRecognition}</div>`);
+    addHTML(rrCard(p));
+  });
 
-  /* NEW: Discussion prompts for Section 2 */
+  /* Section 2 (existing) prompts retained */
   safe("s2-prompts", ()=>{ addHTML(promptsBlock([
     "<em>Compassion & Care:</em> What is one small act this week that would help your spouse feel cared for?",
     "<em>Social:</em> Which setting recharges each of you? Plan one 30-minute moment there.",
@@ -538,13 +590,19 @@ function renderResults(p){
   ])); });
 
   /* Section 3 */
-  safe("s3-patterns", ()=>{ addDivider(); addHTML(`
-    <h3 class="section-title">Section 3: Connection Patterns</h3>
-    <div class="verse">“Make every effort to keep the unity of the Spirit through the bond of peace.” — Ephesians 4:3</div>
-    <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>`); addHTML(patternColumn(p));
-    addSubDivider(); addHTML(`<h4 class="subsection-title">Your Personalized Repair Plan</h4>`); addHTML(strategySelfCard(p.bondingKey)); });
+  safe("s3-patterns", ()=>{ 
+    addDivider(); 
+    addHTML(`
+      <h3 class="section-title">Section 3: Connection Patterns</h3>
+      <div class="verse">${scripture.connectionPattern}</div>
+      <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>
+    `);
+    addHTML(patternColumn(p));
+    addSubDivider(); addHTML(`<h4 class="subsection-title">Your Personalized Repair Plan</h4>`); 
+    addHTML(strategySelfCard(p.bondingKey));
+  });
 
-  /* NEW: Discussion prompts for Section 3 */
+  /* Section 3 prompts (retained) */
   safe("s3-prompts", ()=>{ addHTML(promptsBlock([
     "<em>Early warnings:</em> What cues tell you conflict is starting, and how will you pause earlier?",
     "<em>Return time:</em> What language feels safe for taking a brief pause and coming back?",
@@ -556,7 +614,7 @@ function renderResults(p){
   safe("thanks", ()=>{ addDivider(); addHTML(`
     <div class="result-block" style="border-left-color:transparent; background:#fff;">
       <h3 class="thank-title">Thank You</h3>
-      <div class="verse">“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12</div>
+      <div class="verse">${scripture.thankYou}</div>
       <p class="intro-text">We hope you enjoyed discovering your unique connection patterns. Use these insights as a friendly guide—not labels—to spark great conversations and small, consistent changes.</p>
       <p class="intro-text">To be truly known is to unlock the deepest intimacy—embrace what’s true today and aim courageously for what’s possible tomorrow.</p>
     </div>
@@ -564,6 +622,17 @@ function renderResults(p){
 
   clearState();
 }
+
+/* Scripture (unchanged) */
+const scripture = {
+  compassionCare: "“Be completely humble and gentle; be patient, bearing with one another in love.” — Ephesians 4:2",
+  socialEngagement: "“Therefore encourage one another and build each other up.” — 1 Thessalonians 5:11",
+  decisionLeadership: "“If any of you lacks wisdom, you should ask God … and it will be given to you.” — James 1:5",
+  respectRecognition: "“Honor one another above yourselves.” — Romans 12:10",
+  connectionPattern: "“Make every effort to keep the unity of the Spirit through the bond of peace.” — Ephesians 4:3",
+  conflictStrategies: "“Everyone should be quick to listen, slow to speak and slow to become angry.” — James 1:19",
+  thankYou: "“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12"
+};
 
 /* Result helpers */
 function typesColumn(name, types){
@@ -576,7 +645,7 @@ function typesColumn(name, types){
     </div></div>`;
 }
 
-/* Append temperament details to Affection blocks and rename labels as requested */
+/* Compassion & Care blocks (with temperament details and renamed labels) */
 function compassionColumn(p){
   const nm = p.name || "You";
   const makeDetails = (affKey)=>{
