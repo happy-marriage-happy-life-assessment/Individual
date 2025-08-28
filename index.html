@@ -9,17 +9,11 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13j):
-     - Section 2 intro text replaced with the new, longer guidance
-     - Subsection “framing questions” kept & styled same size as titles:
-       * Compassion & Care: “Do you care about me?”
-       * Social Preferences: “How do you recharge?”
-       * Power & Control: “Who gets to decide?”
-       * Respect & Recognition: “Do you value me?”
-     - Replaced subsection descriptions with your new copy
-     - Added 1.3 line spacing + vertical margins before/after
-       the “What it looks like / Watch-outs / Helpful tip” blocks
-     - Everything else from v13i preserved
+     PATCH NOTES (v13k):
+     - Added Section 3: Communication Style (CCMM-Aligned)
+     - Inserted classifier + renderer based on existing signals
+     - Connection Patterns now labeled Section 4
+     - Small CSS additions: tips-grid + badge-chip
      =========================================================== -->
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -96,6 +90,13 @@
   @media (max-width:700px){ .thank-title{ font-size:3.2rem; } }
   @media (max-width:420px){ .thank-title{ font-size:2.6rem; } }
 
+  /* NEW: Communication Style helpers */
+  .tips-grid { display:grid; gap:8px; grid-template-columns: 1fr; }
+  .badge-chip{
+    display:inline-block; padding:4px 8px; border-radius:999px;
+    background:rgba(0,0,0,.06); font-size:.9rem; font-weight:600; margin-right:6px;
+  }
+
   @media print { .btn { display:none !important; } .card { border:none; box-shadow:none; } body { background:#fff; } }
 </style>
 </head>
@@ -149,7 +150,7 @@
 
 <script>
 /* Build marker */
-const BUILD = "individual-v13j";
+const BUILD = "individual-v13k";
 document.addEventListener('DOMContentLoaded', () => {
   const r = document.getElementById('buildBadgeResults'); if (r) r.textContent = BUILD;
   if (localStorage.getItem('mca_individual_state_v1')) document.getElementById('resumeBtn').classList.remove('hidden');
@@ -604,11 +605,34 @@ function renderResults(p){
     "<em>Respect & Recognition:</em> Share one specific appreciation today and why it matters."
   ])); });
 
-  /* Section 3 */
-  safe("s3-patterns", ()=>{ 
+  /* NEW Section 3: Communication Style (CCMM-Aligned) */
+  safe("s3-comm-style", ()=> {
+    addDivider();
+    addHTML(`
+      <h3 class="section-title">Section 3: Communication Style (CCMM-Aligned)</h3>
+      <div class="verse">${scripture.conflictStrategies}</div>
+      <p class="intro-text">Based on your answers, here’s your current communication pattern in relationships. Treat this as a starting point—not a label—to guide practice, empathy, and shared influence.</p>
+    `);
+
+    const cs = classifyCommunicationStyleFromProfile(p);
+    addHTML(renderCommStyleBlock(p.name || "You", cs));
+
+    // Coaching card
+    addHTML(`
+      <div class="prompt-block">
+        <strong>Mini Action Plan</strong>
+        <ul class="results-list" style="margin-top:6px;">
+          ${COMM_META[cs.style].tips.map(t=>`<li>${t}</li>`).join("")}
+        </ul>
+      </div>
+    `);
+  });
+
+  /* Section 4 (renamed): Connection Patterns */
+  safe("s4-patterns", ()=>{ 
     addDivider(); 
     addHTML(`
-      <h3 class="section-title">Section 3: Connection Patterns</h3>
+      <h3 class="section-title">Section 4: Connection Patterns</h3>
       <div class="verse">${scripture.connectionPattern}</div>
       <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>
     `);
@@ -617,8 +641,8 @@ function renderResults(p){
     addHTML(strategySelfCard(p.bondingKey));
   });
 
-  /* Section 3 prompts (kept) */
-  safe("s3-prompts", ()=>{ addHTML(promptsBlock([
+  /* Section 4 prompts (kept) */
+  safe("s4-prompts", ()=>{ addHTML(promptsBlock([
     "<em>Early warnings:</em> What cues tell you conflict is starting, and how will you pause earlier?",
     "<em>Return time:</em> What language feels safe for taking a brief pause and coming back?",
     "<em>Repair ritual:</em> Pick one simple repair ritual to practice this week.",
@@ -629,7 +653,7 @@ function renderResults(p){
   safe("thanks", ()=>{ addDivider(); addHTML(`
     <div class="result-block" style="border-left-color:transparent; background:#fff;">
       <h3 class="thank-title">Thank You</h3>
-      <div class="verse">“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12</div>
+      <div class="verse">${scripture.thankYou}</div>
       <p class="intro-text">We hope you enjoyed discovering your unique connection patterns. Use these insights as a friendly guide—not labels—to spark great conversations and small, consistent changes.</p>
       <p class="intro-text">To be truly known is to unlock the deepest intimacy—embrace what’s true today and aim courageously for what’s possible tomorrow.</p>
     </div>
@@ -785,6 +809,150 @@ function strategySelfCard(bondingKey){
   </div>`;
 }
 function promptsBlock(items){ return `<div class="prompt-block"><strong>Discussion Prompts</strong><ul class="results-list" style="margin-top:6px;">${items.map(li=>`<li>${li}</li>`).join("")}</ul></div>`; }
+
+/* =========================
+   Communication Style (CCMM)
+   ========================= */
+const COMM_META = {
+  "Assertive": {
+    color:"#2e7d32",
+    desc:"Clear and respectful—states needs honestly while honoring the other’s perspective.",
+    tips:[
+      "Use one ‘I feel… I need…’ request today.",
+      "Summarize your partner before responding.",
+      "Set a short pause rule before escalation."
+    ],
+    dynamics: { compassion: "High", respect: "High", power: "Balanced" }
+  },
+  "Collaborative / Empathetic": {
+    color:"#1565c0",
+    desc:"High empathy and shared problem-solving; prioritizes understanding over winning.",
+    tips:[
+      "Open tough talks with appreciation.",
+      "Ask “What feels most important right now?”",
+      "Brainstorm two win-win options first."
+    ],
+    dynamics: { compassion: "Very High", respect: "High", power: "Balanced/Low" }
+  },
+  "Passive": {
+    color:"#7b1fa2",
+    desc:"Avoids conflict and withholds opinions; needs often go unmet until resentment builds.",
+    tips:[
+      "Prepare one clear ask for this week.",
+      "Practice a 10-second courage sentence.",
+      "Schedule a 10-minute weekly check-in."
+    ],
+    dynamics: { compassion: "Present but muted", respect: "Under-claimed", power: "Under-expressed" }
+  },
+  "Aggressive": {
+    color:"#c62828",
+    desc:"Dominates the conversation; pushes outcomes; empathy drops under stress.",
+    tips:[
+      "Slow your pace; ask one question.",
+      "Swap ‘you’ for ‘I’ statements.",
+      "Offer 2 validations per 1 request."
+    ],
+    dynamics: { compassion: "Low", respect: "Low", power: "Over-expressed" }
+  },
+  "Passive-Aggressive": {
+    color:"#ef6c00",
+    desc:"Indirect expression (hints, sarcasm) mixed with avoidance; needs aren’t clearly named.",
+    tips:[
+      "Replace hints with one direct request.",
+      "Name the feeling + the timeframe.",
+      "Pause if flooded; return as scheduled."
+    ],
+    dynamics: { compassion: "Mixed", respect: "Fragile", power: "Covert" }
+  },
+  "Avoidant / Withdrawn": {
+    color:"#455a64",
+    desc:"Shuts down or stonewalls when tense; distance feels safer than dialogue.",
+    tips:[
+      "Use a 20–30 min calm-down, then resume.",
+      "Agree on a short agenda before hard talks.",
+      "Lead with reassurance before problem-solving."
+    ],
+    dynamics: { compassion: "Muted", respect: "Low-felt", power: "Disengaged" }
+  }
+};
+
+/* Classifier uses only data already gathered on this page */
+function classifyCommunicationStyleFromProfile(p){
+  // Proxies from your selections
+  const avoidFromBond = { GuardedConnector:70, IndependentConnector:60, SteadyConnector:35, ReassuranceSeeker:25 }[p.bondingKey] ?? 40;
+  const pursueFromBond = { ReassuranceSeeker:70, SteadyConnector:45, IndependentConnector:30, GuardedConnector:25 }[p.bondingKey] ?? 40;
+
+  const domFromDecision = { S:40, E:20, R:10, A:-10, U:-20 }[p.decisionTop] ?? 0;
+
+  // RR (0–6) -> empathy anchor (0–100)
+  const empathyFromRR = Math.round((Math.max(0, Math.min(6, p.rrScore||0))/6)*100);
+
+  const exp = p.expressedTop2||[];
+  const des = p.desiredTop2||[];
+  const isComp = k => ["Warmth","Support","DeepTalk"].includes(k);
+  const isDirectish = k => ["Initiative","Playful","DeepTalk"].includes(k);
+
+  const compassionCount = exp.filter(isComp).length + des.filter(isComp).length; // 0..4
+  const compassionBonus = compassionCount * 12; // 0..48
+  const directnessFromAff = (exp.filter(isDirectish).length*15) + (des.filter(isDirectish).length*10); // 0..50-ish
+
+  const overlap = exp.filter(k=>des.includes(k)).length;
+  const mismatch = (2 - overlap) * 25; // 0, 25, 50
+
+  const dominanceIndex  = domFromDecision;
+  const avoidanceIndex  = avoidFromBond + (des.includes("Warmth")?5:0) + (exp.includes("Support")?5:0);
+  const directnessIndex = Math.max(0, Math.min(100, directnessFromAff - (avoidanceIndex/2)));
+  const empathyIndex    = Math.max(0, Math.min(100, empathyFromRR + compassionBonus - (dominanceIndex/2)));
+  const mismatchIndex   = Math.max(0, Math.min(100, mismatch));
+  const pursueIndex     = pursueFromBond;
+
+  const rules = [
+    { name:"Avoidant / Withdrawn", test: () => avoidanceIndex >= 65 && pursueIndex < 45 },
+    { name:"Aggressive",           test: () => dominanceIndex >= 60 && empathyIndex < 50 },
+    { name:"Passive-Aggressive",   test: () => avoidanceIndex >= 50 && mismatchIndex >= 40 },
+    { name:"Passive",              test: () => directnessIndex < 35 && avoidanceIndex >= 50 && dominanceIndex < 40 },
+    { name:"Assertive",            test: () => directnessIndex >= 60 && empathyIndex >= 60 && avoidanceIndex < 45 },
+    { name:"Collaborative / Empathetic", test: () => empathyIndex >= 70 && dominanceIndex < 50 }
+  ];
+  for (const r of rules){ if(r.test()) return { style:r.name, metrics:{ dominanceIndex, empathyIndex, avoidanceIndex, directnessIndex, mismatchIndex } }; }
+
+  const candidates = [
+    { name:"Collaborative / Empathetic", score: empathyIndex - Math.max(0, dominanceIndex - 50) },
+    { name:"Assertive", score: (directnessIndex + empathyIndex) - avoidanceIndex },
+    { name:"Passive", score: (avoidanceIndex + (des.length?20:0)) - dominanceIndex - directnessIndex/2 },
+    { name:"Aggressive", score: dominanceIndex - empathyIndex },
+    { name:"Passive-Aggressive", score: (avoidanceIndex + mismatchIndex) - empathyIndex },
+    { name:"Avoidant / Withdrawn", score: avoidanceIndex - pursueIndex }
+  ].sort((a,b)=>b.score-a.score);
+  return { style: candidates[0].name, metrics:{ dominanceIndex, empathyIndex, avoidanceIndex, directnessIndex, mismatchIndex } };
+}
+
+function renderCommStyleBlock(name, result){
+  const meta = COMM_META[result.style] || COMM_META["Assertive"];
+  const dyn = meta.dynamics || { compassion:"—", respect:"—", power:"—" };
+  const chip = (label,val) => `<span class="badge-chip">${label}: ${val}</span>`;
+  return `
+    <div class="result-block" style="border-left-color:${meta.color}; background:${meta.color}20;">
+      <strong>${name} — Communication Style:</strong> ${result.style}
+      <p style="margin:8px 0 6px;">${meta.desc}</p>
+      <div style="margin:6px 0 10px;">
+        ${chip("Compassion & Care", dyn.compassion)}
+        ${chip("Respect & Recognition", dyn.respect)}
+        ${chip("Power & Control", dyn.power)}
+      </div>
+      <details style="margin-top:6px;">
+        <summary style="cursor:pointer;">Show diagnostic metrics</summary>
+        <div class="muted" style="text-align:left; margin-top:6px;">
+          DominanceIndex: ${Math.round(result.metrics.dominanceIndex)} |
+          EmpathyIndex: ${Math.round(result.metrics.empathyIndex)} |
+          AvoidanceIndex: ${Math.round(result.metrics.avoidanceIndex)} |
+          DirectnessIndex: ${Math.round(result.metrics.directnessIndex)} |
+          MismatchIndex: ${Math.round(result.metrics.mismatchIndex)}
+        </div>
+      </details>
+    </div>
+  `;
+}
 </script>
 </body>
 </html>
