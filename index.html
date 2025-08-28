@@ -10,10 +10,11 @@
 
 <!-- ===========================================================
      PATCH NOTES (v13k):
-     - Added Section 3: Communication Style (CCMM-Aligned)
-     - Inserted classifier + renderer based on existing signals
-     - Connection Patterns now labeled Section 4
-     - Small CSS additions: tips-grid + badge-chip
+     - Section 3 renamed to "Communication Style" (removed "(CCMM-Aligned)")
+     - Removed Section 3 balance scale / matrix button entirely
+     - New Communication Style results with 6 styles + tailored strategy
+     - Kept all v13j upgrades (Section 2 wording, framing questions, prompts,
+       Compassion & Care detail spacing, unified answer buttons)
      =========================================================== -->
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -42,11 +43,11 @@
   .muted a{ color:#9aa3ab; text-decoration:none; }
   .muted a:hover{ text-decoration:underline; }
 
-  /* Intro-only tweaks */
+  /* Intro tweaks */
   #introPage .intro-text { text-align:center; }
   #introPage .aha { font-style:italic; font-size:1.35rem; margin:0 0 8px 0; }
 
-  /* Unified answer style (regular weight, centered) */
+  /* Unified answer style */
   .pill, .answer-btn{
     background:#fff !important; color:#1A3C5E !important;
     font-weight:400; font-size:1rem;
@@ -71,17 +72,14 @@
   .results-list{ list-style-position:outside; margin-left:20px; text-align:left; }
   .results-list li{ margin-bottom:6px; }
 
-  /* Framing question under subsection titles */
+  /* Framing question line (same size as subsection title) */
   .framing-q{
-    text-align:center; font-style:italic; color:#4D9DE0; font-size:14pt; /* same as subsection-title size */
+    text-align:center; font-style:italic; color:#4D9DE0; font-size:14pt;
     margin: 2px 0 6px 0;
   }
 
-  /* Spacing for Affection detail blocks */
-  .aff-detail{
-    line-height:1.3;
-    margin: 8px 0;
-  }
+  /* Affection detail block spacing */
+  .aff-detail{ line-height:1.3; margin: 8px 0; }
 
   .thank-title{
     margin-top:0; margin-bottom:12pt; font-family:'Savoye LET','Zapfino','Great Vibes',cursive;
@@ -89,13 +87,6 @@
   }
   @media (max-width:700px){ .thank-title{ font-size:3.2rem; } }
   @media (max-width:420px){ .thank-title{ font-size:2.6rem; } }
-
-  /* NEW: Communication Style helpers */
-  .tips-grid { display:grid; gap:8px; grid-template-columns: 1fr; }
-  .badge-chip{
-    display:inline-block; padding:4px 8px; border-radius:999px;
-    background:rgba(0,0,0,.06); font-size:.9rem; font-weight:600; margin-right:6px;
-  }
 
   @media print { .btn { display:none !important; } .card { border:none; box-shadow:none; } body { background:#fff; } }
 </style>
@@ -359,7 +350,7 @@ function renderStep(){
     [3,"Strongly Agree"],[2,"Agree"],[1,"Disagree"],[0,"Strongly Disagree"]
   ], val => { answers.rr.rr2 = Number(val); saveState(); next(); });
 
-  /* Connection Patterns */
+  /* Connection tendencies (inputs used for comm-style inference) */
   if(step===10) return renderSingleList(box, "During conflict, I naturally…", [
     ["SteadyConnector","Look for a steady, low-tension path forward."],
     ["ReassuranceSeeker","Seek quick clarity and closeness right away."],
@@ -542,7 +533,6 @@ function renderResults(p){
       Your relationship isn't just a connection of two people; it's a unique dance of two beautiful, distinct individuals! This section is designed to help you understand the everyday rhythms that shape your connection. We'll explore how you naturally care for each other, how you engage socially, how you share influence and make decisions, and how you honor one another. Our hope is that these insights will not only bring clarity but also provide a powerful guide for your discussions, helping you protect your closeness and deepen your bond in every interaction.
     </div>`); });
 
-  /* Compassion & Care */
   safe("s2-compassion", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
@@ -557,7 +547,6 @@ function renderResults(p){
     ]));
   });
 
-  /* Social Preferences */
   safe("s2-social", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
@@ -572,7 +561,6 @@ function renderResults(p){
     ]));
   });
 
-  /* Power & Control */
   safe("s2-power", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
@@ -587,7 +575,6 @@ function renderResults(p){
     ]));
   });
 
-  /* Respect & Recognition */
   safe("s2-rr", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
@@ -597,7 +584,6 @@ function renderResults(p){
     addHTML(rrCard(p));
   });
 
-  /* Section 2 overall prompts (kept) */
   safe("s2-prompts", ()=>{ addHTML(promptsBlock([
     "<em>Compassion & Care:</em> What is one small act this week that would help your spouse feel cared for?",
     "<em>Social:</em> Which setting recharges each of you? Plan one 30-minute moment there.",
@@ -605,48 +591,23 @@ function renderResults(p){
     "<em>Respect & Recognition:</em> Share one specific appreciation today and why it matters."
   ])); });
 
-  /* NEW Section 3: Communication Style (CCMM-Aligned) */
-  safe("s3-comm-style", ()=> {
-    addDivider();
-    addHTML(`
-      <h3 class="section-title">Section 3: Communication Style (CCMM-Aligned)</h3>
-      <div class="verse">${scripture.conflictStrategies}</div>
-      <p class="intro-text">Based on your answers, here’s your current communication pattern in relationships. Treat this as a starting point—not a label—to guide practice, empathy, and shared influence.</p>
-    `);
-
-    const cs = classifyCommunicationStyleFromProfile(p);
-    addHTML(renderCommStyleBlock(p.name || "You", cs));
-
-    // Coaching card
-    addHTML(`
-      <div class="prompt-block">
-        <strong>Mini Action Plan</strong>
-        <ul class="results-list" style="margin-top:6px;">
-          ${COMM_META[cs.style].tips.map(t=>`<li>${t}</li>`).join("")}
-        </ul>
-      </div>
-    `);
-  });
-
-  /* Section 4 (renamed): Connection Patterns */
-  safe("s4-patterns", ()=>{ 
+  /* Section 3 — Communication Style */
+  safe("s3-commstyle", ()=>{ 
     addDivider(); 
-    addHTML(`
-      <h3 class="section-title">Section 4: Connection Patterns</h3>
-      <div class="verse">${scripture.connectionPattern}</div>
-      <p class="intro-text">These results show how you tend to respond to perceived conflict and how you prefer to repair. Learning your strengths, challenges, and blind spots here is key to a healthier, more resilient relationship.</p>
-    `);
-    addHTML(patternColumn(p));
-    addSubDivider(); addHTML(`<h4 class="subsection-title">Your Personalized Repair Plan</h4>`); 
-    addHTML(strategySelfCard(p.bondingKey));
+    const style = inferCommunicationStyle(p);
+    addHTML(`<h3 class="section-title">Section 3: Communication Style</h3>`);
+    addHTML(communicationStyleCard(style));
+    addSubDivider();
+    addHTML(`<h4 class="subsection-title">Moving from Conflict to Connection: Communication Style</h4>`);
+    addHTML(communicationStrategyCard(style));
   });
 
-  /* Section 4 prompts (kept) */
-  safe("s4-prompts", ()=>{ addHTML(promptsBlock([
-    "<em>Early warnings:</em> What cues tell you conflict is starting, and how will you pause earlier?",
-    "<em>Return time:</em> What language feels safe for taking a brief pause and coming back?",
-    "<em>Repair ritual:</em> Pick one simple repair ritual to practice this week.",
-    "<em>Watch-out:</em> Name one personal watch-out and one way your spouse can cue you kindly."
+  /* Section 3 prompts (kept) */
+  safe("s3-prompts", ()=>{ addHTML(promptsBlock([
+    "<em>Early warnings:</em> What cues tell you a tough conversation is starting?",
+    "<em>Return time:</em> Choose language for a short pause and a firm return time.",
+    "<em>One improvement:</em> Pick one sentence you’ll practice this week.",
+    "<em>Support:</em> Ask your spouse for one way they can help you practice."
   ])); });
 
   /* Thank-you + PDF */
@@ -673,7 +634,97 @@ const scripture = {
   thankYou: "“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12"
 };
 
-/* Result helpers */
+/* ==== Communication Style inference & cards ==== */
+/* Heuristic: derive style from conflict tendency (bondingKey), decision & RR */
+function inferCommunicationStyle(p){
+  const bond = p.bondingKey || "SteadyConnector";
+  const rr   = (typeof p.rrScore === 'number') ? p.rrScore : 0;
+  const dec  = p.decisionTop || null;
+  const soc  = p.socialTop   || null;
+
+  // Base mapping from conflict pattern
+  if (bond === "IndependentConnector") return "Avoidant / Withdrawn";
+  if (bond === "GuardedConnector")     return "Passive-Aggressive";
+  if (bond === "ReassuranceSeeker") {
+    if (dec === 'S' || rr <= 2) return "Aggressive";
+    return "Assertive";
+  }
+  // SteadyConnector baseline
+  if (bond === "SteadyConnector") {
+    if (rr >= 5 && dec !== 'S') return "Collaborative / Empathetic";
+    if (dec === 'A' || soc === 'A' || soc === 'U') return "Passive";
+    return "Collaborative / Empathetic";
+  }
+  return "Assertive";
+}
+
+function communicationStyleCard(style){
+  const copy = {
+    "Passive": `
+      <div class="result-block" style="border-left-color:${typeColors.Affable}; background:${typeOpac.Affable};">
+        <p><strong>Passive Communication</strong> — According to your assessment, you tend to use a passive communication style. This means you often avoid conflict and may find yourself going along with others to keep the peace. You might withhold your opinions and feelings to prevent disagreement, which can sometimes lead to resentment or emotional distance building up over time. The key is to find a way to express your needs and feelings without feeling like you're causing conflict.</p>
+      </div>`,
+    "Aggressive": `
+      <div class="result-block" style="border-left-color:${typeColors.Commitment}; background:${typeOpac.Commitment};">
+        <p><strong>Aggressive Communication</strong> — Your results indicate a strong tendency toward an aggressive communication style. This approach is direct and forceful, and you may find yourself dominating conversations or interrupting others to push your own perspective. This style is often linked to a desire for control and can leave others feeling unheard or overpowered. The goal is to learn to express your needs powerfully while also creating space for others to share theirs.</p>
+      </div>`,
+    "Passive-Aggressive": `
+      <div class="result-block" style="border-left-color:${typeColors.Conflict}; background:${typeOpac.Conflict};">
+        <p><strong>Passive-Aggressive Communication</strong> — Based on your assessment, you lean toward a passive-aggressive communication style. This can show up as sarcasm, giving the silent treatment, or making subtle jabs instead of being direct about what you need. This style can be especially damaging because it combines hostility with avoidance, leaving issues unresolved and creating frustration for everyone involved. A great next step is to practice being more direct and open in your conversations.</p>
+      </div>`,
+    "Assertive": `
+      <div class="result-block" style="border-left-color:${typeColors.Intellectual}; background:${typeOpac.Intellectual};">
+        <p><strong>Assertive Communication</strong> — Congratulations! Your assessment shows you have a strong assertive communication style. This is considered the healthiest approach, as you are able to clearly and respectfully express your needs while also genuinely respecting the other person's perspective. This balanced style builds trust and intimacy because it blends honesty with empathy. Keep up the great work!</p>
+      </div>`,
+    "Avoidant / Withdrawn": `
+      <div class="result-block" style="border-left-color:${typeColors.Partnership}; background:${typeOpac.Partnership};">
+        <p><strong>Avoidant / Withdrawn Communication</strong> — Your results suggest you often use an avoidant/withdrawn communication style. When things get difficult, you might find yourself shutting down, disengaging, or “stonewalling” during conversations. This style is common when people feel overwhelmed or are trying to avoid conflict entirely. It can prevent issues from being resolved and create emotional distance. Learning to stay present in difficult conversations is a great place to start.</p>
+      </div>`,
+    "Collaborative / Empathetic": `
+      <div class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};">
+        <p><strong>Collaborative / Empathetic Communication</strong> — Your assessment highlights a natural inclination toward a collaborative/empathetic communication style. This is a strengths-based approach where you actively listen, validate others' feelings, and work together to solve problems. It's very similar to assertive communication but has an even stronger focus on cooperation and understanding. This style helps build strong, intimate relationships.</p>
+      </div>`
+  };
+  return copy[style] || copy["Assertive"];
+}
+
+function communicationStrategyCard(style){
+  const tip = {
+    "Passive": `
+      <div class="result-block" style="border-left-color:${typeColors.Affable}; background:${typeOpac.Affable};">
+        <strong>Passive Communicator — Try this:</strong>
+        <p>Start by taking small steps to voice your opinions and needs. Instead of saying, “Whatever you want to do is fine,” try, “I’d actually prefer to go to the movies tonight—how does that sound to you?”</p>
+      </div>`,
+    "Aggressive": `
+      <div class="result-block" style="border-left-color:${typeColors.Commitment}; background:${typeOpac.Commitment};">
+        <strong>Aggressive Communicator — Try this:</strong>
+        <p>Practice using “I” statements instead of “you” statements. For example, change “You always interrupt me” to “I feel unheard when I’m interrupted.” This shifts the focus from blame to personal experience.</p>
+      </div>`,
+    "Passive-Aggressive": `
+      <div class="result-block" style="border-left-color:${typeColors.Conflict}; background:${typeOpac.Conflict};">
+        <strong>Passive-Aggressive Communicator — Try this:</strong>
+        <p>Be direct. When you feel frustrated, instead of making a sarcastic comment, try saying, “I’m feeling frustrated right now because of X.” This allows for an honest conversation rather than a hidden conflict.</p>
+      </div>`,
+    "Assertive": `
+      <div class="result-block" style="border-left-color:${typeColors.Intellectual}; background:${typeOpac.Intellectual};">
+        <strong>Assertive Communicator — Keep strengthening:</strong>
+        <p>Pair clear “I” statements with reflective listening and one shared next step. Example: “I feel anxious about timing; what I’m hearing you say is you need more detail. Could we agree to a 10-minute plan after dinner?”</p>
+      </div>`,
+    "Avoidant / Withdrawn": `
+      <div class="result-block" style="border-left-color:${typeColors.Partnership}; background:${typeOpac.Partnership};">
+        <strong>Avoidant/Withdrawn Communicator — Try this:</strong>
+        <p>Manage overwhelm by taking a short break with a clear return time: “I’m feeling overwhelmed right now. Can we talk in 15 minutes?” This is healthier than stonewalling and keeps connection safe.</p>
+      </div>`,
+    "Collaborative / Empathetic": `
+      <div class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};">
+        <strong>Collaborative/Empathetic Communicator — Keep strengthening:</strong>
+        <p>Continue validating (“That makes sense”), summarize shared goals, and end with a co-authored step: “So we both want calmer mornings—let’s test a 5-minute prep tonight.”</p>
+      </div>`
+  };
+  return tip[style] || tip["Assertive"];
+}
+
+/* ===== Result helpers from prior build ===== */
 function typesColumn(name, types){
   const safe = Array.isArray(types) && types.length ? types : TYPES.slice(0,4);
   return `<div class="partner-card"><div class="partner-inner">
@@ -757,7 +808,7 @@ function temperamentBlock(name, title, text, topKey){
   return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};"><strong>${name || "You"} — ${title}:</strong> <span>${text || "You flex based on the moment."}</span></div>`;
 }
 
-/* RR & Patterns */
+/* RR & Patterns helpers kept for Section 2 */
 function rrAccent(label){
   if(label==="Strong")   return { color:typeColors.Partnership, bg:typeOpac.Partnership };
   if(label==="Moderate") return { color:typeColors.Commitment,  bg:typeOpac.Commitment  };
@@ -773,185 +824,6 @@ function rrStatement(score){
   if(score>=5) return "You generally feel affirmed, appreciated, respected, and validated—and you likely offer the same in return.";
   if(score>=3) return "You often feel appreciated and respected, though there may be moments when clearer affirmation would be meaningful.";
   return "You may not consistently feel affirmed or validated; be explicit about the kinds of appreciation that help you feel respected.";
-}
-function patternColumn(p){
-  const key = p.bondingKey || "SteadyConnector";
-  const acc = { SteadyConnector:{color:typeColors.Partnership,bg:typeOpac.Partnership}, ReassuranceSeeker:{color:typeColors.Emotional,bg:typeOpac.Emotional}, IndependentConnector:{color:typeColors.Intellectual,bg:typeOpac.Intellectual}, GuardedConnector:{color:typeColors.Conflict,bg:typeOpac.Conflict} }[key];
-  const d = {
-    SteadyConnector:{ connectionType:"Harmony-focused and steady—your presence calms the room and keeps connection safe.", strengths:"create a peaceful space where hard conversations feel possible. You’re consistent, fair, and great at lowering tension.", challenges:"can move past issues too quickly or downplay your own needs to keep the peace, which can leave things unresolved.", tendencies:"In conflict, you often smooth things over fast and avoid going deep, hoping the calm will hold.", coping:"Try a 5–10 minute daily check-in. Name one feeling and one specific need before you move to solutions." },
-    ReassuranceSeeker:{ connectionType:"Attachment-aware and passionate—you lead with heart and crave clarity when things feel off.", strengths:"fight for closeness and speak up when something feels wrong. You’re empathetic and quick to repair.", challenges:"needing reassurance now can feel intense and escalate emotions if it doesn’t arrive quickly.", tendencies:"In conflict, you pursue answers and closeness immediately, which can feel like pressure to a withdrawing partner.", coping:"Ask for one clear reassurance, breathe together, then agree to a short reset with a promised return time." },
-    IndependentConnector:{ connectionType:"Thoughtful and composed—you value clarity and reflection to keep connection honest and stable.", strengths:"think before you speak, de-escalate well, and protect against saying things you don’t mean.", challenges:"taking space without clarity can feel like distance or shutdown to your spouse.", tendencies:"In conflict, you step back to think. Without a return time, that pause can be heard as disconnection.", coping:"Request space with a specific return time (e.g., 30 minutes). Offer one sentence of reassurance first." },
-    GuardedConnector:{ connectionType:"Careful and loyal—you open slowly and build trust through consistency.", strengths:"are dependable and don’t overreact. When you commit, you show up.", challenges:"caution can look like walls. It’s easy to assume negative intent and protect rather than share.", tendencies:"In conflict, you may go quiet, assume the worst, or agree just to end it—then carry the weight alone.", coping:"Use micro-trust steps: keep one small promise daily, write a short note before hard talks, and name one safe topic to open." }
-  }[key];
-  return `<div class="partner-card"><div class="partner-inner"><div class="partner-header">${p.name || "You"}</div>
-    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-      <p><strong>Connection Type:</strong> ${d.connectionType}</p>
-      <p><strong>Strengths:</strong> You ${d.strengths}</p>
-      <p><strong>Challenges:</strong> You ${d.challenges}</p>
-      <p><strong>Tendencies in Conflict:</strong> ${d.tendencies}</p>
-      <p><strong>Coping Skills:</strong> ${d.coping}</p>
-    </div></div></div>`;
-}
-function strategySelfCard(bondingKey){
-  const tipsBy = {
-    SteadyConnector:["Set a five-minute evening check-in: one feeling, one need, one next step.","When tempted to smooth over, ask yourself: “What do I really need to say?”","Close loops—agree on the next check-in time before ending tough talks."],
-    ReassuranceSeeker:["Ask for one clear reassurance, then take 5–10 calming breaths.","If you’re spiraling, request a 10-minute reset with a promised return time.","Use “I feel… I need…” instead of explanations or accusations."],
-    IndependentConnector:["Before taking space, reassure with one sentence, then set a clear return time.","Use a notepad to capture your main point so you don’t avoid the talk.","Come back with one concrete request and one compromise."],
-    GuardedConnector:["Do one daily micro-trust act (keep one small promise).","Name one safe topic and share a little more than you’re used to.","Use a short written note to begin hard conversations kindly."]
-  }[bondingKey || "SteadyConnector"];
-  const acc = (bondingKey==="ReassuranceSeeker") ? { color:typeColors.Emotional, bg:typeOpac.Emotional }
-            : (bondingKey==="IndependentConnector") ? { color:typeColors.Intellectual, bg:typeOpac.Intellectual }
-            : (bondingKey==="GuardedConnector") ? { color:typeColors.Conflict, bg:typeOpac.Conflict }
-            : { color:typeColors.Partnership, bg:typeOpac.Partnership };
-  return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-    <strong>Your Go-To Repair Moves</strong>
-    <ul class="results-list" style="margin-top:6px;">${tipsBy.map(t=>`<li>${t}</li>`).join("")}</ul>
-  </div>`;
-}
-function promptsBlock(items){ return `<div class="prompt-block"><strong>Discussion Prompts</strong><ul class="results-list" style="margin-top:6px;">${items.map(li=>`<li>${li}</li>`).join("")}</ul></div>`; }
-
-/* =========================
-   Communication Style (CCMM)
-   ========================= */
-const COMM_META = {
-  "Assertive": {
-    color:"#2e7d32",
-    desc:"Clear and respectful—states needs honestly while honoring the other’s perspective.",
-    tips:[
-      "Use one ‘I feel… I need…’ request today.",
-      "Summarize your partner before responding.",
-      "Set a short pause rule before escalation."
-    ],
-    dynamics: { compassion: "High", respect: "High", power: "Balanced" }
-  },
-  "Collaborative / Empathetic": {
-    color:"#1565c0",
-    desc:"High empathy and shared problem-solving; prioritizes understanding over winning.",
-    tips:[
-      "Open tough talks with appreciation.",
-      "Ask “What feels most important right now?”",
-      "Brainstorm two win-win options first."
-    ],
-    dynamics: { compassion: "Very High", respect: "High", power: "Balanced/Low" }
-  },
-  "Passive": {
-    color:"#7b1fa2",
-    desc:"Avoids conflict and withholds opinions; needs often go unmet until resentment builds.",
-    tips:[
-      "Prepare one clear ask for this week.",
-      "Practice a 10-second courage sentence.",
-      "Schedule a 10-minute weekly check-in."
-    ],
-    dynamics: { compassion: "Present but muted", respect: "Under-claimed", power: "Under-expressed" }
-  },
-  "Aggressive": {
-    color:"#c62828",
-    desc:"Dominates the conversation; pushes outcomes; empathy drops under stress.",
-    tips:[
-      "Slow your pace; ask one question.",
-      "Swap ‘you’ for ‘I’ statements.",
-      "Offer 2 validations per 1 request."
-    ],
-    dynamics: { compassion: "Low", respect: "Low", power: "Over-expressed" }
-  },
-  "Passive-Aggressive": {
-    color:"#ef6c00",
-    desc:"Indirect expression (hints, sarcasm) mixed with avoidance; needs aren’t clearly named.",
-    tips:[
-      "Replace hints with one direct request.",
-      "Name the feeling + the timeframe.",
-      "Pause if flooded; return as scheduled."
-    ],
-    dynamics: { compassion: "Mixed", respect: "Fragile", power: "Covert" }
-  },
-  "Avoidant / Withdrawn": {
-    color:"#455a64",
-    desc:"Shuts down or stonewalls when tense; distance feels safer than dialogue.",
-    tips:[
-      "Use a 20–30 min calm-down, then resume.",
-      "Agree on a short agenda before hard talks.",
-      "Lead with reassurance before problem-solving."
-    ],
-    dynamics: { compassion: "Muted", respect: "Low-felt", power: "Disengaged" }
-  }
-};
-
-/* Classifier uses only data already gathered on this page */
-function classifyCommunicationStyleFromProfile(p){
-  // Proxies from your selections
-  const avoidFromBond = { GuardedConnector:70, IndependentConnector:60, SteadyConnector:35, ReassuranceSeeker:25 }[p.bondingKey] ?? 40;
-  const pursueFromBond = { ReassuranceSeeker:70, SteadyConnector:45, IndependentConnector:30, GuardedConnector:25 }[p.bondingKey] ?? 40;
-
-  const domFromDecision = { S:40, E:20, R:10, A:-10, U:-20 }[p.decisionTop] ?? 0;
-
-  // RR (0–6) -> empathy anchor (0–100)
-  const empathyFromRR = Math.round((Math.max(0, Math.min(6, p.rrScore||0))/6)*100);
-
-  const exp = p.expressedTop2||[];
-  const des = p.desiredTop2||[];
-  const isComp = k => ["Warmth","Support","DeepTalk"].includes(k);
-  const isDirectish = k => ["Initiative","Playful","DeepTalk"].includes(k);
-
-  const compassionCount = exp.filter(isComp).length + des.filter(isComp).length; // 0..4
-  const compassionBonus = compassionCount * 12; // 0..48
-  const directnessFromAff = (exp.filter(isDirectish).length*15) + (des.filter(isDirectish).length*10); // 0..50-ish
-
-  const overlap = exp.filter(k=>des.includes(k)).length;
-  const mismatch = (2 - overlap) * 25; // 0, 25, 50
-
-  const dominanceIndex  = domFromDecision;
-  const avoidanceIndex  = avoidFromBond + (des.includes("Warmth")?5:0) + (exp.includes("Support")?5:0);
-  const directnessIndex = Math.max(0, Math.min(100, directnessFromAff - (avoidanceIndex/2)));
-  const empathyIndex    = Math.max(0, Math.min(100, empathyFromRR + compassionBonus - (dominanceIndex/2)));
-  const mismatchIndex   = Math.max(0, Math.min(100, mismatch));
-  const pursueIndex     = pursueFromBond;
-
-  const rules = [
-    { name:"Avoidant / Withdrawn", test: () => avoidanceIndex >= 65 && pursueIndex < 45 },
-    { name:"Aggressive",           test: () => dominanceIndex >= 60 && empathyIndex < 50 },
-    { name:"Passive-Aggressive",   test: () => avoidanceIndex >= 50 && mismatchIndex >= 40 },
-    { name:"Passive",              test: () => directnessIndex < 35 && avoidanceIndex >= 50 && dominanceIndex < 40 },
-    { name:"Assertive",            test: () => directnessIndex >= 60 && empathyIndex >= 60 && avoidanceIndex < 45 },
-    { name:"Collaborative / Empathetic", test: () => empathyIndex >= 70 && dominanceIndex < 50 }
-  ];
-  for (const r of rules){ if(r.test()) return { style:r.name, metrics:{ dominanceIndex, empathyIndex, avoidanceIndex, directnessIndex, mismatchIndex } }; }
-
-  const candidates = [
-    { name:"Collaborative / Empathetic", score: empathyIndex - Math.max(0, dominanceIndex - 50) },
-    { name:"Assertive", score: (directnessIndex + empathyIndex) - avoidanceIndex },
-    { name:"Passive", score: (avoidanceIndex + (des.length?20:0)) - dominanceIndex - directnessIndex/2 },
-    { name:"Aggressive", score: dominanceIndex - empathyIndex },
-    { name:"Passive-Aggressive", score: (avoidanceIndex + mismatchIndex) - empathyIndex },
-    { name:"Avoidant / Withdrawn", score: avoidanceIndex - pursueIndex }
-  ].sort((a,b)=>b.score-a.score);
-  return { style: candidates[0].name, metrics:{ dominanceIndex, empathyIndex, avoidanceIndex, directnessIndex, mismatchIndex } };
-}
-
-function renderCommStyleBlock(name, result){
-  const meta = COMM_META[result.style] || COMM_META["Assertive"];
-  const dyn = meta.dynamics || { compassion:"—", respect:"—", power:"—" };
-  const chip = (label,val) => `<span class="badge-chip">${label}: ${val}</span>`;
-  return `
-    <div class="result-block" style="border-left-color:${meta.color}; background:${meta.color}20;">
-      <strong>${name} — Communication Style:</strong> ${result.style}
-      <p style="margin:8px 0 6px;">${meta.desc}</p>
-      <div style="margin:6px 0 10px;">
-        ${chip("Compassion & Care", dyn.compassion)}
-        ${chip("Respect & Recognition", dyn.respect)}
-        ${chip("Power & Control", dyn.power)}
-      </div>
-      <details style="margin-top:6px;">
-        <summary style="cursor:pointer;">Show diagnostic metrics</summary>
-        <div class="muted" style="text-align:left; margin-top:6px;">
-          DominanceIndex: ${Math.round(result.metrics.dominanceIndex)} |
-          EmpathyIndex: ${Math.round(result.metrics.empathyIndex)} |
-          AvoidanceIndex: ${Math.round(result.metrics.avoidanceIndex)} |
-          DirectnessIndex: ${Math.round(result.metrics.directnessIndex)} |
-          MismatchIndex: ${Math.round(result.metrics.mismatchIndex)}
-        </div>
-      </details>
-    </div>
-  `;
 }
 </script>
 </body>
