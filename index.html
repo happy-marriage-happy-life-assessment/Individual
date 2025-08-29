@@ -9,11 +9,11 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13k + fixes):
-     - Communication Style (kept from v13k)
-     - Connection Patterns restored as its own section
-     - Replaced Relational Dynamics (Compassion & Care + R&R) with teaching copy
-     - Safe, chunked results renderer (one error cannot kill the rest)
+     PATCH NOTES (v13k+fix2):
+     - FIX: Added finalize() to compute profile and render results
+     - FIX: Added temperamentBlock() + buildTemperamentText()
+     - Kept: Communication Style (v13k), Connection Patterns section
+     - Safe, chunked results renderer
      - No changes to Questionnaire (Step 0–13)
      =========================================================== -->
 
@@ -135,7 +135,7 @@
 
 <script>
 /* Build marker */
-const BUILD = "individual-v13k";
+const BUILD = "individual-v13k+fix2";
 document.addEventListener('DOMContentLoaded', () => {
   const r = document.getElementById('buildBadgeResults'); if (r) r.textContent = BUILD;
   if (localStorage.getItem('mca_individual_state_v1')) document.getElementById('resumeBtn').classList.remove('hidden');
@@ -431,7 +431,39 @@ function renderSingleList(root, title, options, onPick){
   });
 }
 
-/* ====== RESULTS: supporting helpers from baseline ====== */
+/* ===== LIGHTWEIGHT HELPERS ADDED (temperament + summaries) ===== */
+const TEMPERAMENT_LABEL = { E:"Sanguine", S:"Choleric", R:"Melancholy", A:"Phlegmatic", U:"Supine" };
+
+function buildTemperamentText(code, fallback){
+  if (fallback) return fallback;
+  const map = {
+    E: "You recharge with people, energy, and shared fun. Invite others in and make connection lively.",
+    S: "You thrive when there’s purpose and momentum. Clear roles and decisive action feel good.",
+    R: "You prefer depth over breadth—fewer people, richer conversation, more meaning.",
+    A: "You value peace and predictability. Gentle rhythms and low-pressure time restore you.",
+    U: "You offer steady support and bloom when invited in. Being asked matters as much as being included."
+  };
+  return map[code] || "You balance connection with self-regulation based on the situation.";
+}
+
+function temperamentBlock(name, title, text, code){
+  const colorMap = { E:typeColors.Emotional, S:typeColors.Commitment, R:typeColors.Intellectual, A:typeColors.Affable, U:typeColors.Partnership };
+  const bgMap    = { E:typeOpac.Emotional,   S:typeOpac.Commitment,  R:typeOpac.Intellectual,  A:typeOpac.Affable,  U:typeOpac.Partnership };
+  const color = colorMap[code] || "#4D9DE0";
+  const bg = bgMap[code] || "rgba(77,157,224,.08)";
+  const label = TEMPERAMENT_LABEL[code] || "Balanced";
+  return `
+    <div class="partner-card"><div class="partner-inner">
+      <div class="partner-header">${name || "You"}</div>
+      <div class="result-block" style="border-left-color:${color}; background:${bg};">
+        <p><strong>${title} — ${label}</strong></p>
+        <p>${text}</p>
+      </div>
+    </div></div>
+  `;
+}
+
+/* ===== RESULTS: supporting helpers from baseline ===== */
 function typesColumn(name, types){
   const safe = Array.isArray(types) && types.length ? types : TYPES.slice(0,4);
   return `
@@ -456,7 +488,7 @@ function promptsBlock(items){
   `;
 }
 
-/* Scripture (used in verses earlier if you choose to re-enable) */
+/* Scripture (kept for potential future use) */
 const scripture = {
   compassionCare: "“Be completely humble and gentle; be patient, bearing with one another in love.” — Ephesians 4:2",
   socialEngagement: "“Therefore encourage one another and build each other up.” — 1 Thessalonians 5:11",
@@ -662,6 +694,66 @@ function patternColumnTeaching(p){
       </div>
     </div></div>
   `;
+}
+
+/* ===== finalize(): compute profile & render ===== */
+function finalize(){
+  ensureDefaults();
+
+  // Ranking buckets
+  const top4 = Array.from(new Set(answers.top4 || [])).slice(0,4);
+  const next4 = Array.from(new Set((answers.next4 || []).filter(k=>!top4.includes(k)))).slice(0,4);
+  const picked = [...top4, ...next4];
+  const untapped = TYPES.filter(k => !picked.includes(k));
+
+  // Social & Decision top codes (prefer first answer; fall back to second)
+  const social1 = answers.social?.social1 || null;
+  const social2 = answers.social?.social2 || null;
+  const socialTop = social1 || social2 || null;
+
+  const decision1 = answers.decision?.decision1 || null;
+  const decision2 = answers.decision?.decision2 || null;
+  const decisionTop = decision1 || decision2 || null;
+
+  // Respect & Recognition score and label
+  const rr1 = Number.isFinite(answers.rr?.rr1) ? answers.rr.rr1 : 0;
+  const rr2 = Number.isFinite(answers.rr?.rr2) ? answers.rr.rr2 : 0;
+  const rrScore = rr1 + rr2; // 0–6
+  const rrLabel = rrScore >= 5 ? "Strong" : rrScore >= 3 ? "Moderate" : "Needs Attention";
+
+  // Bonding key (mode of bond1..bond4)
+  const bonds = [answers.bond?.bond1, answers.bond?.bond2, answers.bond?.bond3, answers.bond?.bond4].filter(Boolean);
+  let bondingKey = "SteadyConnector";
+  if (bonds.length){
+    const counts = {};
+    bonds.forEach(b => counts[b] = (counts[b]||0) + 1);
+    bondingKey = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+  }
+
+  // Short summaries for Social/Decision
+  const socialSummary = buildTemperamentText(socialTop);
+  const decisionSummary = {
+    S: "You naturally take initiative and prefer clear direction; pair strength with collaboration.",
+    E: "You lead with optimism and energy, drawing others into the process.",
+    R: "You prefer autonomy and well-scoped responsibilities with minimal oversight.",
+    U: "You feel secure when a trusted leader sets direction you can support.",
+    A: "You flex to keep peace, stepping in when needed for harmony."
+  }[decisionTop] || "You flex your decision style based on context; name roles explicitly to reduce friction.";
+
+  const p = {
+    name: yourName || "You",
+    coreTypes: top4.length ? top4 : TYPES.slice(0,4),
+    growthTypes: next4.length ? next4 : TYPES.slice(4,8),
+    untappedTypes: untapped.length ? untapped : TYPES.slice(8,12),
+    expressedTop2: answers.expressedTop2 || [],
+    desiredTop2: answers.desiredTop2 || [],
+    socialTop, socialSummary,
+    decisionTop, decisionSummary,
+    rrScore, rrLabel,
+    bondingKey
+  };
+
+  renderResults(p);
 }
 
 /* ===== Results renderer (safe & chunked) ===== */
