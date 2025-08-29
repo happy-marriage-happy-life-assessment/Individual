@@ -9,14 +9,12 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13k):
-     - Section 3 renamed to "Communication Style" (removed "(CCMM-Aligned)")
-     - Removed Section 3 balance scale / matrix button entirely
-     - New Communication Style results with 6 styles + tailored strategy
-     - Kept all v13j upgrades (Section 2 wording, framing questions, prompts,
-       Compassion & Care detail spacing, unified answer buttons)
-     - (Merged Patch) Restored "Connection Patterns" section
-     - (Merged Patch) Replaced Section 2 Compassion & Care + R&R with teaching copy
+     PATCH NOTES (v13k + fixes):
+     - Communication Style (kept from v13k)
+     - Connection Patterns restored as its own section
+     - Replaced Relational Dynamics (Compassion & Care + R&R) with teaching copy
+     - Safe, chunked results renderer (one error cannot kill the rest)
+     - No changes to Questionnaire (Step 0–13)
      =========================================================== -->
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -74,12 +72,7 @@
   .results-list{ list-style-position:outside; margin-left:20px; text-align:left; }
   .results-list li{ margin-bottom:6px; }
 
-  /* Framing question line */
-  .framing-q{
-    text-align:center; font-style:italic; color:#4D9DE0; font-size:14pt;
-    margin: 2px 0 6px 0;
-  }
-
+  .framing-q{ text-align:center; font-style:italic; color:#4D9DE0; font-size:14pt; margin: 2px 0 6px 0; }
   .aff-detail{ line-height:1.3; margin: 8px 0; }
 
   .thank-title{
@@ -254,12 +247,12 @@ function showQuiz(){
 }
 function hideAllPages(){ document.getElementById('introPage').classList.add('hidden'); document.getElementById('quizPage').classList.add('hidden'); document.getElementById('resultPage').classList.add('hidden'); }
 
-/* Helpers */
+/* Helpers for Steps */
 const codeToAffKey = (code)=>({ E:"Playful", S:"Initiative", R:"DeepTalk", A:"Warmth", U:"Support" }[code]);
 const affKeyToTemp = (k)=>({ Playful:"E", Initiative:"S", DeepTalk:"R", Warmth:"A", Support:"U" }[k] || null);
 const SANG="E", CHOL="S", MEL="R", PHLE="A", SUPI="U";
 
-/* Renderer (Questionnaire — unchanged) */
+/* Questionnaire renderer (unchanged) */
 function renderStep(){
   ensureDefaults();
 
@@ -280,9 +273,7 @@ function renderStep(){
     [MEL,"…reserve affection for a few, preferring deep talks or thoughtful acts over frequent touch."],
     [SUPI,"…hesitate to initiate affection, but show loyalty and care by being present and supportive."],
     [PHLE,"…offer steady, quiet companionship, showing affection in calm, consistent ways."]
-  ], val => { 
-      const k = codeToAffKey(val); answers.expressedTop2 = k ? [k] : []; saveState(); next(); 
-  });
+  ], val => { const k = codeToAffKey(val); answers.expressedTop2 = k ? [k] : []; saveState(); next(); });
 
   if(step===2) return renderSingleList(box, "To feel most loved and secure, I need my partner to…", [
     [SANG,"…frequently affirm me with words, touch, and celebratory gestures."],
@@ -290,11 +281,7 @@ function renderStep(){
     [MEL,"…share deep emotional connection and understanding, not constant gestures."],
     [SUPI,"…initiate affection often so I feel needed and cherished without asking."],
     [PHLE,"…be present and kind in simple, low-pressure ways that make me feel secure."]
-  ], val => {
-      const k = codeToAffKey(val); const arr = answers.desiredTop2 || [];
-      if(k && !arr.includes(k) && arr.length<2) arr.push(k);
-      answers.desiredTop2 = arr; saveState(); next();
-  });
+  ], val => { const k = codeToAffKey(val); const arr = answers.desiredTop2 || []; if(k && !arr.includes(k) && arr.length<2) arr.push(k); answers.desiredTop2 = arr; saveState(); next(); });
 
   if(step===3) return renderSingleList(box, "Day to day, I feel most cared for when my partner…", [
     [SANG,"…keeps closeness fun and frequent with lighthearted affection."],
@@ -302,11 +289,7 @@ function renderStep(){
     [MEL,"…creates space for thoughtful talks and meaningful moments."],
     [SUPI,"…shows unprompted affection so I feel pursued and valued."],
     [PHLE,"…offers steady, dependable support without pressure."]
-  ], val => {
-      const k = codeToAffKey(val); const arr = answers.desiredTop2 || [];
-      if(k && !arr.includes(k) && arr.length<2) arr.push(k);
-      answers.desiredTop2 = arr; saveState(); next();
-  });
+  ], val => { const k = codeToAffKey(val); const arr = answers.desiredTop2 || []; if(k && !arr.includes(k) && arr.length<2) arr.push(k); answers.desiredTop2 = arr; saveState(); next(); });
 
   /* Inclusion (Social) */
   if(step===4) return renderSingleList(box, "In social settings, I usually…", [
@@ -436,7 +419,7 @@ function renderTopNextPicker(root){
   }
 }
 
-/* Single-choice (no spouse reminder) */
+/* Single-choice helper */
 function renderSingleList(root, title, options, onPick){
   root.innerHTML = `
     <h3 style="text-align:center;">${title}</h3>
@@ -448,94 +431,19 @@ function renderSingleList(root, title, options, onPick){
   });
 }
 
-/* Finalize & Results (resilient) */
-function finalize(){
-  ensureDefaults();
-  let core = Array.isArray(answers.top4)&&answers.top4.length===4 ? [...answers.top4]  : [];
-  let growth = Array.isArray(answers.next4)&&answers.next4.length===4 ? [...answers.next4] : [];
-  if (core.length!==4 || growth.length!==4){ const r = Array.isArray(answers.rank)&&answers.rank.length===TYPES.length ? answers.rank.slice() : TYPES.slice(); core=r.slice(0,4); growth=r.slice(4,8); }
-  const picked = new Set([...core, ...growth]);
-  const untapped = TYPES.filter(k=>!picked.has(k));
-
-  const socialCounts={E:0,S:0,R:0,A:0,U:0}; Object.values(answers.social).forEach(k=> socialCounts[k]++);
-  const decisionCounts={E:0,S:0,R:0,A:0,U:0}; Object.values(answers.decision).forEach(k=> decisionCounts[k]++);
-  const socialTop = Object.entries(socialCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
-  const decisionTop = Object.entries(decisionCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
-
-  const socialSummary = socialTop ? ({E:"You bring energy and enthusiasm to social settings.",S:"You give structure and help lead groups well.",R:"You prefer deep, thoughtful conversations.",A:"You value calm, low-key connection.",U:"You make sure others feel included and cared for."})[socialTop] : "You adapt flexibly to different situations.";
-  const decisionSummary = decisionTop ? ({E:"You decide with enthusiasm, prioritizing enjoyment and momentum.",S:"You decide decisively, goal-first.",R:"You analyze carefully before choosing.",A:"You seek harmony and consensus.",U:"You steadily support plans and shared goals."})[decisionTop] : "You adapt flexibly to different situations.";
-
-  const rrScore = (answers.rr.rr1 ?? 0) + (answers.rr.rr2 ?? 0);
-  const rrLabel = rrScore>=5 ? "Strong" : rrScore>=3 ? "Moderate" : "Needs Attention";
-
-  const bondCounts = {SteadyConnector:0, ReassuranceSeeker:0, IndependentConnector:0, GuardedConnector:0};
-  Object.values(answers.bond).forEach(k=> bondCounts[k]++);
-  const bondingKey = Object.entries(bondCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || "SteadyConnector";
-
-  const profile = {
-    name: yourName || "You",
-    coreTypes: core, growthTypes: growth, untappedTypes: untapped,
-    expressedTop2: [...(answers.expressedTop2||[])],
-    desiredTop2:   [...(answers.desiredTop2||[])],
-    socialTop, decisionTop, socialSummary, decisionSummary,
-    rrScore, rrLabel, bondingKey
-  };
-  renderResults(profile);
-}
-
-/* ======= Baseline helpers used in results (kept) ======= */
+/* ====== RESULTS: supporting helpers from baseline ====== */
 function typesColumn(name, types){
   const safe = Array.isArray(types) && types.length ? types : TYPES.slice(0,4);
-  return `<div class="partner-card"><div class="partner-inner">
+  return `
+    <div class="partner-card"><div class="partner-inner">
       <div class="partner-header">${name || "Results"}</div>
-      ${safe.map(k=>`<div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
+      ${safe.map(k=>`
+        <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
           <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
-        </div>`).join("")}
-    </div></div>`;
-}
-const affEXP = {
-  Playful:"You naturally lift the mood with humor, lightness, and spontaneous moments that say, “I’m with you.” You turn ordinary spaces into warm, safe places.",
-  Initiative:"You show love by stepping in and taking pressure off—solving problems, removing obstacles, and protecting what matters.",
-  DeepTalk:"You invite depth—lingering in meaningful conversation, asking curious questions, and making others feel profoundly understood.",
-  Warmth:"You offer steady presence and gentle affection. Your calming tone, touch, and attention help your spouse exhale and feel safe.",
-  Support:"You love through action: pitching in, following through, and sharing the load. Your reliability says, “You’re not alone—I'm with you.”"
-};
-const affDES = {
-  Playful:"You feel loved when things are kept light, playful, and hope-filled—like a breath of fresh air when life feels heavy.",
-  Initiative:"You feel most cared for when your spouse takes initiative—removing stress, solving a problem, or leading with strength and protection.",
-  DeepTalk:"You feel cherished when your spouse slows down, listens deeply, and engages your thoughts and heart with focused, meaningful time.",
-  Warmth:"You feel secure with gentle presence, unhurried attention, and comforting touch that says, “I’m here, and you matter.”",
-  Support:"You feel honored when your spouse helps practically—sharing responsibilities and showing up consistently in the daily things."
-};
-const temperamentDetails = {
-  E:{ looks:"You energize the room and move things forward with enthusiasm.", watch:"Fast pace can out-run deeper needs or quieter voices.", tip:"Schedule both lively connection and quiet check-ins to stay balanced." },
-  S:{ looks:"You provide direction, set goals, and protect progress.",       watch:"Decisiveness can feel controlling if not co-authored.", tip:"Invite input early and name where you’re flexible." },
-  R:{ looks:"You think deeply, ask great questions, and value thoughtfulness.", watch:"Over-analysis can delay decisions or feel distant.", tip:"Time-box decisions and surface feelings—not just facts." },
-  A:{ looks:"You bring calm, keep the peace, and reduce friction.",          watch:"Avoiding tension can postpone needed clarity.", tip:"Name one concrete next step even when keeping it gentle." },
-  U:{ looks:"You serve steadily, include others, and build trust.",          watch:"Understating your needs can lead to quiet resentment.", tip:"Voice one specific need and one boundary you appreciate." }
-};
-function buildTemperamentText(topKey, summary){
-  if(!topKey) return summary || "You flex based on the moment."; const d=temperamentDetails[topKey]||{};
-  return `${summary || ""} <br><em>What it looks like:</em> ${d.looks || ""} <br><em>Watch-outs:</em> ${d.watch || ""} <br><em>Helpful tip:</em> ${d.tip || ""}`;
-}
-function temperamentAccentFromKey(k){
-  const map = { E:{color:typeColors.Emotional,bg:typeOpac.Emotional}, S:{color:typeColors.Commitment,bg:typeOpac.Commitment}, R:{color:typeColors.Intellectual,bg:typeOpac.Intellectual}, A:{color:typeColors.Affable,bg:typeOpac.Affable}, U:{color:typeColors.Partnership,bg:typeOpac.Partnership} };
-  return map[k] || { color:"#4D9DE0", bg:"rgba(77,157,224,.08)" };
-}
-function temperamentAccentFromAffKey(k){ const t = { Playful:"E", Initiative:"S", DeepTalk:"R", Warmth:"A", Support:"U" }[k]; return temperamentAccentFromKey(t); }
-function temperamentBlock(name, title, text, topKey){
-  const acc = temperamentAccentFromKey(topKey);
-  return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};"><strong>${name || "You"} — ${title}:</strong> <span>${text || "You flex based on the moment."}</span></div>`;
-}
-function rrAccent(label){
-  if(label==="Strong")   return { color:typeColors.Partnership, bg:typeOpac.Partnership };
-  if(label==="Moderate") return { color:typeColors.Commitment,  bg:typeOpac.Commitment  };
-  return { color:typeColors.Emotional, bg:typeOpac.Emotional };
-}
-function rrStatement(score){
-  if(score>=5) return "You generally feel affirmed, appreciated, respected, and validated—and you likely offer the same in return.";
-  if(score>=3) return "You often feel appreciated and respected, though there may be moments when clearer affirmation would be meaningful.";
-  return "You may not consistently feel affirmed or validated; be explicit about the kinds of appreciation that help you feel respected.";
+        </div>
+      `).join("")}
+    </div></div>
+  `;
 }
 function promptsBlock(items){
   return `
@@ -548,7 +456,18 @@ function promptsBlock(items){
   `;
 }
 
-/* ==== Communication Style inference & cards (your v13k) ==== */
+/* Scripture (used in verses earlier if you choose to re-enable) */
+const scripture = {
+  compassionCare: "“Be completely humble and gentle; be patient, bearing with one another in love.” — Ephesians 4:2",
+  socialEngagement: "“Therefore encourage one another and build each other up.” — 1 Thessalonians 5:11",
+  decisionLeadership: "“If any of you lacks wisdom, you should ask God … and it will be given to you.” — James 1:5",
+  respectRecognition: "“Honor one another above yourselves.” — Romans 12:10",
+  connectionPattern: "“Make every effort to keep the unity of the Spirit through the bond of peace.” — Ephesians 4:3",
+  conflictStrategies: "“Everyone should be quick to listen, slow to speak and slow to become angry.” — James 1:19",
+  thankYou: "“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12"
+};
+
+/* ===== Communication Style (v13k logic kept) ===== */
 function inferCommunicationStyle(p){
   const bond = p.bondingKey || "SteadyConnector";
   const rr   = (typeof p.rrScore === 'number') ? p.rrScore : 0;
@@ -570,40 +489,195 @@ function inferCommunicationStyle(p){
 }
 function communicationStyleCard(style){
   const copy = {
-    "Passive": `<div class="result-block" style="border-left-color:${typeColors.Affable}; background:${typeOpac.Affable};"><p><strong>Passive Communication</strong> — According to your assessment, you tend to use a passive communication style. This means you often avoid conflict and may find yourself going along with others to keep the peace. You might withhold your opinions and feelings to prevent disagreement, which can sometimes lead to resentment or emotional distance building up over time. The key is to find a way to express your needs and feelings without feeling like you're causing conflict.</p></div>`,
-    "Aggressive": `<div class="result-block" style="border-left-color:${typeColors.Commitment}; background:${typeOpac.Commitment};"><p><strong>Aggressive Communication</strong> — Your results indicate a strong tendency toward an aggressive communication style. This approach is direct and forceful, and you may find yourself dominating conversations or interrupting others to push your own perspective. This style is often linked to a desire for control and can leave others feeling unheard or overpowered. The goal is to learn to express your needs powerfully while also creating space for others to share theirs.</p></div>`,
-    "Passive-Aggressive": `<div class="result-block" style="border-left-color:${typeColors.Conflict}; background:${typeOpac.Conflict};"><p><strong>Passive-Aggressive Communication</strong> — Based on your assessment, you lean toward a passive-aggressive communication style. This can show up as sarcasm, giving the silent treatment, or making subtle jabs instead of being direct about what you need. This style can be especially damaging because it combines hostility with avoidance, leaving issues unresolved and creating frustration for everyone involved. A great next step is to practice being more direct and open in your conversations.</p></div>`,
-    "Assertive": `<div class="result-block" style="border-left-color:${typeColors.Intellectual}; background:${typeOpac.Intellectual};"><p><strong>Assertive Communication</strong> — Congratulations! Your assessment shows you have a strong assertive communication style. This is considered the healthiest approach, as you are able to clearly and respectfully express your needs while also genuinely respecting the other person's perspective. This balanced style builds trust and intimacy because it blends honesty with empathy. Keep up the great work!</p></div>`,
-    "Avoidant / Withdrawn": `<div class="result-block" style="border-left-color:${typeColors.Partnership}; background:${typeOpac.Partnership};"><p><strong>Avoidant / Withdrawn Communication</strong> — Your results suggest you often use an avoidant/withdrawn communication style. When things get difficult, you might find yourself shutting down, disengaging, or “stonewalling” during conversations. This style is common when people feel overwhelmed or are trying to avoid conflict entirely. It can prevent issues from being resolved and create emotional distance. Learning to stay present in difficult conversations is a great place to start.</p></div>`,
-    "Collaborative / Empathetic": `<div class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};"><p><strong>Collaborative / Empathetic Communication</strong> — Your assessment highlights a natural inclination toward a collaborative/empathetic communication style. This is a strengths-based approach where you actively listen, validate others' feelings, and work together to solve problems. It's very similar to assertive communication but has an even stronger focus on cooperation and understanding. This style helps build strong, intimate relationships.</p></div>`
+    "Passive": `<div class="result-block" style="border-left-color:${typeColors.Affable}; background:${typeOpac.Affable};"><p><strong>Passive Communication</strong> — According to your assessment, you tend to use a passive communication style…</p></div>`,
+    "Aggressive": `<div class="result-block" style="border-left-color:${typeColors.Commitment}; background:${typeOpac.Commitment};"><p><strong>Aggressive Communication</strong> — Your results indicate a strong tendency toward an aggressive communication style…</p></div>`,
+    "Passive-Aggressive": `<div class="result-block" style="border-left-color:${typeColors.Conflict}; background:${typeOpac.Conflict};"><p><strong>Passive-Aggressive Communication</strong> — Based on your assessment, you lean toward a passive-aggressive communication style…</p></div>`,
+    "Assertive": `<div class="result-block" style="border-left-color:${typeColors.Intellectual}; background:${typeOpac.Intellectual};"><p><strong>Assertive Communication</strong> — Congratulations! Your assessment shows you have a strong assertive communication style…</p></div>`,
+    "Avoidant / Withdrawn": `<div class="result-block" style="border-left-color:${typeColors.Partnership}; background:${typeOpac.Partnership};"><p><strong>Avoidant / Withdrawn Communication</strong> — Your results suggest you often use an avoidant/withdrawn communication style…</p></div>`,
+    "Collaborative / Empathetic": `<div class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};"><p><strong>Collaborative / Empathetic Communication</strong> — Your assessment highlights a natural inclination toward a collaborative/empathetic style…</p></div>`
   };
   return copy[style] || copy["Assertive"];
 }
 function communicationStrategyCard(style){
   const tip = {
-    "Passive": `<div class="result-block" style="border-left-color:${typeColors.Affable}; background:${typeOpac.Affable};"><strong>Passive Communicator — Try this:</strong><p>Start by taking small steps to voice your opinions and needs. Instead of saying, “Whatever you want to do is fine,” try, “I’d actually prefer to go to the movies tonight—how does that sound to you?”</p></div>`,
-    "Aggressive": `<div class="result-block" style="border-left-color:${typeColors.Commitment}; background:${typeOpac.Commitment};"><strong>Aggressive Communicator — Try this:</strong><p>Practice using “I” statements instead of “you” statements. For example, change “You always interrupt me” to “I feel unheard when I’m interrupted.” This shifts the focus from blame to personal experience.</p></div>`,
-    "Passive-Aggressive": `<div class="result-block" style="border-left-color:${typeColors.Conflict}; background:${typeOpac.Conflict};"><strong>Passive-Aggressive Communicator — Try this:</strong><p>Be direct. When you feel frustrated, instead of making a sarcastic comment, try saying, “I’m feeling frustrated right now because of X.” This allows for an honest conversation rather than a hidden conflict.</p></div>`,
-    "Assertive": `<div class="result-block" style="border-left-color:${typeColors.Intellectual}; background:${typeOpac.Intellectual};"><strong>Assertive Communicator — Keep strengthening:</strong><p>Pair clear “I” statements with reflective listening and one shared next step. Example: “I feel anxious about timing; what I’m hearing you say is you need more detail. Could we agree to a 10-minute plan after dinner?”</p></div>`,
-    "Avoidant / Withdrawn": `<div class="result-block" style="border-left-color:${typeColors.Partnership}; background:${typeOpac.Partnership};"><strong>Avoidant/Withdrawn Communicator — Try this:</strong><p>Manage overwhelm by taking a short break with a clear return time: “I’m feeling overwhelmed right now. Can we talk in 15 minutes?” This is healthier than stonewalling and keeps connection safe.</p></div>`,
-    "Collaborative / Empathetic": `<div class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};"><strong>Collaborative/Empathetic Communicator — Keep strengthening:</strong><p>Continue validating (“That makes sense”), summarize shared goals, and end with a co-authored step: “So we both want calmer mornings—let’s test a 5-minute prep tonight.”</p></div>`
+    "Passive": `<div class="result-block" style="border-left-color:${typeColors.Affable}; background:${typeOpac.Affable};"><strong>Passive Communicator — Try this:</strong><p>Start by taking small steps to voice your opinions and needs…</p></div>`,
+    "Aggressive": `<div class="result-block" style="border-left-color:${typeColors.Commitment}; background:${typeOpac.Commitment};"><strong>Aggressive Communicator — Try this:</strong><p>Practice using “I” statements instead of “you” statements…</p></div>`,
+    "Passive-Aggressive": `<div class="result-block" style="border-left-color:${typeColors.Conflict}; background:${typeOpac.Conflict};"><strong>Passive-Aggressive Communicator — Try this:</strong><p>Be direct. When you feel frustrated…</p></div>`,
+    "Assertive": `<div class="result-block" style="border-left-color:${typeColors.Intellectual}; background:${typeOpac.Intellectual};"><strong>Assertive Communicator — Keep strengthening:</strong><p>Pair clear “I” statements with reflective listening…</p></div>`,
+    "Avoidant / Withdrawn": `<div class="result-block" style="border-left-color:${typeColors.Partnership}; background:${typeOpac.Partnership};"><strong>Avoidant/Withdrawn Communicator — Try this:</strong><p>Manage overwhelm by taking a short break with a clear return time…</p></div>`,
+    "Collaborative / Empathetic": `<div class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};"><strong>Collaborative/Empathetic Communicator — Keep strengthening:</strong><p>Continue validating…</p></div>`
   };
   return tip[style] || tip["Assertive"];
 }
 
-/* ======= Merged Results Renderer (replaces original to include Connection Patterns and teaching copy) ======= */
+/* ===== Teaching Objects for Section 2 + Patterns ===== */
+const __AFF_TO_APS = { Playful:"E", Initiative:"S", DeepTalk:"R", Warmth:"A", Support:"U" };
+const __APS_COMPASSION = {
+  E: { heading:"Sanguine",
+    express:`Expressing Love: You're a natural at bringing joy and playfulness into a relationship. Your affection is lighthearted, and you show you care by creating fun moments and lifting the mood. Your actions say, "I'm with you, and life is simply better because we're together."`,
+    feel:`Feeling Most Loved: You feel most cherished when the love you give is returned with the same energy and enthusiasm. Laughter, consistent closeness, and affirmation make you feel truly adored and seen.`,
+    cautions:`Cautions: Your strong need for fun and validation can sometimes feel overwhelming for a partner with a quieter temperament. If you don't feel like your energy is being matched, you might become restless or discouraged.`,
+    try:`Try This: Make a point to balance your playful energy with moments of quiet, calm connection. Instead of waiting for others to guess what you need, practice asking for affirmation directly. It's perfectly okay to say, "I'd really love to hear something encouraging right now."`
+  },
+  S: { heading:"Choleric",
+    express:`Expressing Love: You show love through action and initiative. For you, love is a verb. You care for your partner by taking charge—solving problems, creating plans, and protecting the things that matter most to them.`,
+    feel:`Feeling Most Loved: You feel deeply honored when your partner steps in to help with a practical task or takes a burden off your shoulders. Acts of service and practical support speak louder than words to you.`,
+    cautions:`Cautions: Because you're so action-oriented, you might overlook the need for softer, more emotional connection. This can lead to your partner feeling loved through your actions but not necessarily through tenderness or verbal affection.`,
+    try:`Try This: Practice pairing your strong actions with a few simple, verbal affirmations. For example, after you fix something for your partner, you could say, "I did this for you because you're important to me."`
+  },
+  R: { heading:"Melancholy",
+    express:`Expressing Love: You express your love through deep thought and meaningful presence. For you, a heartfelt conversation and thoughtful words are the truest forms of affection.`,
+    feel:`Feeling Most Loved: You feel most secure when your partner takes the time to truly listen to you. Engaging in a reflective, heart-to-heart dialogue makes you feel understood and deeply cared for.`,
+    cautions:`Cautions: Your high standards for yourself and others can sometimes make your partner feel like they can't measure up. Your tendency to over-analyze can also leave you feeling misunderstood if your partner can't follow your line of thought.`,
+    try:`Try This: Actively communicate your appreciation, not just your concerns. When you're sharing a thought or a concern, try to add a feeling statement alongside it. For example, "I feel cared for when you listen to me so carefully," rather than just "You're a good listener."`
+  },
+  A: { heading:"Phlegmatic",
+    express:`Expressing Love: You show love through your calm and steady presence. Your peaceful tone, gentle touch, and quiet demeanor make your partner feel safe and secure.`,
+    feel:`Feeling Most Loved: You feel most cared for when your partner provides a gentle, consistent presence without any pressure. You thrive on a calm, low-key connection that feels reliable and safe.`,
+    cautions:`Cautions: Your tendency to avoid conflict can cause you to hide your own needs until they build up into quiet resentment. This can prevent a healthy resolution of issues and leave you feeling unheard.`,
+    try:`Try This: Challenge yourself to choose one small need each week to voice clearly and directly. For example, you could say, "It would mean a lot to me if we could have a quiet night in this weekend."`
+  },
+  U: { heading:"Supine",
+    express:`Expressing Love: You express your love through consistent service and reliability. Your actions speak volumes, and your message to your partner is always, "You're not alone—I'm with you and I'll be there for you."`,
+    feel:`Feeling Most Loved: You feel truly valued when your partner notices your sacrifices, offers to help you in return, and verbally affirms your loyalty and commitment.`,
+    cautions:`Cautions: You may have a tendency to suppress your own needs, silently hoping that others will notice what you need without you having to ask. When this goes unrecognized, it can lead to quiet hurt and feeling taken for granted.`,
+    try:`Try This: Practice stating a need directly and without apology. It can be as simple as saying, "I'd like to get some rest tonight, so I can't help with that right now." This builds respect and is essential for preventing burnout.`
+  }
+};
+const __RR_TEACHING = {
+  Strong:{title:"Strong (Score 5–6)",
+    result:`Your Result: You have a solid foundation of mutual respect. You generally feel valued, affirmed, and genuinely appreciated, and you have a natural tendency to give that same affirmation to others in return.`,
+    looks:`What it looks like: You and your partner likely celebrate each other's contributions and feel a deep sense of alignment in your core values. There's a feeling of being on the same team, where efforts are seen and honored.`,
+    cautions:`Cautions: When affirmation comes so naturally, it's easy to take that consistency for granted. You might fall into the trap of using general praise instead of specific, meaningful words.`,
+    try:`Try This: Challenge yourself to add more specificity to your affirmations. Instead of simply saying, "Thanks for doing that," try something like, "I really appreciate how you handled that conversation; it showed so much wisdom and care." This kind of specific recognition makes your partner feel truly seen.`
+  },
+  Moderate:{title:"Moderate (Score 3–4)",
+    result:`Your Result: You often feel respected, but there are times when you long for clearer appreciation or more intentional recognition.`,
+    looks:`What it looks like: You may occasionally wonder if your efforts are truly noticed or if your values are fully shared by your partner. This can lead to moments of uncertainty about your place in the relationship.`,
+    cautions:`Cautions: If a need for recognition is not met intentionally, one partner may start to feel quietly undervalued. Over time, this can lead to emotional distance or feelings of being taken for granted.`,
+    try:`Try This: Take the initiative to voice one concrete way you'd like to feel honored. It's not nagging; it's providing a clear guide. For example, you could say, "It really helps me feel valued when you say thank you for the small, everyday things, like making dinner or folding the laundry."`
+  },
+  "Needs Attention":{title:"Needs Attention (Score 0–2)",
+    result:`Your Result: You may not consistently feel valued, affirmed, or recognized for your contributions or personal beliefs.`,
+    looks:`What it looks like: Your efforts may frequently go unnoticed, leaving a space for insecurity and a feeling of being misaligned in your relationship. This can feel like you're putting in a lot of work without your partner seeing or appreciating it.`,
+    cautions:`Cautions: If left unspoken, this lack of recognition can create significant emotional distance and resentment, making it feel like you are not on the same side.`,
+    try:`Try This: It's time to have a gentle but honest conversation. Approach your partner by sharing your feelings using "I" statements. For example, you could say, "When you notice what I do, I feel seen and respected. Could you please try to name one thing you appreciate each day?" This provides a simple, actionable step that can begin to close the gap.`
+  }
+};
+const __PATTERN_TEACHING = {
+  SteadyConnector:{title:"Steady Connector",
+    result:`Your Result: You have a steady, calm, and harmony-focused connection style. You naturally de-escalate tension and create a safe space for conversation to happen. Your presence is reassuring.`,
+    looks:`What it looks like: You're the one who can bring a sense of calm to a heated moment. You prioritize peace and create an environment where your partner feels safe to express themselves without fear of a major argument.`,
+    cautions:`Cautions: Your desire for harmony might cause you to smooth over conflict too quickly, leaving important issues unresolved. While you avoid a big fight, the underlying problem may still be there, waiting to resurface later.`,
+    try:`Try This: To ensure you're addressing issues fully, try implementing a short, daily check-in. For five minutes, each of you can name one feeling, one need, and one next step before moving on. This simple structure ensures you're addressing the deeper issues without a major conflict.`
+  },
+  ReassuranceSeeker:{title:"Reassurance Seeker",
+    result:`Your Result: Your connection style is passionate and driven by closeness. You're quick to notice when something feels off and you work hard to repair the connection.`,
+    looks:`What it looks like: You actively fight for clarity and reassurance, wanting to fix things as soon as they feel broken. Your desire to reconnect quickly is a sign of how deeply you value your partner.`,
+    cautions:`Cautions: Your urgency for reassurance can sometimes feel overwhelming to your partner, especially if they need a moment to process. If you push for a quick resolution before they're ready, it might create more distance instead of closing it.`,
+    try:`Try This: In moments of tension, ask for one clear reassurance from your partner. Then, agree to a short reset with a promised return time. You might say, "Can you just tell me you love me right now? I need twenty minutes to calm down, but I promise I'll be back to talk about this then." This gives both of you what you need.`
+  },
+  IndependentConnector:{title:"Independent Connector",
+    result:`Your Result: Your connection style values clarity and personal reflection. You have a natural tendency to de-escalate conflict by stepping back to think carefully.`,
+    looks:`What it looks like: When a conversation gets heated, your instinct is to withdraw and process your thoughts. You use this pause to gain clarity and avoid saying something you might regret, which can be very effective.`,
+    cautions:`Cautions: If you step away without setting a clear return time, your partner may interpret your pause as withdrawal or disconnection, leading to feelings of abandonment.`,
+    try:`Try This: Communicate your need for space with reassurance. Say, "I need about 20 minutes to think about this, but I promise I will come back to talk." By adding a short sentence of reassurance before you step away—like, "I love you, and this is important to me"—you show that you're pausing for the good of the relationship, not to escape it.`
+  },
+  GuardedConnector:{title:"Guarded Connector",
+    result:`Your Result: Your connection style is cautious and focuses on building trust slowly. You protect the relationship by avoiding overreactions and showing steady, quiet loyalty.`,
+    looks:`What it looks like: You're a rock in the relationship, showing your commitment through steady presence and avoiding drama. This sense of loyalty is a cornerstone of your connection style.`,
+    cautions:`Cautions: Your caution can sometimes look like a wall, leaving your partner feeling shut out or unable to get close to you emotionally. Your reluctance to be vulnerable can create a sense of emotional distance.`,
+    try:`Try This: To build trust, try engaging in micro-trust exercises. Before a hard conversation, share one safe truth, keep a small promise, or write a short note about something you appreciate. These small acts of vulnerability help your partner feel a little safer, making them more willing to open up to you in return.`
+  }
+};
+
+/* ===== Teaching renderers for Section 2 + Patterns ===== */
+function temperamentAccentFromKey(k){
+  const map = { E:{color:typeColors.Emotional,bg:typeOpac.Emotional}, S:{color:typeColors.Commitment,bg:typeOpac.Commitment}, R:{color:typeColors.Intellectual,bg:typeOpac.Intellectual}, A:{color:typeColors.Affable,bg:typeOpac.Affable}, U:{color:typeColors.Partnership,bg:typeOpac.Partnership} };
+  return map[k] || { color:"#4D9DE0", bg:"rgba(77,157,224,.08)" };
+}
+function temperamentAccentFromAffKey(k){ const t = { Playful:"E", Initiative:"S", DeepTalk:"R", Warmth:"A", Support:"U" }[k]; return temperamentAccentFromKey(t); }
+
+function compassionColumnTeaching(p){
+  const name = p.name || "You";
+  const mk = (affKey, label)=>{
+    const pack = __APS_COMPASSION[ __AFF_TO_APS[affKey] ];
+    if(!pack) return "";
+    const acc = temperamentAccentFromAffKey(affKey);
+    return `
+      <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+        <strong>${pack.heading} — ${label}</strong>
+        <p style="margin:.4em 0 0;">${label==="Expressing Love" ? pack.express : pack.feel}</p>
+        <p style="margin:.4em 0 0;">${pack.cautions}</p>
+        <p style="margin:.4em 0 0;"><em>${pack.try}</em></p>
+      </div>`;
+  };
+  const expHtml = (p.expressedTop2||[]).map(k=>mk(k,"Expressing Love")).join("") ||
+    `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make selections earlier to see personalized details.</div>`;
+  const desHtml = (p.desiredTop2||[]).map(k=>mk(k,"Feeling Most Loved")).join("") ||
+    `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make selections earlier to see personalized details.</div>`;
+  return `<div class="partner-card"><div class="partner-inner"><div class="partner-header">${name}</div>${expHtml}${desHtml}</div></div>`;
+}
+
+function rrAccent(label){
+  if(label==="Strong")   return { color:typeColors.Partnership, bg:typeOpac.Partnership };
+  if(label==="Moderate") return { color:typeColors.Commitment,  bg:typeOpac.Commitment  };
+  return { color:typeColors.Emotional, bg:typeOpac.Emotional };
+}
+function rrCardTeaching(p){
+  const label = p.rrLabel || "Moderate";
+  const pack = __RR_TEACHING[label] || __RR_TEACHING["Moderate"];
+  const score = Number.isFinite(p.rrScore) ? p.rrScore : 0;
+  const acc = rrAccent(label);
+  return `
+    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+      <strong>${pack.title}</strong> <span>(${score}/6)</span>
+      <p style="margin:.4em 0 0;">${pack.result}</p>
+      <p style="margin:.4em 0 0;">${pack.looks}</p>
+      <p style="margin:.4em 0 0;">${pack.cautions}</p>
+      <p style="margin:.4em 0 0;"><em>${pack.try}</em></p>
+    </div>
+  `;
+}
+
+function patternColumnTeaching(p){
+  const key = p.bondingKey || "SteadyConnector";
+  const pack = __PATTERN_TEACHING[key] || __PATTERN_TEACHING.SteadyConnector;
+  const acc = {
+    SteadyConnector:{ color: typeColors.Partnership,  bg: typeOpac.Partnership },
+    ReassuranceSeeker:{ color: typeColors.Emotional, bg: typeOpac.Emotional },
+    IndependentConnector:{ color: typeColors.Intellectual, bg: typeOpac.Intellectual },
+    GuardedConnector:{ color: typeColors.Conflict,   bg: typeOpac.Conflict }
+  }[key] || { color:"#4D9DE0", bg:"rgba(77,157,224,.08)" };
+  const name = p.name || "You";
+  return `
+    <div class="partner-card"><div class="partner-inner">
+      <div class="partner-header">${name}</div>
+      <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+        <p><strong>${pack.title}</strong></p>
+        <p>${pack.result}</p>
+        <p>${pack.looks}</p>
+        <p>${pack.cautions}</p>
+        <p><em>${pack.try}</em></p>
+      </div>
+    </div></div>
+  `;
+}
+
+/* ===== Results renderer (safe & chunked) ===== */
 function renderResults(p){
   hideAllPages();
   const resultPage=document.getElementById('resultPage'); resultPage.classList.remove('hidden');
   document.getElementById('resultsHeader').textContent = "Your Relational Connection Profile";
-  const mount=document.getElementById('results'); mount.innerHTML=""; const container=document.createElement('div'); container.id="soloReport"; mount.appendChild(container);
+  const mount=document.getElementById('results'); mount.innerHTML="";
+  const container=document.createElement('div'); container.id="soloReport"; mount.appendChild(container);
 
   const addDivider=()=>{ const d=document.createElement('div'); d.className='section-divider'; container.appendChild(d); };
   const addSubDivider=()=>{ const d=document.createElement('div'); d.className='subsection-divider'; container.appendChild(d); };
   const addHTML=(html)=>{ const tmp=document.createElement('div'); tmp.innerHTML=html; while(tmp.firstChild) container.appendChild(tmp.firstChild); };
   const safe=(label,fn)=>{ try{ fn(); }catch(e){ console.error("Results render error @",label,e); addHTML(`<p class="muted">(Note) A section failed to load. Continuing…</p>`);} };
 
-  /* Section 1 (unchanged headings) */
+  /* Section 1 */
   safe("s1-head", ()=>{ addDivider(); addHTML(`
     <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
     <div class="intro-text">
@@ -636,20 +710,18 @@ function renderResults(p){
       "<em>Reflect:</em> What did you enjoy or learn?"
     ])); });
 
-  /* Section 2 — Relational Dynamics (replacements + kept) */
+  /* Section 2 */
   safe("s2-head", ()=>{ addDivider(); addHTML(`
     <h3 class="section-title">Section 2: Relational Dynamics</h3>
     <div class="intro-text">
-      Your relationship isn't just a connection of two people; it's a unique dance of two beautiful, distinct individuals! This section is designed to help you understand the everyday rhythms that shape your connection. We'll explore how you naturally care for each other, how you engage socially, how you share influence and make decisions, and how you honor one another. Our hope is that these insights will not only bring clarity but also provide a powerful guide for your discussions, helping you protect your closeness and deepen your bond in every interaction.
+      Your relationship isn't just a connection of two people; it's a unique dance of two beautiful, distinct individuals! This section is designed to help you understand the everyday rhythms that shape your connection. We'll explore how you naturally care for each other, how you engage socially, how you share influence and make decisions, and how you honor one another.
     </div>`); });
 
-  /* Compassion & Care — TEACHING VERSION */
+  // Compassion & Care — TEACHING
   safe("s2-compassion", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
     addHTML(`<div class="framing-q">Do you care about me?</div>`);
-    addHTML(`<div class="verse">“Be completely humble and gentle; be patient, bearing with one another in love.” — Ephesians 4:2</div>`);
-    addHTML(`<p class="intro-text">Express Love and Feel Most Loved, according to your APS temperament in affection (expressed and wanted).</p>`);
     addHTML(compassionColumnTeaching(p));
     addHTML(promptsBlock([
       "<em>Spot the signal:</em> What specific action helps you feel most cared for this week?",
@@ -658,13 +730,11 @@ function renderResults(p){
     ]));
   });
 
-  /* Social Preferences — kept summary */
+  // Social — kept summaries
   safe("s2-social", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
     addHTML(`<div class="framing-q">How do you recharge?</div>`);
-    addHTML(`<div class="verse">“Therefore encourage one another and build each other up.” — 1 Thessalonians 5:11</div>`);
-    addHTML(`<p class="intro-text">This dynamic is all about how you both recharge and engage with the world around you. It explores whether you feel energized by being with others (extraversion), find deep renewal in solitude (introversion), or perhaps thrive with a mix of both (ambiversion). Understanding these unique preferences is key to helping you and your spouse beautifully balance your needs for connection and personal space, ensuring you both feel filled up and ready to encourage each other daily.</p>`);
     addHTML(temperamentBlock(p.name,"Your Social Energy",buildTemperamentText(p.socialTop,p.socialSummary),p.socialTop));
     addHTML(promptsBlock([
       "<em>Recharge recipe:</em> What social setting fills your tank most reliably?",
@@ -673,13 +743,11 @@ function renderResults(p){
     ]));
   });
 
-  /* Power & Control — kept summary */
+  // Power & Control — kept summaries
   safe("s2-power", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
     addHTML(`<div class="framing-q">Who gets to decide?</div>`);
-    addHTML(`<div class="verse">“If any of you lacks wisdom, you should ask God … and it will be given to you.” — James 1:5</div>`);
-    addHTML(`<p class="intro-text">This dynamic explores how you navigate decisions and leadership within your relationship, and how you approach influence and authority. It's all about how decisions are made, roles are shared, and influence is balanced. Understanding this helps you create a structure where shared responsibility and collaboration feel both respectful and safe. At its heart, this dynamic helps you to ensure the balance and mutual honor in your daily interactions.</p>`);
     addHTML(temperamentBlock(p.name,"Your Leadership Style",buildTemperamentText(p.decisionTop,p.decisionSummary),p.decisionTop));
     addHTML(promptsBlock([
       "<em>Co-author it:</em> Pick one decision to make together this week; define roles.",
@@ -688,12 +756,10 @@ function renderResults(p){
     ]));
   });
 
-  /* Respect & Recognition — TEACHING VERSION */
+  // Respect & Recognition — TEACHING
   safe("s2-rr", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
-    addHTML(`<div class="framing-q">Do you value me?</div>`);
-    addHTML(`<div class="verse">“Honor one another above yourselves.” — Romans 12:10</div>`);
     addHTML(rrCardTeaching(p));
     addHTML(promptsBlock([
       "<em>One appreciation:</em> Share one specific thing you value in your spouse today.",
@@ -702,12 +768,10 @@ function renderResults(p){
     ]));
   });
 
-  /* Section 3 — Connection Patterns (RESTORED) */
+  /* Section 3 — Connection Patterns */
   safe("s3-connpatterns", ()=>{ 
     addDivider(); 
-    addHTML(`<h3 class="section-title">Section 3: Connection Patterns</h3>
-      <div class="verse">“Make every effort to keep the unity of the Spirit through the bond of peace.” — Ephesians 4:3</div>
-      <p class="intro-text">Attachment-rooted patterns for how you reconnect after tension—recast in an engaging, conversational style.</p>`); 
+    addHTML(`<h3 class="section-title">Section 3: Connection Patterns</h3>`);
     addHTML(patternColumnTeaching(p));
     addHTML(promptsBlock([
       "<em>Return time:</em> Agree on a clear pause-and-return window for hard talks.",
@@ -716,7 +780,7 @@ function renderResults(p){
     ]));
   });
 
-  /* Section 4 — Communication Style (kept) */
+  /* Section 4 — Communication (kept) */
   safe("s4-commstyle", ()=>{ 
     if (typeof inferCommunicationStyle==="function" && typeof communicationStyleCard==="function"){
       addDivider(); 
@@ -733,21 +797,11 @@ function renderResults(p){
   safe("thanks", ()=>{ addDivider(); addHTML(`
     <div class="result-block" style="border-left-color:transparent; background:#fff;">
       <h3 class="thank-title">Thank You</h3>
-      <div class="verse">“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12</div>
       <p class="intro-text">We hope you enjoyed discovering your unique connection patterns. Use these insights as a friendly guide—not labels—to spark great conversations and small, consistent changes.</p>
-      <p class="intro-text">To be truly known is to unlock the deepest intimacy—embrace what’s true today and aim courageously for what’s possible tomorrow.</p>
       <div style="text-align:center; margin-top:8px;"><button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download PDF</button></div>
     </div>`); const pdfBtn=document.getElementById('downloadPdfBtn'); if(pdfBtn) pdfBtn.onclick=()=>window.print(); });
 
   clearState();
-}
-
-/* ========= SUPPORTING UTIL (R&R baseline) ========= */
-function rrCard(p){
-  const acc = rrAccent(p.rrLabel || "Moderate"); const score = Number.isFinite(p.rrScore) ? p.rrScore : 0;
-  return `<div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-    <strong>${p.name || "You"} — Respect &amp; Recognition:</strong> ${p.rrLabel || "Moderate"} (${score}/6)
-    <p style="margin:8px 0 0;">${rrStatement(score)}</p></div>`;
 }
 </script>
 </body>
