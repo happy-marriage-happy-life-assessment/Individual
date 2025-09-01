@@ -9,26 +9,17 @@
 <title>Marriage Connection Assessment — Individual</title>
 
 <!-- ===========================================================
-     PATCH NOTES (v13m-spec):
-     - Results header set to “Your Connection Profile — The Journey Begins”
-     - Added 1 Corinthians 13:4–7 under results header
-     - Section 1 scripture Genesis 2:24 + exact explanation paragraph
-     - Section 2 exact explanation + four subsections:
-       * Compassion & Care: framing Q (plain, title-size), Ephesians 4:2,
-         subsection paragraph, full temperament cards (Express/Feel/Cautions/Try)
-       * Social Preferences: framing Q (plain, title-size), 1 Thess 5:11,
-         subsection paragraph, full temperament cards (Your Social Energy / What it looks like / Cautions / Try This)
-       * Power & Control: framing Q (plain, title-size), James 1:5,
-         subsection paragraph, full temperament cards (Leadership Style / What it looks like / Cautions / Try This)
-       * Respect & Recognition: framing Q (plain, title-size), Romans 12:10,
-         subsection paragraph, tiered (Strong/Moderate/Needs Attention) cards
-     - Section 3: Connection Patterns — framing Q (plain, title-size),
-       Eph 4:2–3 scripture, exact explanation paragraph
-     - Section 4: Communication Style — James 1:19–20 scripture,
-       exact explanation + full style definitions + tailored strategies
-       + dropdown “Understanding the Healthiest Communication Style”
-     - Framing questions style: same font-size as subsection titles; no bold/italics
-     - Safe, chunked renderer retained; finalize() wired
+     PATCH NOTES (v14-category-picks):
+     - Replaced Top-4/Next-4 with 3 category pickers (2-of-4 each):
+       1) Core Connection Types (Spiritual, Emotional, Commitment, Stability)
+       2) Collaborative Connection Types (Partnership, Intellectual, Creative, Conflict)
+       3) Relational Connection Types (Recreational, Affable, Physical, Sexual)
+     - Updated Results → Section 1 copy and structure per spec:
+       * New intro paragraphs under Genesis 2:24
+       * "The Foundational Intimacies — Your Core Connections" + definitions
+       * "The Partnership Intimacies — Your Collaborative Connections" + definitions
+       * "The Connection Intimacies — Your Relational Connections" + definitions
+     - Preserved Sections 2–4 (Relational Dynamics, Connection Patterns, Communication Style)
      =========================================================== -->
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&family=Open+Sans:wght@600;700&family=Merriweather:ital,wght@1,400;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -53,7 +44,7 @@
   #introPage .intro-text { text-align:center; }
   #introPage .aha { font-style:italic; font-size:1.35rem; margin:0 0 8px 0; }
 
-  /* Step 0 picker */
+  /* Mini-cards (category pickers) */
   .mini-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
   .mini-card {
     border:1px solid #4D9DE0; border-radius:8px; background:#fff;
@@ -79,26 +70,31 @@
   .result-block { margin-bottom:16px; page-break-inside:avoid; padding:16px; border-left:8px solid #4D9DE0; border-radius:8px; background:#fff; line-height:1.35; }
   .section-title { color:#1A3C5E; font-family:'Open Sans',sans-serif; font-weight:700; font-size:16pt; margin-bottom:10px; }
   .subsection-title { color:#1A3C5E; font-family:'Roboto',sans-serif; font-weight:600; font-size:14pt; margin: 15px 0 4px; text-align:center; }
+  .subtitle-blue { text-align:center; font-style:italic; color:#4D9DE0; margin:-2px 0 8px; }
   .section-divider{ height:1pt; background-color:#FF4D4D; width:100%; max-width:860px; margin:24pt auto; }
   .subsection-divider{ height:1pt; background-color:rgba(77,157,224,.5); width:100%; max-width:860px; margin:14pt auto; }
-  .verse{ font-family:'Merriweather', serif; font-style:italic; color:#FF4D4D; text-align:center; margin:6px auto 10px; max-width:820px; }
+
+  .verse{
+    font-family:'Merriweather', serif;
+    font-style:italic;
+    color:#FF4D4D;
+    text-align:center;
+    margin:6px auto 10px;
+    max-width:820px;
+    font-size:13pt;           /* 1pt less than 14pt titles */
+  }
+
   .intro-text{ margin:8px auto 12px; line-height:1.5; text-align:left; }
   .prompt-block { border-left:8px solid #4D9DE0; background: rgba(77,157,224,0.08); border-radius:8px; padding:16px; margin:16px 0; }
   .partner-header{ font-weight:700; text-align:center; margin-bottom:6px; }
   .results-list{ list-style-position:outside; margin-left:20px; text-align:left; }
   .results-list li{ margin-bottom:6px; }
 
-  /* Framing questions — same size as title, no italics/bold */
-  .framing-q{
-    text-align:center; font-style:normal; font-weight:400; color:#1A3C5E;
-    font-size:14pt; margin: 4px 0 6px 0;
-  }
+  /* Framing questions */
+  .framing-q{ text-align:center; font-style:italic; font-weight:400; color:#4D9DE0; font-size:12pt; margin:4px 0 6px 0; }
 
   /* Title flourish */
-  .thank-title{
-    margin-top:0; margin-bottom:12pt; font-family:'Savoye LET','Zapfino','Great Vibes',cursive;
-    color:#4D9DE0; font-size:4.4rem; line-height:1.1; text-align:center;
-  }
+  .thank-title{ margin-top:0; margin-bottom:12pt; font-family:'Savoye LET','Zapfino','Great Vibes',cursive; color:#4D9DE0; font-size:4.4rem; line-height:1.1; text-align:center; }
   @media (max-width:700px){ .thank-title{ font-size:3.2rem; } }
   @media (max-width:420px){ .thank-title{ font-size:2.6rem; } }
 
@@ -144,18 +140,15 @@
 <div id="resultPage" class="card hidden">
   <img src="https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png" alt="Logo" style="display:block; margin:0 auto 12px; max-width:200px;" onerror="this.src='https://via.placeholder.com/200x80?text=Logo'">
   <h2 id="resultsHeader">Your Connection Profile — The Journey Begins</h2>
-  <div class="verse">“Love is patient, love is kind... it does not dishonor others, it is not self-seeking, it is not easily angered, it keeps no record of wrongs... it always protects, always trusts, always hopes, always perseveres.” — 1 Corinthians 13:4–7</div>
-  <div id="resultsIntro" class="intro-text" style="text-align:left;">
-    <p>Welcome to the Marriage Connection Assessment, a guided experience designed to help you and your spouse build a covenant, joy-filled marriage as God designed.</p>
-    <p>This is your personalized guide to understanding each other in a new way. Think of this not as a set of labels, but as a living map to the unique landscape of your relationship—it helps you name what’s true today and aim for what’s possible tomorrow.</p>
-  </div>
+  <div class="verse">“Therefore a man shall leave his father and his mother and hold fast to his wife, and they shall become one flesh.” — Genesis 2:24</div>
+  <div id="resultsIntro" class="intro-text" style="text-align:left;"></div>
   <div id="results"></div>
   <p class="muted">Build: <span id="buildBadgeResults"></span></p>
 </div>
 
 <script>
 /* Build marker */
-const BUILD = "individual-v13m-spec";
+const BUILD = "individual-v14-category-picks";
 document.addEventListener('DOMContentLoaded', () => {
   const r = document.getElementById('buildBadgeResults'); if (r) r.textContent = BUILD;
   if (localStorage.getItem('mca_individual_state_v1')) document.getElementById('resumeBtn').classList.remove('hidden');
@@ -190,36 +183,60 @@ const typeOpac = {
   Conflict:"rgba(255,165,82,.08)", Physical:"rgba(255,140,105,.08)", Sexual:"rgba(230,57,70,.08)"
 };
 
+/* Category groupings for the new pickers */
+const CORE_SET   = ["Spiritual","Emotional","Commitment","Stability"];
+const COLLAB_SET = ["Partnership","Intellectual","Creative","Conflict"];
+const RELATE_SET = ["Recreational","Affable","Physical","Sexual"];
+
+/* Question-card copy (exact per spec) */
+const CORE_QDEF = {
+  Spiritual:  "A shared sense of purpose and a deeper connection to God\'s design that anchors your relationship and guides your journey together.",
+  Emotional:  "The ability to be vulnerable and share your deepest feelings and fears without judgment.",
+  Commitment: "The security and dedication that provides stability and the promise to weather storms together.",
+  Stability:  "Transparently and honestly managing resources together, building a foundation of trust for a secure future."
+};
+const COLLAB_QDEF = {
+  Partnership:  "The collaborative connection built by working together to manage daily responsibilities.",
+  Intellectual:  "A shared mental connection through engaging conversations and mutual respect for each other’s thoughts.",
+  Creative:      "The shared joy of bringing new ideas to life by building and dreaming together.",
+  Conflict:      "The ability to maintain a strong connection and mutual respect even during disagreements."
+};
+const RELATE_QDEF = {
+  Recreational:  "Sharing laughter, playfulness, and joy through shared hobbies and experiences.",
+  Affable:       "The ease and comfort found in a relationship, creating a peaceful and enjoyable environment.",
+  Physical:      "Connecting through non-sexual touch, comfort, and physical presence.",
+  Sexual:        "A passionate, exclusive, and sacred physical union that expresses a deep, committed connection."
+};
+
 /* State */
 const STORAGE_KEY = "mca_individual_state_v1";
 let yourName = "";
-const TOTAL_STEPS = 14; // 0..13
+const TOTAL_STEPS = 16; // 0..15
 let step = 0;
 
 const DEFAULT_ANSWERS = {
-  rank: [...TYPES],
+  /* NEW: category picks */
+  coreTop2: [],
+  collabTop2: [],
+  relateTop2: [],
+
+  /* existing */
   expressedTop2: [],
   desiredTop2: [],
   social: {},
   decision: {},
   rr: { rr1:null, rr2:null },
-  bond: {},
-  top4: [],
-  next4: []
+  bond: {}
 };
 let answers = JSON.parse(JSON.stringify(DEFAULT_ANSWERS));
 
 function ensureDefaults(){
   if (!answers || typeof answers !== 'object') answers = JSON.parse(JSON.stringify(DEFAULT_ANSWERS));
-  if (!Array.isArray(answers.rank)  || answers.rank.some(k=>!INTIMACY[k])) answers.rank = [...TYPES];
-  if (!Array.isArray(answers.expressedTop2)) answers.expressedTop2 = [];
-  if (!Array.isArray(answers.desiredTop2))   answers.desiredTop2   = [];
+  ["coreTop2","collabTop2","relateTop2","expressedTop2","desiredTop2"].forEach(k=>{ if(!Array.isArray(answers[k])) answers[k] = []; });
   if (!answers.social || typeof answers.social !== 'object') answers.social = {};
   if (!answers.decision || typeof answers.decision !== 'object') answers.decision = {};
   if (!answers.rr || typeof answers.rr !== 'object') answers.rr = { rr1:null, rr2:null };
   if (!answers.bond || typeof answers.bond !== 'object') answers.bond = {};
-  if (!Array.isArray(answers.top4))  answers.top4  = [];
-  if (!Array.isArray(answers.next4)) answers.next4 = [];
   if (!Number.isInteger(step) || step < 0 || step >= TOTAL_STEPS) step = 0;
 }
 function saveState(){ ensureDefaults(); try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ yourName, step, answers })); } catch(e){} }
@@ -267,10 +284,6 @@ function showQuiz(){
 }
 function hideAllPages(){ document.getElementById('introPage').classList.add('hidden'); document.getElementById('quizPage').classList.add('hidden'); document.getElementById('resultPage').classList.add('hidden'); }
 
-/* Helpers for Steps */
-const codeToAffKey = (code)=>({ E:"Sanguine", S:"Choleric", R:"Melancholy", A:"Phlegmatic", U:"Supine" }[code]); // temperament key labels
-const SANG="E", CHOL="S", MEL="R", PHLE="A", SUPI="U";
-
 /* Questionnaire renderer */
 function renderStep(){
   ensureDefaults();
@@ -282,11 +295,16 @@ function renderStep(){
 
   const box = document.getElementById('questionContainer'); box.innerHTML = "";
 
-  /* Step 0: Top/Next picker */
-  if(step===0){ renderTopNextPicker(box); saveState(); return; }
+  /* ===== New Category Picks ===== */
+  if(step===0) return renderCategoryPick(box, "Core Connection Types — choose your Top 2", CORE_SET, CORE_QDEF, 'coreTop2');
+  if(step===1) return renderCategoryPick(box, "Collaborative Connection Types — choose your Top 2", COLLAB_SET, COLLAB_QDEF, 'collabTop2');
+  if(step===2) return renderCategoryPick(box, "Relational Connection Types — choose your Top 2", RELATE_SET, RELATE_QDEF, 'relateTop2');
 
-  /* Affection (Expressed, Wanted-Emotional, Wanted-Daily) */
-  if(step===1) return renderSingleList(box, "When it comes to showing affection in close relationships, I naturally…", [
+  /* ===== Affection (Expressed, Wanted-Emotional, Wanted-Daily) ===== */
+  const codeToAffKey = (code)=>({ E:"Sanguine", S:"Choleric", R:"Melancholy", A:"Phlegmatic", U:"Supine" }[code]);
+  const SANG="E", CHOL="S", MEL="R", PHLE="A", SUPI="U";
+
+  if(step===3) return renderSingleList(box, "When it comes to showing affection in close relationships, I naturally…", [
     [SANG,"…initiate hugs, kisses, and warm words often; I easily express closeness."],
     [CHOL,"…show care through purposeful actions or brief gestures, less through emotional displays."],
     [MEL,"…reserve affection for a few, preferring deep talks or thoughtful acts over frequent touch."],
@@ -294,7 +312,7 @@ function renderStep(){
     [PHLE,"…offer steady, quiet companionship, showing affection in calm, consistent ways."]
   ], val => { const k = codeToAffKey(val); answers.expressedTop2 = k ? [k] : []; saveState(); next(); });
 
-  if(step===2) return renderSingleList(box, "To feel most loved and secure, I need my partner to…", [
+  if(step===4) return renderSingleList(box, "To feel most loved and secure, I need my partner to…", [
     [SANG,"…frequently affirm me with words, touch, and celebratory gestures."],
     [CHOL,"…respect my independence, affirming my efforts more than giving constant affection."],
     [MEL,"…share deep emotional connection and understanding, not constant gestures."],
@@ -302,7 +320,7 @@ function renderStep(){
     [PHLE,"…be present and kind in simple, low-pressure ways that make me feel secure."]
   ], val => { const k = codeToAffKey(val); const arr = answers.desiredTop2 || []; if(k && !arr.includes(k) && arr.length<2) arr.push(k); answers.desiredTop2 = arr; saveState(); next(); });
 
-  if(step===3) return renderSingleList(box, "Day to day, I feel most cared for when my partner…", [
+  if(step===5) return renderSingleList(box, "Day to day, I feel most cared for when my partner…", [
     [SANG,"…keeps closeness fun and frequent with lighthearted affection."],
     [CHOL,"…takes initiative to solve problems or reduce stress for me."],
     [MEL,"…creates space for thoughtful talks and meaningful moments."],
@@ -310,72 +328,72 @@ function renderStep(){
     [PHLE,"…offers steady, dependable support without pressure."]
   ], val => { const k = codeToAffKey(val); const arr = answers.desiredTop2 || []; if(k && !arr.includes(k) && arr.length<2) arr.push(k); answers.desiredTop2 = arr; saveState(); next(); });
 
-  /* Inclusion (Social) */
-  if(step===4) return renderSingleList(box, "In social settings, I usually…", [
-    [SANG,"…start conversations and draw people in, enjoying being at the center."],
-    [CHOL,"…organize or lead the group toward a goal."],
-    [MEL,"…engage selectively, often preferring one-on-one over big groups."],
-    [SUPI,"…help quietly, waiting for others to invite me in."],
-    [PHLE,"…go with the flow, joining calmly without pushing for attention."]
+  /* ===== Inclusion (Social) ===== */
+  if(step===6) return renderSingleList(box, "In social settings, I usually…", [
+    ["E","…start conversations and draw people in, enjoying being at the center."],
+    ["S","…organize or lead the group toward a goal."],
+    ["R","…engage selectively, often preferring one-on-one over big groups."],
+    ["U","…help quietly, waiting for others to invite me in."],
+    ["A","…go with the flow, joining calmly without pushing for attention."]
   ], val => { answers.social["social1"]=val; saveState(); next(); });
 
-  if(step===5) return renderSingleList(box, "I feel most comfortable in groups when…", [
-    [SANG,"…I’m surrounded by people and actively invited to join the fun."],
-    [CHOL,"…there’s a clear purpose or project, not just chatter."],
-    [MEL,"…the group is small, familiar, or low-key."],
-    [SUPI,"…others seek me out and make me feel included."],
-    [PHLE,"…the setting is relaxed and pressure-free."]
+  if(step===7) return renderSingleList(box, "I feel most comfortable in groups when…", [
+    ["E","…I’m surrounded by people and actively invited to join the fun."],
+    ["S","…there’s a clear purpose or project, not just chatter."],
+    ["R","…the group is small, familiar, or low-key."],
+    ["U","…others seek me out and make me feel included."],
+    ["A","…the setting is relaxed and pressure-free."]
   ], val => { answers.social["social2"]=val; saveState(); next(); });
 
-  /* Control (Decision-Making) */
-  if(step===6) return renderSingleList(box, "When decisions need to be made, I usually…", [
-    [CHOL,"…step up confidently and set direction for others."],
-    [SANG,"…help decide with energy and optimism, inviting collaboration."],
-    [MEL,"…prefer to manage my own responsibilities, not others’."],
-    [SUPI,"…defer to others, supporting instead of leading."],
-    [PHLE,"…stay flexible, only stepping in if needed to keep peace."]
+  /* ===== Control (Decision-Making) ===== */
+  if(step===8) return renderSingleList(box, "When decisions need to be made, I usually…", [
+    ["S","…step up confidently and set direction for others."],
+    ["E","…help decide with energy and optimism, inviting collaboration."],
+    ["R","…prefer to manage my own responsibilities, not others’."],
+    ["U","…defer to others, supporting instead of leading."],
+    ["A","…stay flexible, only stepping in if needed to keep peace."]
   ], val => { answers.decision["decision1"]=val; saveState(); next(); });
 
-  if(step===7) return renderSingleList(box, "When others influence decisions that affect me, I prefer…", [
-    [CHOL,"…to have the final say and resist being directed."],
-    [SANG,"…to collaborate and welcome positive input."],
-    [MEL,"…to be left to my own autonomy and self-direction."],
-    [SUPI,"…to feel secure when others take the lead and guide me."],
-    [PHLE,"…gentle guidance that keeps harmony without conflict."]
+  if(step===9) return renderSingleList(box, "When others influence decisions that affect me, I prefer…", [
+    ["S","…to have the final say and resist being directed."],
+    ["E","…to collaborate and welcome positive input."],
+    ["R","…to be left to my own autonomy and self-direction."],
+    ["U","…to feel secure when others take the lead and guide me."],
+    ["A","…gentle guidance that keeps harmony without conflict."]
   ], val => { answers.decision["decision2"]=val; saveState(); next(); });
 
-  /* Respect & Recognition */
-  if(step===8) return renderSingleList(box, "I feel my opinions are respected in our relationship.", [
+  /* ===== Respect & Recognition ===== */
+  if(step===10) return renderSingleList(box, "I feel my opinions are respected in our relationship.", [
     [3,"Strongly Agree"],[2,"Agree"],[1,"Disagree"],[0,"Strongly Disagree"]
   ], val => { answers.rr.rr1 = Number(val); saveState(); next(); });
 
-  if(step===9) return renderSingleList(box, "We are aligned on core values and honor our covenant.", [
+  if(step===11) return renderSingleList(box, "We are aligned on core values and honor our covenant.", [
     [3,"Strongly Agree"],[2,"Agree"],[1,"Disagree"],[0,"Strongly Disagree"]
   ], val => { answers.rr.rr2 = Number(val); saveState(); next(); });
 
-  /* Connection tendencies */
-  if(step===10) return renderSingleList(box, "During conflict, I naturally…", [
+  /* ===== Connection tendencies ===== */
+  if(step===12) return renderSingleList(box, "During conflict, I naturally…", [
     ["SteadyConnector","Look for a steady, low-tension path forward."],
     ["ReassuranceSeeker","Seek quick clarity and closeness right away."],
     ["IndependentConnector","Take a brief step back to collect my thoughts."],
     ["GuardedConnector","Share less until I feel fully safe to open up."]
   ], val => { answers.bond["bond1"]=val; saveState(); next(); });
 
-  if(step===11) return renderSingleList(box, "When I feel unappreciated, I tend to…", [
+  if(step===13) return renderSingleList(box, "When I feel unappreciated, I tend to…", [
     ["SteadyConnector","Keep things even and move forward steadily."],
     ["ReassuranceSeeker","Ask for clear acknowledgment or reassurance."],
     ["IndependentConnector","Pull back to reset and think it through."],
     ["GuardedConnector","Go quiet and wait before sharing more."]
   ], val => { answers.bond["bond2"]=val; saveState(); next(); });
 
-  if(step===12) return renderSingleList(box, "After a disagreement, I prefer to…", [
+  if(step===14) return renderSingleList(box, "After a disagreement, I prefer to…", [
     ["SteadyConnector","Reconnect calmly with a simple next step together."],
     ["ReassuranceSeeker","Repair together soon and name what’s okay between us."],
     ["IndependentConnector","Pause briefly, then return at a set time to resolve."],
     ["GuardedConnector","Start small—share a little, then build from there."]
   ], val => { answers.bond["bond3"]=val; saveState(); next(); });
 
-  if(step===13) return renderSingleList(box, "When I’m overwhelmed, I prefer to…", [
+  if(step===15) return renderSingleList(box, "When I’m overwhelmed, I prefer to…", [
     ["SteadyConnector","Keep routines steady and talk when emotions settle."],
     ["ReassuranceSeeker","Get reassurance and closeness before moving on."],
     ["IndependentConnector","Take protected space, then reconnect as planned."],
@@ -384,58 +402,31 @@ function renderStep(){
 }
 function next(){ step++; renderStep(); }
 
-/* Step 0: Top/Next picker */
-function renderTopNextPicker(root){
+/* Category pick helper (2 of 4) */
+function renderCategoryPick(root, title, keys, defs, field){
   ensureDefaults();
-  const stage = (answers.top4.length < 4) ? 'top4' : (answers.next4.length < 4) ? 'next4' : 'done';
-  if(stage === 'done'){
-    const picked = [...answers.top4, ...answers.next4];
-    const remaining = TYPES.filter(k => !picked.includes(k));
-    answers.rank = picked.length ? [...picked, ...remaining] : [...TYPES];
-    saveState(); next(); return;
-  }
-  const isTop = (stage==='top4');
-  const pickedSet = new Set(isTop ? answers.top4 : answers.next4);
-  const alreadyPicked = new Set([...answers.top4, ...answers.next4]);
-  const pool = TYPES.filter(k => !alreadyPicked.has(k) || pickedSet.has(k));
-
-  const heading = isTop ? "Choose 4 Connection Types" : "You're halfway there!";
-  const guidanceTop = `<div class="intro-text" style="text-align:center;">
-      <p>Think about a perfect day with your partner. What kinds of connection feel most meaningful to you?</p>
-      <p>Choose the 4 connection types that matter most to you. Tap a card to select it.</p>
-    </div>`;
-  const guidanceNext = `<div class="intro-text" style="text-align:center;">
-      <p>From the remaining options, choose the 4 connection types that come next in importance to you.</p>
-    </div>`;
-
+  const picked = new Set(answers[field] || []);
   root.innerHTML = `
-    <h3 style="text-align:center;">${heading}</h3>
-    <p class="rank-help" style="text-align:center; margin-top:6px; color:#4a607a;"><em>Selected: ${pickedSet.size} / 4</em></p>
-    ${isTop ? guidanceTop : guidanceNext}
+    <h3 style="text-align:center;">${title}</h3>
+    <p class="rank-help" style="text-align:center; margin-top:6px; color:#4a607a;"><em>Tap up to 2. Selected: ${picked.size} / 2</em></p>
     <div class="mini-grid" id="miniGrid"></div>
   `;
   const grid = root.querySelector('#miniGrid');
-  pool.forEach(key=>{
+  keys.forEach(k=>{
     const card = document.createElement('div');
-    card.className = 'mini-card' + (pickedSet.has(key) ? ' selected' : '');
-    card.style.borderLeft = `6px solid ${typeColors[key]}`;
+    card.className = 'mini-card' + (picked.has(k) ? ' selected' : '');
+    card.style.borderLeft = `6px solid ${typeColors[k]}`;
     card.style.paddingLeft = '10px';
-    const label = INTIMACY[key].label.replace(/Intimacy/gi, 'Connection');
-    const desc  = INTIMACY[key].desc.replace(/intimacy/gi, 'connection');
+    const label = INTIMACY[k].label.replace(/Intimacy/gi, 'Connection');
+    const desc  = defs[k] || INTIMACY[k].desc.replace(/intimacy/gi,'connection');
     card.innerHTML = `<div class="mini-title">${label}</div><p class="mini-desc">${desc}</p>`;
     card.onclick = ()=>{
-      if(pickedSet.has(key)) pickedSet.delete(key); else if(pickedSet.size<4) pickedSet.add(key);
-      if(isTop) answers.top4=[...pickedSet]; else answers.next4=[...pickedSet];
-      saveState(); (pickedSet.size===4) ? setTimeout(()=>renderTopNextPicker(root),120) : renderTopNextPicker(root);
+      if(picked.has(k)) picked.delete(k); else if(picked.size<2) picked.add(k);
+      answers[field] = [...picked]; saveState();
+      if(picked.size===2) setTimeout(()=>next(), 120); else renderCategoryPick(root, title, keys, defs, field);
     };
     grid.appendChild(card);
   });
-
-  if (pool.length === 0) {
-    const note = document.createElement('p'); note.className = 'muted'; note.textContent = 'All picked — advancing…';
-    root.appendChild(note);
-    setTimeout(()=> { answers.rank = [...TYPES]; saveState(); next(); }, 200);
-  }
 }
 
 /* Single-choice helper */
@@ -450,9 +441,7 @@ function renderSingleList(root, title, options, onPick){
   });
 }
 
-/* ===== Teaching data ===== */
-
-/* Compassion & Care (APS) */
+/* ===== Teaching data (Sections 2–4) ===== */
 const APS_CARE = {
   E: { heading:"Sanguine",
     express:`Expressing Love: You're a natural at bringing joy and playfulness into a relationship. Your affection is lighthearted, and you show you care by creating fun moments and lifting the mood. Your actions say, "I'm with you, and life is simply better because we're together."`,
@@ -486,7 +475,6 @@ const APS_CARE = {
   }
 };
 
-/* Social Preferences — full temperament copy */
 const SOCIAL_PACK = {
   E: { title:"Sanguine",
     energy:`Your Social Energy: Your energy is contagious! You're the person who brings enthusiasm and life to any social setting. People are naturally drawn to your optimistic and dynamic presence.`,
@@ -495,7 +483,7 @@ const SOCIAL_PACK = {
     try:`Try This: Make a conscious effort to balance your lively, group-oriented activities with one-on-one check-ins. Try scheduling a coffee chat or a quiet walk with a friend to really listen to their thoughts and feelings.`
   },
   S: { title:"Choleric",
-    energy:`Your Social Energy: You're a natural leader who provides structure and direction. Your presence helps groups stay on track and move toward a goal effectively.`,
+    energy:`Your Social Energy: You are a natural leader who provides structure and direction. Your presence helps groups stay on track and move toward a goal effectively.`,
     looks:`What it looks like: People look to you for guidance and clarity. You provide a clear path forward, set concrete goals, and are great at protecting the progress a group has already made.`,
     cautions:`Cautions: Your decisiveness, while valuable, can sometimes come across as controlling if you don't involve others in the process. Remember, a great leader doesn't just give orders; they build consensus.`,
     try:`Try This: Before making a decision, start by inviting input from others. Use phrases like, "I have an idea for how we can move forward, but I'd love to hear your thoughts first." Also, be sure to name where you're flexible to show you're open to collaboration.`
@@ -510,7 +498,7 @@ const SOCIAL_PACK = {
     energy:`Your Social Energy: You bring a sense of calm and stability to social settings. Your presence is reassuring and helps create a low-key, peaceful atmosphere.`,
     looks:`What it looks like: You are the peacemaker in the group. You naturally reduce friction and keep things running smoothly, making others feel comfortable and relaxed in your presence.`,
     cautions:`Cautions: Your desire to avoid tension can sometimes lead you to postpone a conversation that's needed for clarity or to resolve an issue. While you prioritize peace, sometimes a little productive tension is necessary for growth.`,
-    try:`Try This: Challenge yourself to name one concrete next step in a difficult conversation, even if you do it gently. For example, "I hear you. Could we circle back to this tomorrow to talk about a solution?"`
+    try:`Try This: Challenge yourself to name one firm value or non-negotiable area you have, and then clearly name an area where you are willing to be flexible. This allows you to stand your ground while still showing you are open to compromise.`
   },
   U: { title:"Supine",
     energy:`Your Social Energy: You are a natural caregiver who makes sure others feel included, safe, and valued. Your social energy is all about serving and building trust.`,
@@ -520,7 +508,6 @@ const SOCIAL_PACK = {
   }
 };
 
-/* Power & Control — full temperament copy */
 const POWER_PACK = {
   E: { title:"Sanguine",
     style:`Your Leadership Style: You lead with enthusiasm! You're a natural motivator who makes decisions with a sense of fun and excitement, which keeps things moving forward with great momentum.`,
@@ -554,7 +541,6 @@ const POWER_PACK = {
   }
 };
 
-/* Respect & Recognition — tier copy (unchanged content per spec) */
 const RR_PACK = {
   Strong:{title:"Strong (Score 5–6)",
     result:`Your Result: You have a solid foundation of mutual respect. You generally feel valued, affirmed, and genuinely appreciated, and you have a natural tendency to give that same affirmation to others in return.`,
@@ -576,7 +562,6 @@ const RR_PACK = {
   }
 };
 
-/* Connection Patterns — teaching */
 const PATTERN_PACK = {
   SteadyConnector:{title:"Steady Connector",
     result:`Your Result: You have a steady, calm, and harmony-focused connection style. You naturally de-escalate tension and create a safe space for conversation to happen. Your presence is reassuring.`,
@@ -604,49 +589,25 @@ const PATTERN_PACK = {
   }
 };
 
-/* Communication styles — definitions + strategies per spec */
-const COMM_STYLE_DEF = {
-  "Passive": {
-    copy: `According to your assessment, you tend to use a passive communication style. This means you often avoid conflict and may find yourself going along with others to keep the peace. You might withhold your opinions and feelings to prevent disagreement, which can sometimes lead to resentment or emotional distance building up over time.`,
-    move: `For the Passive Communicator: Start by taking small steps to voice your opinions and needs. Instead of saying, "Whatever you want to do is fine," try, "I'd actually prefer to go to the movies tonight, how does that sound to you?"`
-  },
-  "Aggressive": {
-    copy: `Your results indicate a strong tendency toward an aggressive communication style. This approach is direct and forceful, and you may find yourself dominating conversations or interrupting others to push your own perspective. This style is often linked to a desire for control and can leave others feeling unheard or overpowered. The goal is to learn to express your needs powerfully while also creating space for others to share theirs.`,
-    move: `For the Aggressive Communicator: Practice using "I" statements instead of "you" statements. For example, change "You always interrupt me" to "I feel unheard when I'm interrupted." This shifts the focus from blame to personal experience.`
-  },
-  "Passive-Aggressive": {
-    copy: `Based on your assessment, you lean toward a passive-aggressive communication style. This can show up as sarcasm, giving the silent treatment, or making subtle jabs instead of being direct about what you need. This style can be especially damaging because it combines hostility with avoidance, leaving issues unresolved and creating frustration for everyone involved. A great next step is to practice being more direct and open in your conversations.`,
-    move: `For the Passive-Aggressive Communicator: Be direct. When you feel frustrated, instead of making a sarcastic comment, try saying, "I'm feeling frustrated right now because of X." This allows for an honest conversation rather than a hidden conflict.`
-  },
-  "Avoidant / Withdrawn": {
-    copy: `Your results suggest you often use an avoidant/withdrawn communication style. When things get difficult, you might find yourself shutting down, disengaging, or "stonewalling" during conversations. This style is common when people feel overwhelmed or are trying to avoid conflict entirely. It can prevent issues from being resolved and create emotional distance. Learning to stay present in difficult conversations is a great place to start.`,
-    move: `For the Avoidant/Withdrawn Communicator: Learn to manage your overwhelm by taking a short break. Say, "I'm feeling overwhelmed right now. Can we talk about this in 15 minutes?" This is a much healthier alternative to stonewalling, as it communicates a clear intention to return to the conversation.`
-  },
-  "Assertive": {
-    copy: `Congratulations! Your assessment shows you have a strong assertive communication style. This is considered the healthiest approach, as you are able to clearly and respectfully express your needs while also genuinely respecting the other person's perspective. This balanced style builds trust and intimacy because it blends honesty with empathy. Keep up the great work!`,
-    move: `For the Assertive Communication: Balance your style with the other healthy style, Collaborative / Empathetic Communication. This is a strengths-based approach where you actively listen, validate others' feelings, and work together to solve problems. It's very similar to assertive communication but has an even stronger focus on cooperation and understanding. This style helps build strong, intimate relationships.`
-  },
-  "Collaborative / Empathetic": {
-    copy: `Your assessment highlights a natural inclination toward a collaborative/empathetic communication style. This is a strengths-based approach where you actively listen, validate others' feelings, and work together to solve problems. It's very similar to assertive communication but has an even stronger focus on cooperation and understanding. This style helps build strong, intimate relationships.`,
-    move: `For the Collaborative / Empathetic Communication: Balance with the other healthy type “Assertive Communication.” This is considered the healthiest approach, as you are able to clearly and respectfully express your needs while also genuinely respecting the other person's perspective. This balanced style builds trust and intimacy because it blends honesty with empathy. Keep up the great work!`
-  }
-};
-
 /* ===== Accent helpers ===== */
 function accentByTemp(temp){
   const map = { E:{color:typeColors.Emotional,bg:typeOpac.Emotional}, S:{color:typeColors.Commitment,bg:typeOpac.Commitment}, R:{color:typeColors.Intellectual,bg:typeOpac.Intellectual}, A:{color:typeColors.Affable,bg:typeOpac.Affable}, U:{color:typeColors.Partnership,bg:typeOpac.Partnership} };
   return map[temp] || { color:"#4D9DE0", bg:"rgba(77,157,224,.08)" };
 }
+function emphasizeLabelPrefix(text){
+  if(!text || typeof text !== 'string') return text;
+  const i = text.indexOf(':');
+  if (i > 0) {
+    const label = text.slice(0, i);
+    const rest  = text.slice(i + 1);
+    return `<strong><em>${label}</em>:</strong>${rest}`;
+  }
+  return text;
+}
 
 /* ===== finalize(): compute profile & render ===== */
 function finalize(){
   ensureDefaults();
-
-  // Ranking buckets
-  const top4 = Array.from(new Set(answers.top4 || [])).slice(0,4);
-  const next4 = Array.from(new Set((answers.next4 || []).filter(k=>!top4.includes(k)))).slice(0,4);
-  const picked = [...top4, ...next4];
-  const untapped = TYPES.filter(k => !picked.includes(k));
 
   // Social & Decision top codes (prefer first answer; fall back to second)
   const socialTop = answers.social?.social1 || answers.social?.social2 || null;
@@ -669,9 +630,10 @@ function finalize(){
 
   const p = {
     name: yourName || "You",
-    coreTypes: top4.length ? top4 : TYPES.slice(0,4),
-    growthTypes: next4.length ? next4 : TYPES.slice(4,8),
-    untappedTypes: untapped.length ? untapped : TYPES.slice(8,12),
+    // New picks to show under each category
+    corePicks:   [...(answers.coreTop2||[])],
+    collabPicks: [...(answers.collabTop2||[])],
+    relatePicks: [...(answers.relateTop2||[])],
 
     expressedTop2: answers.expressedTop2 || [],   // Sanguine/Choleric/Melancholy/Phlegmatic/Supine (labels)
     desiredTop2: answers.desiredTop2 || [],
@@ -684,51 +646,22 @@ function finalize(){
   renderResults(p);
 }
 
-/* ===== Utility blocks ===== */
-function typesColumn(name, types){
-  const safe = Array.isArray(types) && types.length ? types : TYPES.slice(0,4);
-  return `
-    <div class="partner-card"><div class="partner-inner">
-      <div class="partner-header">${name || "Results"}</div>
-      ${safe.map(k=>`
-        <div class="result-block" style="border-left-color:${typeColors[k]}; background:${typeOpac[k]};">
-          <strong>${INTIMACY[k].label}</strong> — ${INTIMACY[k].desc}
-        </div>
-      `).join("")}
-    </div></div>
-  `;
-}
-function promptsBlock(items){
-  return `
-    <div class="prompt-block">
-      <strong>Discussion Prompts</strong>
-      <ul class="results-list" style="margin-top:6px;">
-        ${items.map(li=>`<li>${li}</li>`).join("")}
-      </ul>
-    </div>
-  `;
-}
-
-/* ===== Section render helpers per spec ===== */
-
-/* Compassion & Care column (uses expressed/desired temperament labels) */
-/* PATCH: remove temperament names from section headers (v13m-spec-p1) */
-
-/* Compassion & Care column (no temperament label shown) */
+/* ===== Section 2–4 helpers reused from previous builds ===== */
 function compassionCareColumn(p){
   const name = p.name || "You";
   const codeMap = { Sanguine:"E", Choleric:"S", Melancholy:"R", Phlegmatic:"A", Supine:"U" };
-  const mk = (tempLabel, label)=>{
+  const mk = (tempLabel, which) => {
     const t = codeMap[tempLabel];
     const pack = APS_CARE[t];
     if(!pack) return "";
     const acc = accentByTemp(t);
     return `
       <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-        <strong>${label}</strong>
-        <p style="margin:.4em 0 0;">${label==="Expressing Love" ? pack.express : pack.feel}</p>
-        <p style="margin:.4em 0 0;">${pack.cautions}</p>
-        <p style="margin:.4em 0 0;"><em>${pack.try}</em></p>
+        <strong>${which}</strong>
+        <p style="margin:.4em 0 0;">${emphasizeLabelPrefix(pack.express)}</p>
+        <p style="margin:.4em 0 0;">${emphasizeLabelPrefix(pack.feel)}</p>
+        <p style="margin:.4em 0 0;">${emphasizeLabelPrefix(pack.cautions)}</p>
+        <p style="margin:.4em 0 0;"><em>${emphasizeLabelPrefix(pack.try)}</em></p>
       </div>`;
   };
   const expHtml = (p.expressedTop2||[]).map(k=>mk(k,"Expressing Love")).join("") ||
@@ -737,56 +670,48 @@ function compassionCareColumn(p){
     `<div class="result-block" style="border-left-color:#4D9DE0;background:rgba(77,157,224,.08);">Make selections earlier to see personalized details.</div>`;
   return `<div class="partner-card"><div class="partner-inner"><div class="partner-header">${name}</div>${expHtml}${desHtml}</div></div>`;
 }
-
-/* Social Preferences card (no temperament label shown) */
 function socialPreferencesCard(p){
   const code = p.socialTop || "E";
   const pack = SOCIAL_PACK[code] || SOCIAL_PACK.E;
   const acc = accentByTemp(code);
   return `
-    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-      <p><strong>Your Social Energy</strong></p>
-      <p>${pack.energy}</p>
-      <p>${pack.looks}</p>
-      <p>${pack.cautions}</p>
-      <p><em>${pack.try}</em></p>
-    </div>
-  `;
+   <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+     <p><strong>Your Social Energy</strong></p>
+     <p>${emphasizeLabelPrefix(pack.energy)}</p>
+     <p>${emphasizeLabelPrefix(pack.looks)}</p>
+     <p>${emphasizeLabelPrefix(pack.cautions)}</p>
+     <p><em>${emphasizeLabelPrefix(pack.try)}</em></p>
+   </div>
+ `;
 }
-
-/* Power & Control card (no temperament label shown) */
 function powerControlCard(p){
   const code = p.decisionTop || "S";
   const pack = POWER_PACK[code] || POWER_PACK.S;
   const acc = accentByTemp(code);
   return `
-    <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-      <p><strong>Your Leadership Style</strong></p>
-      <p>${pack.style}</p>
-      <p>${pack.looks}</p>
-      <p>${pack.cautions}</p>
-      <p><em>${pack.try}</em></p>
-    </div>
-  `;
+   <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+     <p><strong>Your Leadership Style</strong></p>
+     <p>${emphasizeLabelPrefix(pack.style)}</p>
+     <p>${emphasizeLabelPrefix(pack.looks)}</p>
+     <p>${emphasizeLabelPrefix(pack.cautions)}</p>
+     <p><em>${emphasizeLabelPrefix(pack.try)}</em></p>
+   </div>
+ `;
 }
-
-/* Respect & Recognition tier card */
 function respectRecognitionCard(p){
   const pack = RR_PACK[p.rrLabel] || RR_PACK.Moderate;
   const color = (p.rrLabel==="Strong")?typeColors.Partnership:(p.rrLabel==="Moderate")?typeColors.Commitment:typeColors.Emotional;
   const bg    = (p.rrLabel==="Strong")?typeOpac.Partnership:(p.rrLabel==="Moderate")?typeOpac.Commitment:typeOpac.Emotional;
   return `
-    <div class="result-block" style="border-left-color:${color}; background:${bg};">
-      <strong>${pack.title}</strong> <span>(${Number.isFinite(p.rrScore)?p.rrScore:0}/6)</span>
-      <p style="margin:.4em 0 0;">${pack.result}</p>
-      <p style="margin:.4em 0 0;">${pack.looks}</p>
-      <p style="margin:.4em 0 0;">${pack.cautions}</p>
-      <p style="margin:.4em 0 0;"><em>${pack.try}</em></p>
-    </div>
-  `;
+   <div class="result-block" style="border-left-color:${color}; background:${bg};">
+     <strong>${pack.title}</strong> <span>(${Number.isFinite(p.rrScore)?p.rrScore:0}/6)</span>
+     <p style="margin:.4em 0 0;">${emphasizeLabelPrefix(pack.result)}</p>
+     <p style="margin:.4em 0 0;">${emphasizeLabelPrefix(pack.looks)}</p>
+     <p style="margin:.4em 0 0;">${emphasizeLabelPrefix(pack.cautions)}</p>
+     <p style="margin:.4em 0 0;"><em>${emphasizeLabelPrefix(pack.try)}</em></p>
+   </div>
+ `;
 }
-
-/* Connection Pattern card */
 function connectionPatternCard(p){
   const key = p.bondingKey || "SteadyConnector";
   const pack = PATTERN_PACK[key] || PATTERN_PACK.SteadyConnector;
@@ -798,38 +723,17 @@ function connectionPatternCard(p){
   }[key] || { color:"#4D9DE0", bg:"rgba(77,157,224,.08)" };
   const name = p.name || "You";
   return `
-    <div class="partner-card"><div class="partner-inner">
-      <div class="partner-header">${name}</div>
-      <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
-        <p><strong>${pack.title}</strong></p>
-        <p>${pack.result}</p>
-        <p>${pack.looks}</p>
-        <p>${pack.cautions}</p>
-        <p><em>${pack.try}</em></p>
-      </div>
-    </div></div>
-  `;
-}
-
-/* Communication style inference (kept logic; maps to definitions above) */
-function inferCommunicationStyle(p){
-  const bond = p.bondingKey || "SteadyConnector";
-  const rr   = (typeof p.rrScore === 'number') ? p.rrScore : 0;
-  const dec  = p.decisionTop || null;
-  const soc  = p.socialTop   || null;
-
-  if (bond === "IndependentConnector") return "Avoidant / Withdrawn";
-  if (bond === "GuardedConnector")     return "Passive-Aggressive";
-  if (bond === "ReassuranceSeeker") {
-    if (dec === 'S' || rr <= 2) return "Aggressive";
-    return "Assertive";
-  }
-  if (bond === "SteadyConnector") {
-    if (rr >= 5 && dec !== 'S') return "Collaborative / Empathetic";
-    if (dec === 'A' || soc === 'A' || soc === 'U') return "Passive";
-    return "Collaborative / Empathetic";
-  }
-  return "Assertive";
+   <div class="partner-card"><div class="partner-inner">
+     <div class="partner-header">${name}</div>
+     <div class="result-block" style="border-left-color:${acc.color}; background:${acc.bg};">
+       <p><strong>${pack.title}</strong></p>
+       <p>${emphasizeLabelPrefix(pack.result)}</p>
+       <p>${emphasizeLabelPrefix(pack.looks)}</p>
+       <p>${emphasizeLabelPrefix(pack.cautions)}</p>
+       <p><em>${emphasizeLabelPrefix(pack.try)}</em></p>
+     </div>
+   </div></div>
+ `;
 }
 
 /* ===== Results renderer (safe & chunked) ===== */
@@ -843,47 +747,102 @@ function renderResults(p){
   const addDivider=()=>{ const d=document.createElement('div'); d.className='section-divider'; container.appendChild(d); };
   const addSubDivider=()=>{ const d=document.createElement('div'); d.className='subsection-divider'; container.appendChild(d); };
   const addHTML=(html)=>{ const tmp=document.createElement('div'); tmp.innerHTML=html; while(tmp.firstChild) container.appendChild(tmp.firstChild); };
-  const safe=(label,fn)=>{ try{ fn(); }catch(e){ console.error("Results render error @",label,e); addHTML(`<p class="muted">(Note) A section failed to load. Continuing…</p>`);} };
+  const safe=(label,fn)=>{ try{ fn(); }catch(e){ console.error("Results render error @",label,e); addHTML(`<p class=\"muted\">(Note) A section failed to load. Continuing…</p>`);} };
 
-  /* Section 1 */
+  /* ======================== Section 1 ======================== */
   safe("s1-head", ()=>{ addDivider(); addHTML(`
     <h3 class="section-title">Section 1: Your Intimacy Preferences</h3>
-    <div class="verse">“Therefore a man shall leave his father and his mother and hold fast to his wife, and they shall become one flesh.” — Genesis 2:24</div>
     <div class="intro-text">
-      This section is all about understanding intimacy—the profound experience of being truly known, deeply connected, and fully cherished by your spouse. It reveals your unique connection profile, showing how you naturally express love and how you feel most loved in return.
-      <p>Our model organizes intimacy into 12 distinct types that span all dimensions of human experience, wisely combining the essential aspects of 'being together' (like emotional bonding and spiritual connection) and 'doing together' (like shared effort and practical unity). This approach reflects how love truly thrives in real-life marriage. These types represent crucial points of connection (and sometimes conflict) in your relationship, and understanding your preferences gives you and your spouse a shared language to express your needs and navigate your connection. Think of your results as a vibrant guide to your relationship's most rewarding pathways.</p>
+      Becoming "one flesh" is a journey far beyond the physical; it's the profound experience of being truly known, deeply connected, and fully cherished by your spouse. This model helps you understand your unique connection profile, revealing how you naturally express love and how you feel most loved in return.
+      <p>We've organized this journey into 12 distinct types of intimacy that cover all aspects of your life together. This model combines the essential parts of 'being together'—like your emotional and spiritual bonds—with 'doing together'—like shared effort and practical teamwork. This reflects how love truly thrives in the beautiful, everyday reality of marriage.</p>
+      <p>Think of these types as the most rewarding pathways and sometimes the trickiest intersections in your relationship. Understanding your preferences gives you and your spouse a shared language to express your needs, navigate your connection, and intentionally build a more fulfilling union. Your results are a vibrant guide to deepening your one-of-a-kind bond.</p>
     </div>`); });
 
+  /* Foundational Intimacies (Core) */
   safe("s1-core", ()=>{ addSubDivider(); addHTML(`
-    <h4 class="subsection-title">Your Core Connection Strengths</h4>
-    <p class="intro-text">These are your most fulfilling and effortless pathways to deeper closeness.</p>`); addHTML(typesColumn(p.name,p.coreTypes)); addHTML(promptsBlock([
-      "<em>Explore:</em> Why does each strength matter to you, and when do you feel most connected through it?",
-      "<em>Be creative:</em> Pick one way to use a strength intentionally this week.",
-      "<em>Share:</em> Name a recent moment you felt especially connected through one of these types."
-    ])); });
+    <h4 class="subsection-title">The Foundational Intimacies</h4>
+    <div class="subtitle-blue">Your Core Connections</div>
+    <p class="intro-text">This is the most important layer—the foundation of your relationship. You can't build a stable house without solid ground, and you can't build a lasting relationship without these core elements. They are the non-negotiable pillars that give your relationship purpose, trust, and resilience.</p>
+  `);
+  if ((p.corePicks||[]).length){ addHTML(`<p class="intro-text" style="text-align:center; font-style:italic; color:#4D9DE0;">Your picks: <strong>${p.corePicks.map(k=>INTIMACY[k].label.replace(/Intimacy/gi,'Connection')).join('</strong>, <strong>')}</strong></p>`); }
+  addHTML(`
+    <div class="result-block" style="border-left-color:${typeColors.Spiritual}; background:${typeOpac.Spiritual};">
+      <strong>Spiritual Intimacy</strong>
+      <p>This is your shared compass. It's a deep sense of purpose and connection to God’s design that anchors your relationship, shaping how you love each other. Ultimately, this foundational bond guides your journey together through life's ups and downs.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Commitment}; background:${typeOpac.Commitment};">
+      <strong>Commitment Intimacy</strong>
+      <p>Think of this as the main support beam. It's the unwavering dedication to your partner and the relationship, providing the security you need to face challenges together.<br/>Commitment intimacy is the security and dedication that acts as the core of a relationship, providing the stability needed to weather life’s storms. This dedicated bond is what allows a couple to face challenges and deepen their connection over time.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Stability}; background:${typeOpac.Stability};">
+      <strong>Stability Intimacy</strong>
+      <p>This is about building a practical and secure future as a team. It’s the trust you forge by honestly managing life's resources, like time and money, and aligning your values to work toward a common goal. This crucial collaboration ensures your partnership is built on a solid, reliable foundation.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};">
+      <strong>Emotional Intimacy</strong>
+      <p>This is the absolute heart of your connection. It’s about feeling safe enough to be truly vulnerable, sharing your deepest feelings and fears without judgment. This crucial bond is the gateway that allows all other forms of closeness to flourish.</p>
+    </div>
+  `); });
 
-  safe("s1-growth-untapped", ()=>{ addSubDivider(); addHTML(`
-    <h4 class="subsection-title">Your Areas for Growth</h4>
-    <p class="intro-text">These are opportunities for intentional focus. With a bit of practice and presence, you can deepen connection here.</p>`); addHTML(typesColumn(p.name,p.growthTypes)); addHTML(promptsBlock([
-      "<em>One small step:</em> Choose a 10-minute practice for one growth area.",
-      "<em>Support plan:</em> What would help you show up here more consistently?"
-    ]));
-    addSubDivider(); addHTML(`
-    <h4 class="subsection-title">Your Untapped Opportunities</h4>
-    <p class="intro-text">These aren’t weaknesses—think of them as exciting, untapped gifts to discover. Exploring them can add surprising depth and joy.</p>`); addHTML(typesColumn(p.name,p.untappedTypes)); addHTML(promptsBlock([
-      "<em>Pick one:</em> Which untapped type feels most intriguing right now?",
-      "<em>Try it:</em> Design a tiny experiment you can do this week.",
-      "<em>Reflect:</em> What did you enjoy or learn?"
-    ])); });
+  /* Partnership Intimacies (Collaborative) */
+  safe("s1-collab", ()=>{ addSubDivider(); addHTML(`
+    <h4 class="subsection-title">The Partnership Intimacies</h4>
+    <div class="subtitle-blue">Your Collaborative Connections</div>
+    <p class="intro-text">Once the foundation is set, you start building the structure of your house—this is the partnership layer. These are the active, hands-on ways you work together to build a shared life. They're about functioning as a cohesive team to tackle life's projects and challenges.</p>
+  `);
+  if ((p.collabPicks||[]).length){ addHTML(`<p class="intro-text" style="text-align:center; font-style:italic; color:#4D9DE0;">Your picks: <strong>${p.collabPicks.map(k=>INTIMACY[k].label.replace(/Intimacy/gi,'Connection')).join('</strong>, <strong>')}</strong></p>`); }
+  addHTML(`
+    <div class="result-block" style="border-left-color:${typeColors.Partnership}; background:${typeOpac.Partnership};">
+      <strong>Partnership Intimacy</strong>
+      <p>This is the feeling of being a unified team. It’s the collaborative connection you build by tackling daily chores and big decisions together, side-by-side. This shared effort forges a powerful bond as you function as a single unit, tackling life’s challenges together.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Creative}; background:${typeOpac.Creative};">
+      <strong>Creative Intimacy</strong>
+      <p>This is the shared joy of building and dreaming. It’s about bringing new ideas to life as a duo, whether it’s a shared project or a vision for your future. This bond is strengthened through the collaborative process of seeing your shared vision become a reality.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Conflict}; background:${typeOpac.Conflict};">
+      <strong>Conflict Intimacy</strong>
+      <p>This might sound strange, but it’s your secret weapon. It’s the ability to fight fair, navigate disagreements with mutual respect, and actually grow closer through the process of resolving issues. It shows that your connection is strong enough to handle differences without breaking.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Intellectual}; background:${typeOpac.Intellectual};">
+      <strong>Intellectual Intimacy</strong>
+      <p>This is the meeting of your minds. It’s that mental spark from sharing ideas, having deep conversations, and exploring new perspectives with mutual respect for each other’s thoughts. This powerful bond is forged by the exchange of ideas and a curiosity about each other’s inner worlds.</p>
+    </div>
+  `); });
 
-  /* Section 2 — Relational Dynamics */
+  /* Connection Intimacies (Relational) */
+  safe("s1-relate", ()=>{ addSubDivider(); addHTML(`
+    <h4 class="subsection-title">The Connection Intimacies</h4>
+    <div class="subtitle-blue">Your Relational Connections</div>
+    <p class="intro-text">With the house built, it's time to make it a home. This is the connection layer, which brings vitality and joy to your day-to-day life. These are the daily interactions and expressions of affection that keep your relationship vibrant and alive.</p>
+  `);
+  if ((p.relatePicks||[]).length){ addHTML(`<p class="intro-text" style="text-align:center; font-style:italic; color:#4D9DE0;">Your picks: <strong>${p.relatePicks.map(k=>INTIMACY[k].label.replace(/Intimacy/gi,'Connection')).join('</strong>, <strong>')}</strong></p>`); }
+  addHTML(`
+    <div class="result-block" style="border-left-color:${typeColors.Physical}; background:${typeOpac.Physical};">
+      <strong>Physical Intimacy</strong>
+      <p>This is the warmth of non-sexual touch that provides a deep sense of security. It’s the comfort of holding hands, cuddling, or a hug that affirms your bond through simple gestures and presence. This kind of closeness creates a sense of safety and a feeling of being fully cherished.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Sexual}; background:${typeOpac.Sexual};">
+      <strong>Sexual Intimacy</strong>
+      <p>This is a passionate and exclusive expression of your committed bond. It’s a unique and powerful way to honor your connection through shared vulnerability and pleasure. This sacred physical union expresses a deep level of intimacy that only you two share.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Affable}; background:${typeOpac.Affable};">
+      <strong>Affable Intimacy</strong>
+      <p>This is the simple, peaceful comfort of your daily rhythm. It’s the ease of being agreeable and genuinely enjoying each other's company in your everyday interactions. This kind of closeness creates a peaceful and enjoyable environment, making your relationship feel like a safe haven.</p>
+    </div>
+    <div class="result-block" style="border-left-color:${typeColors.Recreational}; background:${typeOpac.Recreational};">
+      <strong>Recreational Intimacy</strong>
+      <p>This is all about the fun stuff! It’s the shared laughter and joy from hobbies and adventures that brings vitality and fun to your relationship. This kind of intimacy creates cherished memories that strengthen your bond through shared experiences.</p>
+    </div>
+  `); });
+
+  /* ======================== Section 2 ======================== */
   safe("s2-head", ()=>{ addDivider(); addHTML(`
     <h3 class="section-title">Section 2: Relational Dynamics</h3>
     <div class="intro-text">
       Your relationship isn't just a connection of two people; it's a unique dance of two beautiful, distinct individuals! This section is designed to help you understand the everyday rhythms that shape your connection. We'll explore how you naturally care for each other, how you engage socially, how you share influence and make decisions, and how you honor one another. Our hope is that these insights will not only bring clarity but also provide a powerful guide for your discussions, helping you protect your closeness and deepen your bond in every interaction.
     </div>`); });
 
-  // Compassion & Care
   safe("s2-compassion", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Compassion & Care</h4>`);
@@ -893,7 +852,6 @@ function renderResults(p){
     addHTML(compassionCareColumn(p));
   });
 
-  // Social Preferences
   safe("s2-social", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Social Preferences</h4>`);
@@ -903,7 +861,6 @@ function renderResults(p){
     addHTML(socialPreferencesCard(p));
   });
 
-  // Power & Control
   safe("s2-power", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Power & Control</h4>`);
@@ -913,7 +870,6 @@ function renderResults(p){
     addHTML(powerControlCard(p));
   });
 
-  // Respect & Recognition
   safe("s2-rr", ()=>{ 
     addSubDivider(); 
     addHTML(`<h4 class="subsection-title">Respect & Recognition</h4>`);
@@ -923,7 +879,7 @@ function renderResults(p){
     addHTML(respectRecognitionCard(p));
   });
 
-  /* Section 3 — Connection Patterns */
+  /* ======================== Section 3 ======================== */
   safe("s3-connpatterns", ()=>{ 
     addDivider(); 
     addHTML(`<h3 class="section-title">Section 3: Connection Patterns</h3>`);
@@ -933,14 +889,53 @@ function renderResults(p){
     addHTML(connectionPatternCard(p));
   });
 
-  /* Section 4 — Communication Style */
+  /* ======================== Section 4 ======================== */
   safe("s4-commstyle", ()=>{ 
     addDivider(); 
     addHTML(`<h3 class="section-title">Section 4: Communication Style</h3>`);
     addHTML(`<div class="verse">“My dear brothers and sisters, take note of this: Everyone should be quick to listen, slow to speak and slow to become angry, because human anger does not produce the righteousness that God desires.” — James 1:19–20</div>`);
     addHTML(`<div class="intro-text">This section of your results is designed to help you understand your primary communication style—the innate way you tend to express yourself and others. Think of it as your natural rhythm for conversation and connection. Your results will show you what you need to feel heard and how you naturally communicate. Understanding this can help you better manage conflict, deepen intimacy, and feel more confident in expressing yourself in every relationship.</div>`);
-    const style = inferCommunicationStyle(p);
-    const pack = COMM_STYLE_DEF[style] || COMM_STYLE_DEF["Assertive"];
+
+    // Simple inference retained from previous builds
+    const style = (function infer(){
+      const bond = p.bondingKey || "SteadyConnector";
+      const rr   = (typeof p.rrScore === 'number') ? p.rrScore : 0;
+      const dec  = p.decisionTop || null;
+      const soc  = p.socialTop   || null;
+      if (bond === "IndependentConnector") return "Avoidant / Withdrawn";
+      if (bond === "GuardedConnector")     return "Passive-Aggressive";
+      if (bond === "ReassuranceSeeker") { if (dec === 'S' || rr <= 2) return "Aggressive"; return "Assertive"; }
+      if (bond === "SteadyConnector") { if (rr >= 5 && dec !== 'S') return "Collaborative / Empathetic"; if (dec === 'A' || soc === 'A' || soc === 'U') return "Passive"; return "Collaborative / Empathetic"; }
+      return "Assertive";
+    })();
+
+    const COMM_STYLE_DEF = {
+      "Passive": {
+        copy: `According to your assessment, you tend to use a passive communication style. This means you often avoid conflict and may find yourself going along with others to keep the peace. You might withhold your opinions and feelings to prevent disagreement, which can sometimes lead to resentment or emotional distance building up over time.`,
+        move: `For the Passive Communicator: Start by taking small steps to voice your opinions and needs. Instead of saying, "Whatever you want to do is fine," try, "I'd actually prefer to go to the movies tonight, how does that sound to you?"`
+      },
+      "Aggressive": {
+        copy: `Your results indicate a strong tendency toward an aggressive communication style. This approach is direct and forceful, and you may find yourself dominating conversations or interrupting others to push your own perspective. This style is often linked to a desire for control and can leave others feeling unheard or overpowered. The goal is to learn to express your needs powerfully while also creating space for others to share theirs.`,
+        move: `For the Aggressive Communicator: Practice using "I" statements instead of "you" statements. For example, change "You always interrupt me" to "I feel unheard when I'm interrupted." This shifts the focus from blame to personal experience.`
+      },
+      "Passive-Aggressive": {
+        copy: `Based on your assessment, you lean toward a passive-aggressive communication style. This can show up as sarcasm, giving the silent treatment, or making subtle jabs instead of being direct about what you need. This style can be especially damaging because it combines hostility with avoidance, leaving issues unresolved and creating frustration for everyone involved. A great next step is to practice being more direct and open in your conversations.`,
+        move: `For the Passive-Aggressive Communicator: Be direct. When you feel frustrated, instead of making a sarcastic comment, try saying, "I'm feeling frustrated right now because of X." This allows for an honest conversation rather than a hidden conflict.`
+      },
+      "Avoidant / Withdrawn": {
+        copy: `Your results suggest you often use an avoidant/withdrawn communication style. When things get difficult, you might find yourself shutting down, disengaging, or "stonewalling" during conversations. This style is common when people feel overwhelmed or are trying to avoid conflict entirely. It can prevent issues from being resolved and create emotional distance. Learning to stay present in difficult conversations is a great place to start.`,
+        move: `For the Avoidant/Withdrawn Communicator: Learn to manage your overwhelm by taking a short break. Say, "I'm feeling overwhelmed right now. Can we talk about this in 15 minutes?" This is a much healthier alternative to stonewalling, as it communicates a clear intention to return to the conversation.`
+      },
+      "Assertive": {
+        copy: `Congratulations! Your assessment shows you have a strong assertive communication style. This is considered the healthiest approach, as you are able to clearly and respectfully express your needs while also genuinely respecting the other person's perspective. This balanced style builds trust and intimacy because it blends honesty with empathy. Keep up the great work!`,
+        move: `For the Assertive Communication: Balance your style with the other healthy style, Collaborative / Empathetic Communication. This is a strengths-based approach where you actively listen, validate others' feelings, and work together to solve problems. It's very similar to assertive communication but has an even stronger focus on cooperation and understanding. This style helps build strong, intimate relationships.`
+      },
+      "Collaborative / Empathetic": {
+        copy: `Your assessment highlights a natural inclination toward a collaborative/empathetic communication style. This is a strengths-based approach where you actively listen, validate others' feelings, and work together to solve problems. It's very similar to assertive communication but has an even stronger focus on cooperation and understanding. This style helps build strong, intimate relationships.`,
+        move: `For the Collaborative / Empathetic Communication: Balance with the other healthy type “Assertive Communication.” This is considered the healthiest approach, as you are able to clearly and respectfully express your needs while also genuinely respecting the other person's perspective. This balanced style builds trust and intimacy because it blends honesty with empathy. Keep up the great work!`
+      }
+    };
+
     const colorMap = {
       "Passive": typeColors.Affable, "Aggressive": typeColors.Commitment, "Passive-Aggressive": typeColors.Conflict,
       "Assertive": typeColors.Intellectual, "Avoidant / Withdrawn": typeColors.Partnership, "Collaborative / Empathetic": typeColors.Emotional
@@ -949,6 +944,8 @@ function renderResults(p){
       "Passive": typeOpac.Affable, "Aggressive": typeOpac.Commitment, "Passive-Aggressive": typeOpac.Conflict,
       "Assertive": typeOpac.Intellectual, "Avoidant / Withdrawn": typeOpac.Partnership, "Collaborative / Empathetic": typeOpac.Emotional
     };
+
+    const pack = COMM_STYLE_DEF[style] || COMM_STYLE_DEF["Assertive"];
     addHTML(`
       <div class="result-block" style="border-left-color:${colorMap[style]}; background:${bgMap[style]};">
         <p><strong>${style} Communication</strong></p>
@@ -961,19 +958,6 @@ function renderResults(p){
       <div class="result-block" style="border-left-color:${colorMap[style]}; background:${bgMap[style]};">
         <p><strong>Try this:</strong> ${pack.move}</p>
       </div>
-    `);
-
-    // Dropdown: Understanding the Healthiest Communication Style
-    addHTML(`
-      <details class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};">
-        <summary style="cursor:pointer;"><strong>Understanding the Healthiest Communication Style</strong></summary>
-        <div class="intro-text" style="margin-top:8px;">
-          <p>The most successful couples consistently demonstrate a blend of assertive and collaborative/empathetic communication. While these are often discussed as two separate styles, they are deeply intertwined and represent a healthy, proactive approach to communication.</p>
-          <p><em>Assertive communication</em> is about clearly and respectfully expressing your own needs, feelings, and boundaries without attacking or blaming your partner. It's the "I feel..." statement—taking ownership of your emotions and needs, which prevents defensiveness and opens the door for a productive conversation.</p>
-          <p><em>Collaborative/empathetic communication</em> involves actively listening and seeking to understand your partner's perspective. This style goes beyond simply hearing words; it's about validating their emotions, even if you don't agree with their viewpoint. This creates a safe space for both partners to be vulnerable and understood.</p>
-          <p>When these two styles are combined, they form a powerful feedback loop. One partner asserts their needs, and the other responds with empathy and a collaborative mindset, and vice versa. This dynamic builds a strong foundation of trust and intimacy, allowing couples to navigate disagreements and challenges as a team rather than as opponents.</p>
-        </div>
-      </details>
     `);
   });
 
