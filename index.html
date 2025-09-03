@@ -278,9 +278,17 @@
   <h2 id="quizTitle">Assessment</h2>
   <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
   <div id="progress" style="text-align:center; margin-bottom:8px;"></div>
+
   <div id="questionContainer" class="question-box"></div>
+
+  <!-- NEW: Back button -->
+  <div style="display:flex; gap:10px; justify-content:center;">
+    <button id="backBtn" class="btn" style="display:none; max-width:160px;">Back</button>
+  </div>
+
   <p class="muted"><a href="https://happymarriagehappylife.com" target="_blank" rel="noopener">HappyMarriageHappyLife.com</a></p>
 </div>
+
 
 <!-- Results Page -->
 <div id="resultPage" class="card hidden">
@@ -353,10 +361,54 @@ function clearState(){ try { localStorage.removeItem(STORAGE_KEY); } catch(e){} 
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('startFreshBtn');
   const resumeBtn = document.getElementById('resumeBtn');
-  if (localStorage.getItem(STORAGE_KEY)) resumeBtn?.classList.remove('hidden');
-  startBtn?.addEventListener('click', () => { try { clearState(); yourName = (document.getElementById('yourName')?.value || "").trim() || "You"; step = 0; answers = JSON.parse(JSON.stringify(DEFAULT_ANSWERS)); saveState(); showQuiz(); } catch(e){ alert('Oops — please reload the page.'); } });
-  resumeBtn?.addEventListener('click', () => { try { const restored = loadState(); const typed = (document.getElementById('yourName')?.value || "").trim(); if (typed) yourName = typed; ensureDefaults(); if(!restored) step = 0; showQuiz(); } catch(e){ alert("Couldn’t resume. Starting fresh."); clearState(); step = 0; answers = JSON.parse(JSON.stringify(DEFAULT_ANSWERS)); showQuiz(); } });
+  const backBtn  = document.getElementById('backBtn');
+
+  if (localStorage.getItem(STORAGE_KEY)) {
+    resumeBtn?.classList.remove('hidden');
+  }
+
+  // Back button
+  backBtn?.addEventListener('click', () => {
+    if (step > 0) {
+      step--;
+      saveState();
+      renderStep();
+    }
+  });
+
+  // Start fresh
+  startBtn?.addEventListener('click', () => {
+    try {
+      clearState();
+      yourName = (document.getElementById('yourName')?.value || "").trim() || "You";
+      step = 0;
+      answers = JSON.parse(JSON.stringify(DEFAULT_ANSWERS));
+      saveState();
+      showQuiz();
+    } catch(e){
+      alert('Oops — please reload the page.');
+    }
+  });
+
+  // Resume
+  resumeBtn?.addEventListener('click', () => {
+    try {
+      const restored = loadState();
+      const typed = (document.getElementById('yourName')?.value || "").trim();
+      if (typed) yourName = typed;
+      ensureDefaults();
+      if (!restored) step = 0;
+      showQuiz();
+    } catch(e){
+      alert("Couldn’t resume. Starting fresh.");
+      clearState();
+      step = 0;
+      answers = JSON.parse(JSON.stringify(DEFAULT_ANSWERS));
+      showQuiz();
+    }
+  });
 });
+
 
 function showQuiz(){ hideAllPages(); document.getElementById('quizPage').classList.remove('hidden'); document.getElementById('quizTitle').textContent = `Assessment — ${yourName}`; renderStep(); }
 function hideAllPages(){ document.getElementById('introPage').classList.add('hidden'); document.getElementById('quizPage').classList.add('hidden'); document.getElementById('resultPage').classList.add('hidden'); }
@@ -364,6 +416,12 @@ function hideAllPages(){ document.getElementById('introPage').classList.add('hid
 /* ---- Questionnaire renderer ---- */
 function renderStep(){
   ensureDefaults();
+
+  // NEW: toggle Back visibility
+  const backBtn = document.getElementById('backBtn');
+  if (backBtn) backBtn.style.display = step > 0 ? 'block' : 'none';
+
+
   const progEl = document.getElementById('progress');
   const barEl  = document.getElementById('progressBar');
   if (progEl) progEl.textContent = `Step ${step+1} of ${TOTAL_STEPS}`;
@@ -420,10 +478,26 @@ function renderCategoryPick(root, title, desc, keys, defs, field){
 }
 
 function renderSingleList(root, title, options, onPick){
-  root.innerHTML = `<h3 style="text-align:center;">${title}</h3><div class="vertical-list"></div>`;
+  const showHelper = (typeof step === 'number' && step >= 3); // steps 3..15 == Sections 4..16
+  const helperHTML = showHelper
+    ? `<p style="text-align:center; margin-top:-6px; color:#4a607a;"><em>Select the one statement that best describes you.</em></p>`
+    : "";
+
+  root.innerHTML = `
+    <h3 style="text-align:center;">${title}</h3>
+    ${helperHTML}
+    <div class="vertical-list"></div>
+  `;
   const v = root.querySelector('.vertical-list');
-  options.forEach(([val, txt])=>{ const b = document.createElement('button'); b.className = 'answer-btn'; b.textContent = txt; b.onclick = ()=> onPick(val); v.appendChild(b); });
+  options.forEach(([val, txt])=>{
+    const b = document.createElement('button');
+    b.className = 'answer-btn';
+    b.textContent = txt;
+    b.onclick = ()=> onPick(val);
+    v.appendChild(b);
+  });
 }
+
 
 /* ---- Teaching data ---- */
 const APS_CARE = {
