@@ -63,6 +63,11 @@
 .toc-guide .toc-sub a:hover{ text-decoration:underline; }
 .toc-guide .toc-sub span{ font-weight:600; color:#1A3C5E; margin-right:4px; }
 
+@media print {
+  #commHealthyPanel.hidden { display:block !important; }
+}
+
+
 /* Print polish */
 @media print{
   #resultsTOC{ page-break-inside:avoid; }
@@ -997,7 +1002,32 @@ function renderResults(p){
     addSubDivider();
     addHTML(`<h4 class="subsection-title">Moving from Conflict to Connection: Communication Style</h4>`);
     addHTML(`<div class="result-block" style="border-left-color:${colorMap[style]}; background:${bgMap[style]};"><p><strong>Try this:</strong> ${pack.move}</p></div>`);
-    const pb = promptsBlockEditable('s4comm', [
+// Collapsible "Understanding the Healthiest Communication Style"
+addHTML(`
+  <div class="result-block" style="border-left-color:${typeColors.Intellectual}; background:${typeOpac.Intellectual};">
+    <button id="commHealthyBtn" class="btn" style="max-width:420px;">
+      Understanding the Healthiest Communication Style
+    </button>
+    <div id="commHealthyPanel" class="hidden" style="margin-top:10px;">
+      <p>The most successful couples consistently blend two key communication approaches: assertive communication and a collaborative and empathetic spirit. While these may sound like separate skills, they're deeply connected, working together to create a healthy and proactive way to talk.</p>
+      <p><strong>Assertive communication</strong> is the tool for expressing yourself. It's about clearly and respectfully stating your needs, feelings, and boundaries without blaming or attacking your partner. Think of it as using "I feel..." statements—you're taking ownership of your emotions, which naturally prevents defensiveness and sets the stage for a productive conversation.</p>
+      <p><strong>A collaborative and empathetic spirit</strong> is the tool for connection. It’s about more than just hearing words; it's about actively listening to your partner and trying to understand their perspective. This involves validating their emotions, even if you don't agree with their viewpoint. This approach builds a safe space where both of you can feel vulnerable and understood.</p>
+      <p>When you combine these two, they create a powerful and positive cycle. One partner expresses their needs assertively, and the other responds with a collaborative and empathetic heart. This dynamic builds a strong foundation of trust, allowing you to tackle disagreements as a team, not as opponents.</p>
+    </div>
+  </div>
+`);
+
+// Wire the toggle
+{
+  const healthyBtn = document.getElementById('commHealthyBtn');
+  const healthyPanel = document.getElementById('commHealthyPanel');
+  healthyBtn?.addEventListener('click', () => {
+    healthyPanel?.classList.toggle('hidden');
+  });
+}
+
+    
+const pb = promptsBlockEditable('s4comm', [
       'What is one healthy phrase you will practice using this week?',
       'What support do you need from your spouse to use this style?',
       'Name one moment today to try this approach.'
