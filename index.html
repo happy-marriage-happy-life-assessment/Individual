@@ -134,77 +134,59 @@
 
 
   /* Notebook-paper look for prompts (keeps the blue highlight) */
-.prompt-input{
-  width:100%;
-  min-height:96px;
-  background:transparent;
-  border:0; outline:0;
-  padding:4px 4px 6px 0;
-  font:14px/1.6 'Merriweather', serif;
-  color:#1A3C5E;
-}
-.prompt-input:placeholder-shown{
-  background-color: rgba(77,157,224,0.08);
-  background-image:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(77,157,224,0.22) 0,
-      rgba(77,157,224,0.22) 1px,
-      transparent 1px,
-      transparent 28px
-    ),
-    linear-gradient(
-      to right,
-      rgba(220,60,60,0.35) 50px,
-      transparent 50px
-    );
-  background-attachment: local, local;
-  background-position: 0 0, 0 0;
-  background-size: 100% 100%, 100% 100%;
-}
-.prompt-input::placeholder{ color:#7a8ba3; font-style:italic; }
-.prompt-input:focus{ box-shadow: inset 0 -2px 0 rgba(77,157,224,.35); }
-
-
-/* Binder holes (pure CSS, decorative) */
-/* Notebook rectangle look (keeps blue highlight, squared corners, thin red line) */
+/* Notebook paper look (light blue tint + horizontal lines) */
 .prompt-block{
-  position: relative;
-  border-left:8px solid #4D9DE0;
-  border-radius:0;                          /* squared corners */
+  position:relative;
+  border-left:none;
+  border-radius:8px;
   margin:16px 0;
-  padding:18px 16px 18px 60px;              /* left margin for red line area */
-  background-color: rgba(77,157,224,0.08);  /* same highlight blue */
-  /* blue horizontal lines + a single thin red margin line */
+  padding:12px 16px;
+  background-color: rgba(77,157,224,0.06); /* light blue tint */
   background-image:
     repeating-linear-gradient(
       to bottom,
-      rgba(77,157,224,0.22) 0,
-      rgba(77,157,224,0.22) 1px,
+      rgba(77,157,224,0.18) 0px,
+      rgba(77,157,224,0.18) 1px,
       transparent 1px,
-      transparent 28px
-    ),
-    linear-gradient(
-      to right,
-      transparent 55px,
-      rgba(220,60,60,0.75) 56px,           /* 1px red LINE (not an area) */
-      transparent 57px
+      transparent 26px
     );
-  background-size: 100% 100%, 100% 100%;
-  background-position: 0 0, 0 0;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
+/* Seamless handwriting area on the paper */
+.prompt-input{
+  display:block;
+  width:100%;
+  min-height:300px;                 /* taller so it feels full-page */
+  border:0 !important;              /* seamless edge */
+  background:transparent !important;/* show paper lines behind */
+  outline:0;
+  padding:0;                        /* align text with the paper lines */
+  margin:0;
+  font:14px/1.7 'Merriweather',serif;
+  color:#1A3C5E;
+  resize:vertical;
+  box-shadow:none;
+}
+
+.prompt-block .results-list{ margin-left:0; padding-left:18px; }
+.prompt-block .results-list li{ margin-left:0; }
+
+
 /* Title styling for 'Discussion Notes' */
+/* Discussion Notes title – match couples */
 .discussion-title{
   display:block;
+  text-align:center;
   color:#4D9DE0;
-  font-size:18pt;
-  font-family:'Merriweather', serif;
+  font-family:'Savoye LET','Zapfino','Great Vibes',cursive; /* same family as Thank You */
+  font-size:2.6rem;  /* slightly larger */
+  line-height:1.1;
   font-weight:400;
   margin:0 0 8px 0;
 }
+
 
 /* Keep the editable note area readable on the blue paper */
 .prompt-input{
@@ -289,16 +271,18 @@
   .prompt-input{ width:100%; min-height:84px; border:1px dashed #4D9DE0; border-radius:8px; padding:10px; margin-top:6px; resize:vertical; background:#fff; box-sizing:border-box; }
 
   /* Make framing questions look identical to subtitle-blue */
+/* Match subheading look: centered, italic, light blue, Merriweather */
 .subtitle-blue,
 .framing-q{
-  text-align:center;
-  font-style:italic;
+  text-align:center !important;
+  font-style:italic !important;
   font-weight:400;
-  color:#4D9DE0;
+  color:#4D9DE0 !important;
   font-size:14pt;
-  font-family:'Merriweather', serif;
+  font-family:'Merriweather', serif !important;
   margin:-2px 0 8px;
 }
+
 
 
   .thank-title{ margin-top:0; margin-bottom:12pt; font-family:'Savoye LET','Zapfino','Great Vibes',cursive; color:#4D9DE0; font-size:4.4rem; line-height:1.1; text-align:center; }
