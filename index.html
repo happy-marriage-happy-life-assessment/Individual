@@ -290,6 +290,86 @@
   @media (max-width:420px){ .thank-title{ font-size:2.6rem; } }
 
   @media print { .btn { display:none !important; } .card { border:none; box-shadow:none; } body { background:#fff; } }
+/* Actions row for results buttons */
+.actions-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  margin-top:8px;
+}
+/* Override the global .btn width so desktop can sit side-by-side */
+/* Actions row for results buttons — UNIFORM SIZE & TYPOGRAPHY */
+.actions-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  margin-top:8px;
+}
+
+/* Make all three buttons identical on desktop */
+.actions-row .btn{
+  display:inline-flex;              /* same inline layout for <a> and <button> */
+  align-items:center;
+  justify-content:center;
+  width:240px;                      /* equal width on desktop */
+  padding:12px 16px;                /* same inner spacing */
+  border-radius:8px;                /* same rounded corners */
+  font-family:'Open Sans', sans-serif; /* same font */
+  font-size:16px;                   /* same font size */
+  font-weight:700;                  /* same weight */
+  line-height:1.2;
+  text-align:center;
+  white-space:nowrap;               /* keep single line so heights match */
+}
+
+/* Ensure anchor buttons aren’t underlined */
+.actions-row a.btn{ text-decoration:none; }
+
+/* Mobile: stack full-width, still identical */
+@media (max-width:700px){
+  .actions-row{ flex-direction:column; }
+  .actions-row .btn{ width:100%; max-width:520px; }
+}
+/* === RESULTS ACTION BUTTONS — FINAL OVERRIDES (moved out of <script>) === */
+#resultPage .actions-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  margin-top:8px;
+}
+
+#resultPage .actions-row .btn{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  width:240px !important;
+  max-width:none !important;
+  padding:12px 16px !important;
+  border-radius:8px !important;
+  font-family:'Open Sans', sans-serif !important;
+  font-size:16px !important;
+  font-weight:700 !important;
+  line-height:1.2 !important;
+  text-decoration:none !important;
+}
+
+#resultPage .actions-row .btn:hover{ background:#3A7FBF; }
+
+@media (max-width:700px){
+  #resultPage .actions-row{ flex-direction:column; }
+  #resultPage .actions-row .btn{
+    width:100% !important;
+    max-width:520px !important;
+  }
+}
+
+
 </style>
 </head>
 <script>
@@ -307,7 +387,10 @@ document.addEventListener('DOMContentLoaded', () => {
 <body>
 <!-- Intro Page -->
 <div id="introPage" class="card">
+  <a href="https://happymarriagehappylife.com" target="_blank" rel="noopener">
   <img src="https://static.wixstatic.com/media/4d6372_c110ccf05896482192f466d6c0e3c1ae~mv2.png" alt="Logo" style="display:block; margin:0 auto 12px; max-width:200px;" onerror="this.src='https://via.placeholder.com/200x80?text=Logo'">
+</a>
+
   <h1>Your Guide to a Deeper Connection</h1>
   <div class="intro-text" style="text-align:center;">
     <p class="aha"><em>Ready for a few “aha!” moments?</em></p>
@@ -1022,29 +1105,67 @@ const pb = promptsBlockEditable('s4comm', [
   // ===============================
   // Thank You
   // ===============================
-  safe('thanks', () => {
-    addDivider();
-    addHTML('<a id="thanks"></a>');
-    addHTML(`
-      <div class="result-block" style="border-left-color:transparent; background:#fff;">
-        <h3 class="thank-title">Thank You</h3>
-        <div class="verse">“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12</div>
-        <div class="intro-text">
-          <p>We hope you had fun diving deep and discovering your unique connection types on multiple levels!</p>
-          <p>Remember, this has been a friendly, beginner's assessment, designed not to label you, but to inspire the sparks of connection and help your marriage explore the beautiful, unique individuals within it. Use these insights as a fun tool for introspection and spouse discovery, opening up new conversations and drawing you closer.</p>
-          <p>For to be truly known is to unlock the deepest intimacy, empowering you to courageously embrace what's true in your relationship today and boldly aim for what's possible tomorrow—cultivating the lasting love and joy-filled fulfillment God designed for your marriage.</p>
-        </div>
-        <div style="text-align:center; margin-top:8px;">
-          <button id="downloadPdfBtn" class="btn" style="max-width:260px;">Download PDF</button>
-        </div>
+ safe('thanks', () => {
+  addDivider();
+  addHTML('<a id="thanks"></a>');
+  addHTML(`
+    <div class="result-block" style="border-left-color:transparent; background:#fff;">
+      <h3 class="thank-title">Thank You</h3>
+      <div class="verse">“May the Lord make your love increase and overflow for each other and for everyone else, just as ours does for you.” — 1 Thessalonians 3:12</div>
+      <div class="intro-text">
+        <p>We hope you had fun diving deep and discovering your unique connection types on multiple levels!</p>
+        <p>Remember, this has been a friendly, beginner's assessment, designed not to label you, but to inspire the sparks of connection and help your marriage explore the beautiful, unique individuals within it. Use these insights as a fun tool for introspection and spouse discovery, opening up new conversations and drawing you closer.</p>
+        <p>For to be truly known is to unlock the deepest intimacy, empowering you to courageously embrace what's true in your relationship today and boldly aim for what's possible tomorrow—cultivating the lasting love and joy-filled fulfillment God designed for your marriage.</p>
       </div>
-    `);
-    const pdfBtn = document.getElementById('downloadPdfBtn');
-    if (pdfBtn) pdfBtn.onclick = () => window.print();
-  });
+
+      <div class="actions-row">
+        <a id="invitePartnerBtn" class="btn" href="#">Invite Your Partner</a>
+        <button id="downloadPdfBtn" class="btn">Download PDF</button>
+        <a class="btn" href="https://happymarriagehappylife.com" target="_blank" rel="noopener">Site Home</a>
+      </div>
+    </div>
+  `);
+
+  // Download PDF
+  const pdfBtn = document.getElementById('downloadPdfBtn');
+  if (pdfBtn) pdfBtn.onclick = () => window.print();
+
+  // Invite Your Partner — copy URL and show "linked copy"
+  const inviteBtn = document.getElementById('invitePartnerBtn');
+  if (inviteBtn) {
+    const inviteURL = location.origin + location.pathname;
+    inviteBtn.href = inviteURL; // keeps right-click copy behavior
+
+    const copyInviteURL = async () => {
+      try {
+        await navigator.clipboard.writeText(inviteURL);
+        return true;
+      } catch (_err) {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = inviteURL;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'absolute';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand && document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      }
+    };
+
+    inviteBtn.addEventListener('click', async (e) => {
+      e.preventDefault(); // don’t navigate
+      const prev = inviteBtn.textContent;
+      const ok = await copyInviteURL();
+      inviteBtn.textContent = ok ? 'linked copy' : 'copy failed';
+      setTimeout(() => { inviteBtn.textContent = prev; }, 1400);
+    });
+  }
+});
+
 }
-  
 </script>
 </body>
 </html>
-
