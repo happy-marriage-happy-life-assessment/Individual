@@ -368,6 +368,19 @@
     max-width:520px !important;
   }
 }
+/* Results card 'learn more' link — right-aligned, italic, not bold */
+.result-block p.learn-more-wrap{
+  text-align:right;
+  margin:6px 0 0;
+}
+.result-block a.learn-more{
+  color:#4D9DE0;
+  font-weight:400;   /* not bold */
+  font-style:italic; /* italic */
+  text-decoration:none;
+}
+.result-block a.learn-more:hover{ text-decoration:underline; }
+
 
 
 </style>
@@ -842,7 +855,17 @@ function renderResults(p){
       addHTML(`<p class="intro-text" style="text-align:center; font-style:italic; color:#4D9DE0;">Your top two preferences are: <strong>${p.corePicks.map(k=>INTIMACY[k].label.replace(/Intimacy/gi,'Connection')).join('</strong>, <strong>')}</strong></p>`);
     }
     addHTML(`
-      <div class="result-block" style="border-left-color:${typeColors.Spiritual}; background:${typeOpac.Spiritual};"><strong>Spiritual Intimacy</strong><p>This is your shared compass. It's a deep sense of purpose and connection to God’s design that anchors your relationship, shaping how you love each other. Ultimately, this foundational bond guides your journey together through life's ups and downs.</p></div>
+      <div class="result-block" style="border-left-color:${typeColors.Spiritual}; background:${typeOpac.Spiritual};">
+  <strong>Spiritual Intimacy</strong>
+  <p>This is your shared compass. It's a deep sense of purpose and connection to God’s design that anchors your relationship, shaping how you love each other. Ultimately, this foundational bond guides your journey together through life's ups and downs.</p>
+  <p class="learn-more-wrap">
+    <a class="learn-more" href="https://www.happymarriagehappylife.com/post/spiritual-intimacy-the-compass-of-covenant-marriage" target="_blank" rel="noopener">
+      Read more about Spiritual Intimacy
+    </a>
+  </p>
+</div>
+
+
       <div class="result-block" style="border-left-color:${typeColors.Commitment}; background:${typeOpac.Commitment};"><strong>Commitment Intimacy</strong><p>Think of this as the main support beam of your relationship. It’s the unwavering security that comes from knowing you're both dedicated for the long haul, providing the stability you need to face any challenge. This profound bond allows you to deepen your connection over time, no matter what.</p></div>
       <div class="result-block" style="border-left-color:${typeColors.Stability}; background:${typeOpac.Stability};"><strong>Stability Intimacy</strong><p>This is about building a practical and secure future as a team. It’s the trust you forge by honestly managing life's resources, like time and money, and aligning your values to work toward a common goal. This crucial collaboration ensures your partnership is built on a solid, reliable foundation.</p></div>
       <div class="result-block" style="border-left-color:${typeColors.Emotional}; background:${typeOpac.Emotional};"><strong>Emotional Intimacy</strong><p>This is the absolute heart of your connection. It’s about feeling safe enough to be truly vulnerable, sharing your deepest feelings and fears without judgment. This crucial bond is the gateway that allows all other forms of closeness to flourish.</p></div>
@@ -1164,8 +1187,8 @@ const pb = promptsBlockEditable('s4comm', [
     });
   }
 });
-
 }
+
 </script>
 </body>
 </html>
